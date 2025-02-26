@@ -12,6 +12,8 @@ using System.IO;
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Controls;
+using Avalonia.Collections;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -20,6 +22,7 @@ using Nodify;
 
 using GBFRDataTools.FSM.Entities;
 using GBFRDataTools.FSM;
+using GBFRDataTools.FSM.Components.Actions.Quest;
 
 using Dock.Model.Core;
 using Dock.Model.Mvvm.Controls;
@@ -27,10 +30,8 @@ using Dock.Model.Mvvm.Controls;
 using RelinkToolkit2.Messages.IO;
 using RelinkToolkit2.Messages.Fsm;
 using RelinkToolkit2.ViewModels.Fsm;
-using GBFRDataTools.FSM.Components.Actions.Quest;
 using RelinkToolkit2.ViewModels.Menu;
-using Avalonia.Collections;
-using Microsoft.Msagl.Core.Layout;
+using RelinkToolkit2.ViewModels.Fsm.TransitionComponents;
 
 //using MsBox.Avalonia;
 
@@ -322,19 +323,33 @@ public partial class FsmEditorViewModel : Document
         {
             for (int j = 0; j < trans.ConditionComponents.Count; j++)
             {
-                transition.ConditionComponents.Add(new TransitionConditionComponentViewModel(trans.ConditionComponents[j])
+                if (j != 0)
+                {
+                    int paramsIndex = j - 1;
+                    var param = trans.TransitionParams[paramsIndex];
+                    transition.ConditionComponents.Add(new TransitionConditionOpViewModel()
+                    {
+                        Title = param.IsAndCondition ? "AND" : "OR",
+                        Priority = param.Priority,
+                    });
+                }
+                
+                transition.ConditionComponents.Add(new TransitionConditionViewModel(trans.ConditionComponents[j])
                 {
                     Title = trans.ConditionComponents[j].ComponentName,
                     IsFalse = trans.ConditionComponents[j].IsReverseSuccess,
                 });
+
+
+                
             }
 
             connection.UpdateConnection();
         }
     }
 
-    private readonly Dictionary<int, NodeViewModel> _guidToNodeVm = [];
-    private readonly HashSet<int> _processedNodes = [];
+    private readonly Dictionary<uint, NodeViewModel> _guidToNodeVm = [];
+    private readonly HashSet<uint> _processedNodes = [];
 
     private NodeViewModel GetNodeViewModel(FSMNode node, int x, int y)
     {
@@ -373,7 +388,7 @@ public partial class FsmEditorViewModel : Document
 
     public FSMNode BuildTreeFromCurrentGraph()
     {
-        Dictionary<int, FSMNode> fsmNodes = [];
+        Dictionary<uint, FSMNode> fsmNodes = [];
 
         foreach (ConnectionViewModel connection in Connections)
         {
@@ -385,7 +400,7 @@ public partial class FsmEditorViewModel : Document
                     sourceFsmNode.Guid = connection.Source.Guid;
 
                     Transition fsmTransition = new(transition.Source.Guid, connection.Target.Guid);
-                    foreach (TransitionConditionComponentViewModel conditionComponent in transition.ConditionComponents)
+                    foreach (TransitionConditionViewModel conditionComponent in transition.ConditionComponents)
                         fsmTransition.ConditionComponents.Add(conditionComponent.ConditionComponent);
 
                     foreach (NodeComponentViewModel componentViewModel in connection.Source.Components)

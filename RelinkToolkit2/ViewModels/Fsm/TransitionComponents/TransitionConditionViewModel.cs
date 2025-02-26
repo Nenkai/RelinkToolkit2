@@ -16,13 +16,14 @@ using GBFRDataTools.FSM.Entities;
 using Nodify;
 
 using RelinkToolkit2.Messages.Fsm;
+using RelinkToolkit2.ViewModels.Fsm.TransitionComponents;
 
-namespace RelinkToolkit2.ViewModels.Fsm;
+namespace RelinkToolkit2.ViewModels.Fsm.TransitionComponents;
 
 /// <summary>
 /// Represents a transition between two nodes on the graph.
 /// </summary>
-public partial class TransitionConditionComponentViewModel : ObservableObject
+public partial class TransitionConditionViewModel : TransitionConditionBase
 {
     [ObservableProperty]
     private string? _title;
@@ -33,7 +34,7 @@ public partial class TransitionConditionComponentViewModel : ObservableObject
     [ObservableProperty]
     private ConditionComponent _conditionComponent;
 
-    public TransitionConditionComponentViewModel(ConditionComponent conditionComponent)
+    public TransitionConditionViewModel(ConditionComponent conditionComponent)
     {
         ArgumentNullException.ThrowIfNull(conditionComponent, nameof(conditionComponent));
 

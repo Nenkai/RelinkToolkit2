@@ -3,13 +3,14 @@ using Avalonia.Input;
 using Avalonia.VisualTree;
 using Avalonia.Xaml.Interactions.DragAndDrop;
 
+using RelinkToolkit2.ViewModels.Fsm.TransitionComponents;
 using RelinkToolkit2.ViewModels.Fsm;
 
 namespace RelinkToolkit2.Behaviors;
 
 public class TransitionComponentDropHandler : DropHandlerBase
 {
-    private bool Validate<T>(ItemsControl listBox, DragEventArgs e, object? sourceContext, object? targetContext, bool bExecute) where T : TransitionConditionComponentViewModel
+    private bool Validate<T>(ItemsControl listBox, DragEventArgs e, object? sourceContext, object? targetContext, bool bExecute) where T : TransitionConditionViewModel
     {
         if (sourceContext is not T sourceComponent || targetContext is not TransitionViewModel targetTransitionViewModel)
         {
@@ -19,7 +20,7 @@ public class TransitionComponentDropHandler : DropHandlerBase
         if (listBox.GetVisualAt(e.GetPosition(listBox)) is not Control targetControl)
             return false;
 
-        if (targetControl.DataContext is not TransitionConditionComponentViewModel targetComponent)
+        if (targetControl.DataContext is not TransitionConditionViewModel targetComponent)
             return false;
 
         var items = targetTransitionViewModel.ConditionComponents;
@@ -42,7 +43,7 @@ public class TransitionComponentDropHandler : DropHandlerBase
     {
         if (sender is ItemsControl listBox)
         {
-            return Validate<TransitionConditionComponentViewModel>(listBox, e, sourceContext, targetContext, false);
+            return Validate<TransitionConditionViewModel>(listBox, e, sourceContext, targetContext, false);
         }
 
         return false;
@@ -52,7 +53,7 @@ public class TransitionComponentDropHandler : DropHandlerBase
     {
         if (sender is ItemsControl listBox)
         {
-            return Validate<TransitionConditionComponentViewModel>(listBox, e, sourceContext, targetContext, true);
+            return Validate<TransitionConditionViewModel>(listBox, e, sourceContext, targetContext, true);
         }
         return false;
     }

@@ -19,6 +19,7 @@ using GBFRDataTools.FSM.Components.Conditions.Quest;
 using RelinkToolkit2.Messages;
 using RelinkToolkit2.Messages.Fsm;
 using RelinkToolkit2.ViewModels.Fsm;
+using RelinkToolkit2.ViewModels.Fsm.TransitionComponents;
 
 namespace RelinkToolkit2.ViewModels;
 
@@ -49,11 +50,12 @@ public partial class ConnectionEditorViewModel : Tool
                     },
                     ConditionComponents = 
                     [
-                        new TransitionConditionComponentViewModel(new RecvSignal())
+                        new TransitionConditionViewModel(new RecvSignal())
                         {
                             Title = "Condition 1",
                         },
-                        new TransitionConditionComponentViewModel(new CheckChallengeMissionClear())
+                        new TransitionConditionOpViewModel() { Title = "AND", Priority = 0 },
+                        new TransitionConditionViewModel(new CheckChallengeMissionClear())
                         {
                             Title = "Condition 2",
                         },

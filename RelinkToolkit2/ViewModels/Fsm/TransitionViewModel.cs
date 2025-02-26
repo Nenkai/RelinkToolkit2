@@ -14,10 +14,12 @@ using GBFRDataTools.FSM.Entities;
 
 using Nodify;
 
+using RelinkToolkit2.ViewModels.Fsm.TransitionComponents;
+
 namespace RelinkToolkit2.ViewModels.Fsm;
 
 /// <summary>
-/// Represents a transition between two nodes on the graph.
+/// Represents a transition between two nodes on the graph (one direction).
 /// </summary>
 public partial class TransitionViewModel : ObservableObject
 {
@@ -26,7 +28,7 @@ public partial class TransitionViewModel : ObservableObject
     public required NodeViewModel Source { get; set; }
     public required NodeViewModel Target { get; set; }
 
-    public ObservableCollection<TransitionConditionComponentViewModel> ConditionComponents { get; set; } = [];
+    public ObservableCollection<TransitionConditionBase> ConditionComponents { get; set; } = [];
 
     public TransitionViewModel(ConnectionViewModel parentConnection)
     {
@@ -34,7 +36,7 @@ public partial class TransitionViewModel : ObservableObject
     }
 
     [RelayCommand]
-    public void OnTransitionComponentDeleted(TransitionConditionComponentViewModel component)
+    public void OnTransitionComponentDeleted(TransitionConditionViewModel component)
     {
         ConditionComponents.Remove(component);
 

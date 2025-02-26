@@ -18,11 +18,12 @@ using GBFRDataTools.FSM.Entities;
 using Nodify;
 
 using RelinkToolkit2.Messages.Fsm;
+using RelinkToolkit2.ViewModels.Fsm.TransitionComponents;
 
 namespace RelinkToolkit2.ViewModels.Fsm;
 
 /// <summary>
-/// Represents a connection on the graph (which can represent start & end connection).
+/// Represents a connection on the graph (which can be bi-directional).
 /// </summary>
 public partial class ConnectionViewModel : ObservableObject
 {
@@ -73,10 +74,11 @@ public partial class ConnectionViewModel : ObservableObject
         }
         else if (Transitions.Count == 1)
         {
-            if (Transitions[0].ConditionComponents.Count > 0)
+            int condCount = Transitions[0].ConditionComponents.Count(e => e is TransitionConditionViewModel);
+            if (condCount > 0)
             {
-                Title = Transitions[0].ConditionComponents.Count > 1 ?
-                    $"{Transitions[0].ConditionComponents.Count} conditions" :
+                Title = condCount > 1 ?
+                    $"{condCount} conditions" :
                     "1 condition";
             }
             else

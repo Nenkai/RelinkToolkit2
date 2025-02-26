@@ -31,7 +31,7 @@ public partial class NodeViewModel : NodeViewModelBase //, IDropTarget
     private CornerRadius _cornerRadius = new(5);
 
     [ObservableProperty]
-    public int _guid;
+    public uint _guid;
 
     [ObservableProperty]
     public int _layerIndex;

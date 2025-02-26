@@ -6,6 +6,7 @@
 			 xmlns:controls="using:RelinkToolkit2.Controls"
 			 xmlns:VMs="using:RelinkToolkit2.ViewModels"
              xmlns:fsmVMs="using:RelinkToolkit2.ViewModels.Fsm"
+			 xmlns:condVMs="using:RelinkToolkit2.ViewModels.Fsm.TransitionComponents"
 			 xmlns:pgc="using:Avalonia.PropertyGrid.Controls"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -103,8 +104,8 @@
 								<Border BorderThickness="0 1 0 0" BorderBrush="LightGray">
 									<StackPanel Orientation="Vertical" Margin="12 4 4 4">
 										<ItemsControl x:Name="ConditionsControl" ItemsSource="{Binding ConditionComponents}" Classes="ItemsDragAndDrop">
-											<ItemsControl.ItemTemplate>
-												<DataTemplate DataType="{x:Type fsmVMs:TransitionConditionComponentViewModel}">
+											<ItemsControl.DataTemplates>
+												<DataTemplate DataType="{x:Type condVMs:TransitionConditionViewModel}">
 													<StackPanel x:Name="TransitionStackPanel" Orientation="Horizontal" HorizontalAlignment="Stretch" Focusable="True">
 														<Expander>
 															<Expander.Header>
@@ -153,7 +154,15 @@
 														</Expander>
 													</StackPanel>
 												</DataTemplate>
-											</ItemsControl.ItemTemplate>
+												<DataTemplate DataType="{x:Type condVMs:TransitionConditionOpViewModel}">
+													<Grid Width="300" HorizontalAlignment="Left">
+														<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+															<TextBlock Text="{Binding Title}" FontWeight="Bold"/>
+															<TextBlock Text="{Binding Priority, StringFormat=' (Priority {0})'}" />
+														</StackPanel>
+													</Grid>
+												</DataTemplate>
+											</ItemsControl.DataTemplates>
 										</ItemsControl>
 									</StackPanel>
 								</Border>
