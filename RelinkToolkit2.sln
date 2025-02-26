@@ -1,0 +1,54 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35122.118
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RelinkToolkit2", "RelinkToolkit2\RelinkToolkit2.csproj", "{AFDA6108-85A2-495D-99DA-D25997F90D05}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RelinkToolkit2.Desktop", "RelinkToolkit2.Desktop\RelinkToolkit2.Desktop.csproj", "{1B032C76-2FB9-4C17-9418-DA9E65B2178D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RelinkToolkit2.Browser", "RelinkToolkit2.Browser\RelinkToolkit2.Browser.csproj", "{E703F78A-F2EA-4CF5-8639-F6E97C3EB316}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GBFRDataTools.FSM", "..\GRBFDataTools\GBFRDataTools.FSM\GBFRDataTools.FSM.csproj", "{CED501DD-9993-4A52-940E-CDB6706C1E9B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GBFRDataTools.Entities", "..\GRBFDataTools\GBFRDataTools.Entities\GBFRDataTools.Entities.csproj", "{F9CF76B5-E88C-45B7-947C-56D9B7C10FF2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FB868470-12F6-4461-902A-65BC3DC249AF}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AFDA6108-85A2-495D-99DA-D25997F90D05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AFDA6108-85A2-495D-99DA-D25997F90D05}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AFDA6108-85A2-495D-99DA-D25997F90D05}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AFDA6108-85A2-495D-99DA-D25997F90D05}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B032C76-2FB9-4C17-9418-DA9E65B2178D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B032C76-2FB9-4C17-9418-DA9E65B2178D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B032C76-2FB9-4C17-9418-DA9E65B2178D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B032C76-2FB9-4C17-9418-DA9E65B2178D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E703F78A-F2EA-4CF5-8639-F6E97C3EB316}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E703F78A-F2EA-4CF5-8639-F6E97C3EB316}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E703F78A-F2EA-4CF5-8639-F6E97C3EB316}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E703F78A-F2EA-4CF5-8639-F6E97C3EB316}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CED501DD-9993-4A52-940E-CDB6706C1E9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CED501DD-9993-4A52-940E-CDB6706C1E9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CED501DD-9993-4A52-940E-CDB6706C1E9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CED501DD-9993-4A52-940E-CDB6706C1E9B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9CF76B5-E88C-45B7-947C-56D9B7C10FF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9CF76B5-E88C-45B7-947C-56D9B7C10FF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9CF76B5-E88C-45B7-947C-56D9B7C10FF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9CF76B5-E88C-45B7-947C-56D9B7C10FF2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7029061C-B8CA-432D-8417-DECD95DE6AF4}
+	EndGlobalSection
+EndGlobal

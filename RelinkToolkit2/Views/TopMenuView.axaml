@@ -1,0 +1,71 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:RelinkToolkit2.ViewModels"
+			 xmlns:local="clr-namespace:RelinkToolkit2.Views"
+			 x:Class="RelinkToolkit2.Views.TopMenuView"
+			 xmlns:controls="using:RelinkToolkit2.Controls"
+			 xmlns:converters="using:RelinkToolkit2.Converters"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="200"
+             x:DataType="vm:TopMenuViewModel" x:CompileBindings="False">
+	<Design.DataContext>
+		<vm:TopMenuViewModel />
+	</Design.DataContext>
+
+	<UserControl.Resources>
+		<converters:VectorIconConverter x:Key="vectorIconConverter"/>
+	</UserControl.Resources>
+	
+	<!-- 
+	holy SHIT, just getting a fricking MENU to work with bindings in Avalonia is a pain. 
+	HierarchicalDataTemplate does not exist.
+	
+	https://docs.avaloniaui.net/docs/get-started/wpf/hierarchicaldatatemplate says I should use TreeDataTemplate in place of it.
+	
+	Swapping from HierarchicalDataTemplate from WPF to TreeDataTemplate does not work. 
+	"There is no support for TreeDataTemplate in Menu control" okay??
+	https://github.com/AvaloniaUI/Avalonia/discussions/10326
+	
+	Menu.ItemContainerTheme only supports one target type.
+	
+	Setting one ControlTheme would end up to this anyway. Still not fixed!
+	https://github.com/AvaloniaUI/Avalonia/discussions/10060
+	
+	More relevant issues which i've gone through to no success.
+	https://github.com/AvaloniaUI/Avalonia/discussions/10018
+	https://github.com/AvaloniaUI/Avalonia/discussions/16813
+	https://github.com/AvaloniaUI/Avalonia/discussions/10326#discussioncomment-4967899
+	https://github.com/AvaloniaUI/Avalonia/issues/15858
+	
+	Turns out a plain old style works JUST FINE.
+	-->
+	<UserControl.Styles>
+		<Style Selector="MenuItem" >
+			<Setter Property="Header" Value="{Binding Header}" />
+			<Setter Property="Command" Value="{Binding Command}" />
+			<Setter Property="CommandParameter" Value="{Binding Parameter}"/>
+			<Setter Property="IsEnabled" Value="{Binding Enabled}" />
+			<Setter Property="IsChecked" Value="{Binding Checked}" />
+			<Setter Property="ToggleType" Value="{Binding ToggleType}" />
+			<Setter Property="ItemsSource" Value="{Binding MenuItems}"/>
+		</Style>
+
+		<!-- Ensure to only apply an icon when there is no specific toggle type, otherwise there will be a gap. -->
+		<Style Selector="MenuItem[ToggleType=None]">
+			<Setter Property="Icon">
+				<Template>
+					<Image>
+						<Image.Source>
+							<controls:VectorIconDrawingImage Drawing="{Binding IconKind, Converter={StaticResource vectorIconConverter}}"/>
+						</Image.Source>
+					</Image>
+				</Template>
+			</Setter>
+		</Style>
+	</UserControl.Styles>
+	
+	<Menu ItemsSource="{Binding MenuItems}" >
+
+	</Menu>
+</UserControl>

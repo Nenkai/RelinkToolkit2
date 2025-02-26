@@ -1,0 +1,31 @@
+﻿<UserControl x:Class="RelinkToolkit2.Views.PropertyGridView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:RelinkToolkit2"
+			 xmlns:converters="using:RelinkToolkit2.Converters"
+			 xmlns:controls="using:RelinkToolkit2.Controls"
+			 xmlns:VMs="using:RelinkToolkit2.ViewModels"
+             xmlns:fsmVMs="using:RelinkToolkit2.ViewModels.Fsm"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:pgc="using:Avalonia.PropertyGrid.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="350"
+			 x:DataType="VMs:PropertyGridViewModel">
+    <Design.DataContext>
+		<VMs:PropertyGridViewModel/>
+    </Design.DataContext>
+
+	<UserControl.Resources>
+		<converters:VectorIconConverter x:Key="vectorIconConverter"/>
+	</UserControl.Resources>
+
+	<ScrollViewer>
+		<pgc:PropertyGrid
+			x:Name="propertyGrid_Basic"
+			Margin="4"
+			AllowFilter="False"
+			DataContext="{Binding SelectedObject}">
+		</pgc:PropertyGrid>
+	</ScrollViewer>
+</UserControl>

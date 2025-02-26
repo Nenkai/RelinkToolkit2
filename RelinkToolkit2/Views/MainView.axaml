@@ -1,0 +1,34 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:RelinkToolkit2.ViewModels"
+			 xmlns:views="using:RelinkToolkit2.Views"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="RelinkToolkit2.Views.MainView"
+             x:DataType="vm:MainViewModel" x:CompileBindings="True"
+			 Loaded="UserControl_Loaded">
+	<Design.DataContext>
+		<!-- This only sets the DataContext for the previewer in an IDE,
+         to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+		<vm:MainViewModel />
+	</Design.DataContext>
+
+	<UserControl.Resources>
+		<ExperimentalAcrylicMaterial BackgroundSource="Digger"
+                                 TintColor="{DynamicResource SystemAltHighColor}"
+                                 TintOpacity="1"
+                                 FallbackColor="{DynamicResource AcrylicFallbackColor}"
+                                 MaterialOpacity="0.55"
+                                 x:Key="AcrylicMaterial"/>
+	</UserControl.Resources>
+	<DockPanel>
+		<views:TopMenuView DockPanel.Dock="Top" DataContext="{Binding TopMenuViewModel}"/>
+
+		<Panel DockPanel.Dock="Bottom">
+			
+			<ExperimentalAcrylicBorder IsHitTestVisible="False" Material="{StaticResource AcrylicMaterial}"/>
+			<DockControl Name="DockControl" Layout="{Binding Layout}"/>
+		</Panel>
+	</DockPanel>
+</UserControl>

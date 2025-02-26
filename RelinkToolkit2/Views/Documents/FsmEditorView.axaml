@@ -1,0 +1,179 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:nodify="https://miroiu.github.io/nodify"
+			 xmlns:local="clr-namespace:RelinkToolkit2;assembly=RelinkToolkit2"
+			 xmlns:fsmViews="using:RelinkToolkit2.Views.Fsm"
+			 xmlns:vms="using:RelinkToolkit2.ViewModels"
+			 xmlns:docVMs="using:RelinkToolkit2.ViewModels.Documents"
+			 xmlns:fsmVMs="using:RelinkToolkit2.ViewModels.Fsm"
+			 xmlns:collections="clr-namespace:System.Collections;assembly=System.Runtime"
+			 xmlns:converters="using:RelinkToolkit2.Converters"
+			 xmlns:controls="using:RelinkToolkit2.Controls"
+			 xmlns:menuVMs="using:RelinkToolkit2.ViewModels.Menu"
+			 xmlns:b="using:RelinkToolkit2.Behaviors"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="RelinkToolkit2.Views.Documents.FsmEditorView"
+			 x:DataType="docVMs:FsmEditorViewModel">
+	<UserControl.Resources>
+		<converters:ConnectorOffsetConverter x:Key="ConnectorOffsetConverter" />
+		<converters:VectorIconConverter x:Key="vectorIconConverter"/>
+		
+		<!-- Nodify -->
+		<GeometryDrawing x:Key="SmallGridGeometry"
+                         Geometry="M0,0 L0,1 0.03,1 0.03,0.03 1,0.03 1,0 Z"
+						 Brush="#404040" />
+
+		<GeometryDrawing x:Key="LargeGridGeometry"
+                         Geometry="M0,0 L0,1 0.015,1 0.015,0.015 1,0.015 1,0 Z"
+                         Brush="#434343" />
+
+		<DrawingBrush x:Key="SmallGridLinesDrawingBrush"
+                      TileMode="Tile"
+                      DestinationRect="0 0 15 15"
+                      TransformOrigin="0,0"
+                      Transform="{Binding DpiScaledViewportTransform, ElementName=Editor}"
+                      Drawing="{StaticResource SmallGridGeometry}" />
+
+		<DrawingBrush x:Key="LargeGridLinesDrawingBrush"
+                      TileMode="Tile"
+                      Opacity="0.5"
+                      DestinationRect="0 0 150 150"
+                      Transform="{Binding DpiScaledViewportTransform, ElementName=Editor}"
+                      Drawing="{StaticResource LargeGridGeometry}" />
+
+	</UserControl.Resources>
+
+	<UserControl.Styles>
+		<Style x:DataType="menuVMs:MenuItemViewModel" Selector="MenuItem" >
+			<Setter Property="Header" Value="{Binding Header}" />
+			<Setter Property="FontWeight" Value="{Binding FontWeight}" />
+			<Setter Property="Command" Value="{Binding Command}" />
+			<Setter Property="CommandParameter" Value="{Binding Parameter}"/>
+			<Setter Property="IsEnabled" Value="{Binding Enabled}" />
+			<Setter Property="IsChecked" Value="{Binding Checked}" />
+			<Setter Property="ToggleType" Value="{Binding ToggleType}" />
+			<Setter Property="ItemsSource" Value="{Binding MenuItems}"/>
+		</Style>
+
+		<!-- Ensure to only apply an icon when there is no specific toggle type, otherwise there will be a gap. -->
+		<Style x:DataType="menuVMs:MenuItemViewModel" Selector="MenuItem[ToggleType=None]">
+			<Setter Property="Icon">
+				<Template>
+					<Image>
+						<Image.Source>
+							<controls:VectorIconDrawingImage Brush="{Binding IconBrush, Mode=TwoWay}" Drawing="{Binding IconKind, Converter={StaticResource vectorIconConverter}}"/>
+						</Image.Source>
+					</Image>
+				</Template>
+			</Setter>
+		</Style>
+
+
+	</UserControl.Styles>
+	
+	<Design.DataContext>
+		<docVMs:FsmEditorViewModel/>
+	</Design.DataContext>
+
+	<Grid Background="#1E1E1E">
+		<!-- The actual node editor. -->
+		<nodify:NodifyEditor x:Name="Editor"
+				 ItemsSource="{Binding Nodes}"
+				 Connections="{Binding Connections}"
+				 Background="{StaticResource SmallGridLinesDrawingBrush}"
+				 SelectedItem="{Binding SelectedNode}"
+				 SelectedConnection="{Binding SelectedConnection}"
+			     PendingConnection="{Binding PendingConnection}"
+			     Loaded="NodifyEditor_Loaded">
+			
+			<nodify:NodifyEditor.ItemContainerTheme>
+				<ControlTheme TargetType="nodify:ItemContainer" x:DataType="fsmVMs:NodeViewModel" BasedOn="{StaticResource {x:Type nodify:ItemContainer}}">
+					<Setter Property="Location" Value="{Binding Location}"/>
+					<Setter Property="ActualSize" Value="{Binding Size, Mode=OneWayToSource}" />
+					<Setter Property="Tag" Value="{Binding}"/>
+				</ControlTheme>
+			</nodify:NodifyEditor.ItemContainerTheme>
+
+			<nodify:NodifyEditor.ConnectionTemplate>
+				<DataTemplate DataType="fsmVMs:ConnectionViewModel">
+					<nodify:LineConnection
+								   Source="{Binding Source.Anchor}"
+								   Target="{Binding Target.Anchor}"
+								   SourceOffset="{Binding Source.Size, Converter={StaticResource ConnectorOffsetConverter}, ConverterParameter=20}"
+								   TargetOffset="{Binding Target.Size, Converter={StaticResource ConnectorOffsetConverter}, ConverterParameter=20}"
+								   ArrowSize="15,15"
+								   Spacing="0"
+								   Text="{Binding Title}"
+								   FontWeight="Bold"
+								   ArrowEnds="{Binding ArrowHeadEnds}"
+								   Stroke="{Binding ArrowColor}"
+								   IsAnimatingDirectionalArrows="{Binding IsAnimating}"
+								   DirectionalArrowsCount="{Binding DirectionalArrowCount}"
+								   StrokeDashArray="{Binding StrokeDashArray}"
+								   SourceOffsetMode="Edge"
+								   TargetOffsetMode="Edge"
+								   nodify:BaseConnection.IsSelectable="True">
+						<nodify:LineConnection.Theme>
+							<ControlTheme TargetType="{x:Type nodify:LineConnection}"
+								   BasedOn="{StaticResource {x:Type nodify:LineConnection}}">
+								<Setter Property="StrokeThickness" Value="4" />
+							</ControlTheme>
+						</nodify:LineConnection.Theme>
+					</nodify:LineConnection>
+				</DataTemplate>
+			</nodify:NodifyEditor.ConnectionTemplate>
+
+			<nodify:NodifyEditor.PendingConnectionTemplate>
+				<DataTemplate DataType="{x:Type fsmVMs:PendingConnectionViewModel}">
+					<nodify:PendingConnection
+						 IsVisible="{Binding IsVisible}"
+                         Source="{Binding Source, Mode=OneWayToSource}"
+                         Target="{Binding Target, Mode=OneWayToSource}"
+                         TargetAnchor="{Binding TargetLocation, Mode=OneWayToSource}"
+						 CompletedCommand="{Binding #Editor.((docVMs:FsmEditorViewModel)DataContext).ConnectionCompletedCommand}" />
+				</DataTemplate>
+			</nodify:NodifyEditor.PendingConnectionTemplate>
+			
+			<!-- Set how every node should be displayed -->
+			<nodify:NodifyEditor.DataTemplates>
+				<DataTemplate DataType="fsmVMs:NodeViewModel">
+					<fsmViews:FsmNodeView />
+				</DataTemplate>
+				<DataTemplate DataType="fsmVMs:GroupNodeViewModel">
+					<!-- Refer to ItemContainerStyle for location. -->
+					<nodify:GroupingNode ActualSize="{Binding Size}">
+						<nodify:GroupingNode.Header>
+							<StackPanel Orientation="Horizontal">
+								<controls:EditableTextBlock Text="{Binding Title}" FontWeight="Bold"/>
+							</StackPanel>
+						</nodify:GroupingNode.Header>
+					</nodify:GroupingNode>
+				</DataTemplate>
+			</nodify:NodifyEditor.DataTemplates>
+		</nodify:NodifyEditor>
+
+		<Grid Background="{StaticResource LargeGridLinesDrawingBrush}"
+		  Panel.ZIndex="-2" />
+	</Grid>
+
+
+	<!--
+        <nodify:Minimap 
+                ItemsSource="{Binding ItemsSource, ElementName=Editor}"
+                ViewportLocation="{Binding ViewportLocation, ElementName=Editor}"
+                ViewportSize="{Binding ViewportSize, ElementName=Editor}"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Width="300"
+                Height="200">
+            <nodify:Minimap.ItemContainerStyle>
+                <Style TargetType="nodify:MinimapItem">
+                    <Setter Property="Location" Value="{Binding MyItemLocation}" />
+                </Style>
+            </nodify:Minimap.ItemContainerStyle>
+        </nodify:Minimap>
+        <Grid Background="{StaticResource LargeGridLinesDrawingBrush}" Panel.ZIndex="-2" />
+        -->
+</UserControl>

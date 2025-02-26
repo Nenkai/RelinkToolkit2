@@ -1,0 +1,87 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:nodify="https://miroiu.github.io/nodify"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 xmlns:fsmVMs="using:RelinkToolkit2.ViewModels.Fsm"
+			 xmlns:b="using:RelinkToolkit2.Behaviors"
+			 xmlns:controls="using:RelinkToolkit2.Controls"
+             x:Class="RelinkToolkit2.Views.Fsm.FsmNodeView"
+			 x:DataType="fsmVMs:NodeViewModel">
+	<UserControl.Styles>
+		<Style Selector="ItemsControl.ItemsDragAndDrop">
+			<Style.Resources>
+				<b:NodeComponentDropHandler x:Key="NodeComponentDropHandler" />
+			</Style.Resources>
+			<Setter Property="(Interaction.Behaviors)">
+				<BehaviorCollectionTemplate>
+					<BehaviorCollection>
+						<ContextDropBehavior Handler="{StaticResource NodeComponentDropHandler}" />
+					</BehaviorCollection>
+				</BehaviorCollectionTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="ItemsControl.ItemsDragAndDrop ContentPresenter">
+			<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+			<Setter Property="(Interaction.Behaviors)">
+				<BehaviorCollectionTemplate>
+					<BehaviorCollection>
+						<ContextDragBehavior HorizontalDragThreshold="3" VerticalDragThreshold="3" />
+					</BehaviorCollection>
+				</BehaviorCollectionTemplate>
+			</Setter>
+		</Style>
+	</UserControl.Styles>
+	
+	<Design.DataContext>
+		<fsmVMs:NodeViewModel/>
+	</Design.DataContext>
+	<nodify:StateNode x:Name="Node"
+					  IsConnected="True"
+					  BorderBrush="{Binding BorderBrush}"
+					  Content="{Binding}"
+					  CornerRadius="{Binding CornerRadius}"
+					  Anchor="{Binding Anchor, Mode=OneWayToSource}"
+					  DragDrop.AllowDrop="True">
+		<!-- For execution components -->
+		<nodify:StateNode.ContentTemplate>
+			<DataTemplate DataType="fsmVMs:NodeViewModel">
+				<StackPanel Orientation="Vertical">
+					<StackPanel Orientation="Horizontal">
+						<!-- Make sure to not display edit cursor while hovering over the text block
+							 We don't want the cursor types to change too much while moving around nodes.
+							 You can double click to edit the label. -->
+						<controls:EditableTextBlock Cursor="SizeAll" Text="{Binding Title}" FontWeight="Bold" Margin="4,2,2,2"/>
+						<TextBlock Text="{Binding LayerIndex, StringFormat='(L{0})'}}" Foreground="DimGray" FontSize="8" Margin="0,2,2,2" />
+
+					</StackPanel>
+
+					<!-- Caption/Path to external fsm -->
+					<TextBlock Text="{Binding FsmSource}" Foreground="DimGray" FontSize="10" Margin="4,0,2,2"
+							IsVisible="{Binding FsmSource, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+					<ItemsControl ItemsSource="{Binding Components}" Classes="ItemsDragAndDrop">
+
+						<!-- Spacing between execution components -->
+						<ItemsControl.ItemTemplate>
+							<DataTemplate DataType="fsmVMs:NodeComponentViewModel">
+								<Border Cursor="Hand" BorderBrush="{Binding BorderBrush}" BorderThickness="1" PointerEntered="Border_PointerEntered" PointerExited="Border_PointerExited" Margin="0 5 0 0" Tapped="Component_Tapped" PointerPressed="Border_PointerPressed">
+
+									<!-- Setting to transparent is needed for the hit test to work everywhere (otherwise doesn't work on the gap) -->
+									<Grid ColumnDefinitions="*,*,10" Background="Transparent">
+										<StackPanel Grid.Column="0" Orientation="Horizontal" IsHitTestVisible="False">
+											<Label Grid.Column="0" Width="26" FontWeight="Bold" Content=">>"/>
+											<Label Grid.Column="1" Content="{Binding Name}"/>
+										</StackPanel>
+									</Grid>
+								</Border>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+				</StackPanel>
+			</DataTemplate>
+		</nodify:StateNode.ContentTemplate>
+	</nodify:StateNode>
+</UserControl>
