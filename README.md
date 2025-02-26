@@ -2,6 +2,8 @@
 
 Unfinished FSM/Quest Editor for Granblue Fantasy: Relink using Avalonia. Rewritten from [RelinkFSMToolkit](https://github.com/Nenkai/RelinkFSMToolkit)
 
+![RelinkToolkit2 Desktop_ug7mZZBXmF](https://github.com/user-attachments/assets/50a85a91-c258-41e8-87dc-a7af825fbc2b)
+
 ## State
 
 * Can load & view multiple FSMs
