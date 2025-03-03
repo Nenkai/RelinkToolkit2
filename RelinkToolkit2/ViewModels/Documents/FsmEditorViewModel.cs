@@ -64,6 +64,8 @@ public partial class FsmEditorViewModel : Document
 
     public DocumentsViewModel Documents { get; set; }
 
+    private string _currentFsmName;
+
     public FsmEditorViewModel()
     {
         WeakReferenceMessenger.Default.Register<FileSaveRequestMessage>(this, (recipient, message) =>
@@ -146,8 +148,10 @@ public partial class FsmEditorViewModel : Document
     /// <summary>
     /// Inits the graph from the loaded nodes.
     /// </summary>
-    public void InitGraph()
+    public void InitGraph(string fsmName)
     {
+        _currentFsmName = fsmName;
+
         _processedNodes.Clear();
         Nodes.Clear();
         Connections.Clear();
@@ -157,7 +161,7 @@ public partial class FsmEditorViewModel : Document
             
             if (FSM.RootNode is null)
             {
-                foreach (var group in FSM.GroupsToNodes)
+                foreach (var group in FSM.NonEmptyLayersToNodes)
                 {
                     if (group.Count == 0)
                         continue;
@@ -218,8 +222,8 @@ public partial class FsmEditorViewModel : Document
                     Target = subLayerNode,
                 };
 
-                graphNode.Title += $" (Transition to Layer{node.ChildLayerId})";
-                connection.StrokeDashArray = new AvaloniaList<double>() { 1 };
+                graphNode.Title += $" (to Layer{node.ChildLayerId})";
+                connection.StrokeDashArray = [1];
                 connection.ArrowHeadEnds = ArrowHeadEnds.None;
                 connection.ArrowColor = Brushes.DimGray; 
                 Connections.Add(connection);
@@ -281,7 +285,7 @@ public partial class FsmEditorViewModel : Document
         toNode = GetNodeViewModel(toFsmNode, (depth + 1) * 400, i * 200);
         if (trans.IsEndTransition)
         {
-            toNode.Title = $"END ({toNode.Guid})";
+            toNode.Title = "END";
             toNode.BorderBrush = GraphColors.EndingNode;
         }
 
@@ -356,10 +360,14 @@ public partial class FsmEditorViewModel : Document
         if (_guidToNodeVm.TryGetValue(node.Guid, out NodeViewModel? nodeViewModel))
             return nodeViewModel;
 
+        string title = NodeNameStore.TryGetNameForNode(_currentFsmName, node.Guid, node.NameHash);
+        if (string.IsNullOrEmpty(title))
+            title = $"{node.Guid}";
+
         nodeViewModel = new NodeViewModel()
         {
             Guid = node.Guid,
-            Title = $"{node.Guid}",
+            Title = title,
             Location = new Point(x, y),
             LayerIndex = node.LayerIndex,
         };

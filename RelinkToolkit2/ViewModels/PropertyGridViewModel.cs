@@ -4,10 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Avalonia.Controls;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 
 using Dock.Model.Mvvm.Controls;
+
+using GBFRDataTools.FSM.Components.Actions.Quest;
 
 using RelinkToolkit2.Messages.Fsm;
 
@@ -27,5 +31,10 @@ public partial class PropertyGridViewModel : Tool
         {
             SelectedObject = message.Value;
         });
+
+        if (Design.IsDesignMode)
+        {
+            this.SelectedObject = new BeginSection();
+        }
     }
 }

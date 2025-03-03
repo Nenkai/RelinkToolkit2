@@ -139,7 +139,7 @@
 			<!-- Set how every node should be displayed -->
 			<nodify:NodifyEditor.DataTemplates>
 				<DataTemplate DataType="fsmVMs:NodeViewModel">
-					<fsmViews:FsmNodeView />
+					<fsmViews:FsmNodeView/>
 				</DataTemplate>
 				<DataTemplate DataType="fsmVMs:GroupNodeViewModel">
 					<!-- Refer to ItemContainerStyle for location. -->

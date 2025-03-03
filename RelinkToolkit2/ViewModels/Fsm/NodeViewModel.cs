@@ -7,6 +7,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Media;
 
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -43,6 +45,15 @@ public partial class NodeViewModel : NodeViewModelBase //, IDropTarget
     private string _fsmSource;
 
     public ObservableCollection<NodeComponentViewModel> Components { get; set; } = [];
+
+    public NodeViewModel()
+    {
+        if (Design.IsDesignMode)
+        {
+            Title = "Test Node";
+            Guid = 123456789;
+        }
+    }
 
     /*
     public void DragOver(IDropInfo dropInfo)
@@ -105,5 +116,19 @@ public partial class NodeViewModel : NodeViewModelBase //, IDropTarget
             Component = component,
             Name = component.ComponentName,
         });
+    }
+
+    [RelayCommand]
+    public async void OnCopyGuid(object obj)
+    {
+        // FIXME: Not MVVM friendly.
+
+        var clipboard = TopLevel.GetTopLevel((Visual?)obj)?.Clipboard;
+        if (clipboard is not null)
+        {
+            var dataObject = new DataObject();
+            dataObject.Set(DataFormats.Text, Guid.ToString());
+            await clipboard.SetDataObjectAsync(dataObject);
+        }
     }
 }

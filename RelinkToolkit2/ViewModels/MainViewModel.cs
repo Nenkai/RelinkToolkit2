@@ -160,7 +160,7 @@ public partial class MainViewModel : ObservableObject
             FSM = fsm,
             Documents = DocumentsViewModel,
         };
-        fsmEditorViewModel.InitGraph();
+        fsmEditorViewModel.InitGraph(name);
 
         DocumentsViewModel.AddDocument(fsmEditorViewModel);
     }

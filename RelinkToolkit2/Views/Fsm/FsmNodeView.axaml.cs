@@ -12,6 +12,7 @@ using RelinkToolkit2.Messages.Fsm;
 using RelinkToolkit2.ViewModels.Fsm;
 
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace RelinkToolkit2.Views.Fsm;
 
@@ -68,6 +69,13 @@ public partial class FsmNodeView : UserControl
 
     private void Border_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
+        if (e.Pointer.Type == PointerType.Mouse)
+        {
+            var properties = e.GetCurrentPoint(this).Properties;
+            if (!properties.IsLeftButtonPressed)
+                return;
+        }
+
         if (sender is not Control control)
             return;
 
@@ -97,5 +105,21 @@ public partial class FsmNodeView : UserControl
             return;
 
         componentViewModel.BorderBrush = GraphColors.ComponentBorderNormal;
+    }
+
+    
+    private void StateNode_PointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+    {
+        // Problem: Setting a context menu to the state node and right-clicking to open it does not work and instead drags the node.
+        // Solution: Ensure to handle left click but nothing else. That allows context menu to work.
+        if (e.Pointer.Type == PointerType.Mouse)
+        {
+            var properties = e.GetCurrentPoint(this).Properties;
+            if (!properties.IsLeftButtonPressed)
+            {
+                e.Handled = true;
+                return;
+            }
+        }
     }
 }

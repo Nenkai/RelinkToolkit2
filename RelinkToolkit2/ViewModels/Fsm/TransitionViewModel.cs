@@ -38,7 +38,14 @@ public partial class TransitionViewModel : ObservableObject
     [RelayCommand]
     public void OnTransitionComponentDeleted(TransitionConditionViewModel component)
     {
+        int idx = ConditionComponents.IndexOf(component);
+        if (idx - 1 > 0 && ConditionComponents[idx - 1] is TransitionConditionOpViewModel operatorVm)
+            ConditionComponents.Remove(operatorVm);
+
         ConditionComponents.Remove(component);
+
+        if (ConditionComponents.Count > 0 && ConditionComponents[0] is TransitionConditionOpViewModel firstOp)
+            ConditionComponents.Remove(firstOp);
 
         ParentConnection.UpdateConnection();
     }

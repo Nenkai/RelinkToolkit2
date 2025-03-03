@@ -9,9 +9,12 @@
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:pgc="using:Avalonia.PropertyGrid.Controls"
+			 xmlns:ll="using:Avalonia.PropertyGrid.Localization"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="350"
-			 x:DataType="VMs:PropertyGridViewModel">
+			 x:DataType="VMs:PropertyGridViewModel"
+			 xmlns:avalonia_propertygrid_controls="using:Avalonia.PropertyGrid.Controls"
+			 xmlns:avalonia_controls="using:Avalonia.Controls">
     <Design.DataContext>
 		<VMs:PropertyGridViewModel/>
     </Design.DataContext>
@@ -25,7 +28,9 @@
 			x:Name="propertyGrid_Basic"
 			Margin="4"
 			AllowFilter="False"
-			DataContext="{Binding SelectedObject}">
+			DataContext="{Binding SelectedObject}"
+			PropertyCategoryStyle="InheritingOrder"
+			AllowQuickFilter="False">
 		</pgc:PropertyGrid>
 	</ScrollViewer>
 </UserControl>

@@ -4,6 +4,7 @@
 			 xmlns:core="using:Dock.Model.Core"
              x:Class="RelinkToolkit2.App"
 			 xmlns:controls="using:RelinkToolkit2.Controls"
+			 xmlns:pgc="using:Avalonia.PropertyGrid.Controls"
              RequestedThemeVariant="Default">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
@@ -91,7 +92,7 @@
 
 			<ControlTheme TargetType="{x:Type controls:EditableTextBlock}" x:Key="{x:Type controls:EditableTextBlock}"
 				   BasedOn="{StaticResource EditableTextBlockBaseStyle}" />
-			
+
 		</ResourceDictionary>
 	</Application.Resources>
 	
@@ -136,4 +137,5 @@
 			<Setter Property="Background" Value="Transparent" />
 		</Style>
     </Application.Styles>
+	
 </Application>

@@ -44,7 +44,14 @@
 					  Content="{Binding}"
 					  CornerRadius="{Binding CornerRadius}"
 					  Anchor="{Binding Anchor, Mode=OneWayToSource}"
-					  DragDrop.AllowDrop="True">
+					  DragDrop.AllowDrop="True"
+					  PointerPressed="StateNode_PointerPressed" >
+		<nodify:StateNode.ContextMenu>
+			<ContextMenu>
+				<MenuItem Header="{Binding Guid, StringFormat='Copy Guid ({0})'}" Command="{Binding CopyGuidCommand}"
+						  CommandParameter="{Binding #Node}"/> <!-- FIXME: Not MVVM friendly. -->
+			</ContextMenu>
+		</nodify:StateNode.ContextMenu>
 		<!-- For execution components -->
 		<nodify:StateNode.ContentTemplate>
 			<DataTemplate DataType="fsmVMs:NodeViewModel">
@@ -55,8 +62,9 @@
 							 You can double click to edit the label. -->
 						<controls:EditableTextBlock Cursor="SizeAll" Text="{Binding Title}" FontWeight="Bold" Margin="4,2,2,2"/>
 						<TextBlock Text="{Binding LayerIndex, StringFormat='(L{0})'}}" Foreground="DimGray" FontSize="8" Margin="0,2,2,2" />
-
 					</StackPanel>
+
+					<TextBlock Text="{Binding Guid}" Foreground="DimGray" FontSize="10" Margin="4,-1,0,0"/>
 
 					<!-- Caption/Path to external fsm -->
 					<TextBlock Text="{Binding FsmSource}" Foreground="DimGray" FontSize="10" Margin="4,0,2,2"

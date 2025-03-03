@@ -10,6 +10,7 @@
         Title="RelinkToolkit2"
 		TransparencyLevelHint="AcrylicBlur"
 	    ExtendClientAreaChromeHints="PreferSystemChrome"
-		WindowState="Maximized">
+		WindowState="Maximized"
+		FontFamily="Segoe UI">
 	<views:MainView />
 </Window>
