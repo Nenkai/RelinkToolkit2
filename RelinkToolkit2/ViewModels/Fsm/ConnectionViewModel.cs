@@ -45,11 +45,11 @@ public partial class ConnectionViewModel : ObservableObject
     [ObservableProperty]
     private string? _title;
 
-    public NodeViewModel Source { get; set; }
-    public NodeViewModel Target { get; set; }
+    public required NodeViewModel Source { get; set; }
+    public required NodeViewModel Target { get; set; }
 
     [ObservableProperty]
-    private AvaloniaList<double> _strokeDashArray;
+    private AvaloniaList<double>? _strokeDashArray;
 
     /// <summary>
     /// Transitions. May have up to 2 (source to target and, target to source, if applicable)

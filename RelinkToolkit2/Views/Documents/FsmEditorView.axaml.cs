@@ -119,7 +119,14 @@ public partial class FsmEditorView : UserControl
 
                 if (nvm.LayerIndex != 0)
                 {
-                    if (!groupNodes.TryGetValue(nvm.LayerIndex, out GroupNodeViewModel groupNode))
+                    Control? control = Editor.ContainerFromItem(nvm);
+                    if (control is null)
+                    {
+                        // TODO: Warn
+                        continue;
+                    }
+
+                    if (!groupNodes.TryGetValue(nvm.LayerIndex, out GroupNodeViewModel? groupNode))
                     {
                         groupNode = new();
                         groupNodes.Add(nvm.LayerIndex, groupNode);
@@ -132,7 +139,6 @@ public partial class FsmEditorView : UserControl
                         groupNode.Title = $"Layer {nvm.LayerIndex}";
                     }
 
-                    Control? control = Editor.ContainerFromItem(nvm);
 
                     double minX = groupNode.Location.X;
                     double minY = groupNode.Location.Y;

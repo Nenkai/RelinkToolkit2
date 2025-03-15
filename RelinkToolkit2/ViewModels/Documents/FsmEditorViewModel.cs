@@ -62,9 +62,8 @@ public partial class FsmEditorViewModel : Document
     [ObservableProperty]
     private Point _contextMenuLocation;
 
-    public DocumentsViewModel Documents { get; set; }
-
-    private string _currentFsmName;
+    public DocumentsViewModel? Documents { get; set; }
+    private string? _currentFsmName;
 
     public FsmEditorViewModel()
     {
@@ -110,7 +109,7 @@ public partial class FsmEditorViewModel : Document
     // Document closing
     public override bool OnClose()
     {
-        Documents.Remove(Id);
+        Documents?.Remove(Id);
         return base.OnClose();
     }
 
@@ -159,7 +158,7 @@ public partial class FsmEditorViewModel : Document
         try
         {
             
-            if (FSM.RootNode is null)
+            if (FSM?.RootNode is null)
             {
                 foreach (var group in FSM.NonEmptyLayersToNodes)
                 {

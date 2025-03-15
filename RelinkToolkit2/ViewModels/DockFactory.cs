@@ -15,7 +15,7 @@ namespace RelinkToolkit2.ViewModels;
 
 public class DockFactory : Factory
 {
-    private IRootDock _rootDock;
+    private IRootDock? _rootDock;
     private readonly DocumentsViewModel _documentsViewModel;
     private readonly ToolboxViewModel _toolboxViewModel;
     private readonly ConnectionEditorViewModel _connectionEditorViewModel;

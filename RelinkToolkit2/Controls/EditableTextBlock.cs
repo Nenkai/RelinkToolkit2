@@ -45,9 +45,9 @@ internal class EditableTextBlock : WpfControl
         return value;
     }
 
-    public string Text
+    public string? Text
     {
-        get => (string)GetValue(TextProperty);
+        get => GetValue(TextProperty);
         set => SetValue(TextProperty, value);
     }
 

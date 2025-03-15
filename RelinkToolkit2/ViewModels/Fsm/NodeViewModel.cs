@@ -42,7 +42,7 @@ public partial class NodeViewModel : NodeViewModelBase //, IDropTarget
     private Size _size;
 
     [ObservableProperty]
-    private string _fsmSource;
+    private string? _fsmSource;
 
     public ObservableCollection<NodeComponentViewModel> Components { get; set; } = [];
 
@@ -119,7 +119,7 @@ public partial class NodeViewModel : NodeViewModelBase //, IDropTarget
     }
 
     [RelayCommand]
-    public async void OnCopyGuid(object obj)
+    public async Task OnCopyGuid(object obj)
     {
         // FIXME: Not MVVM friendly.
 

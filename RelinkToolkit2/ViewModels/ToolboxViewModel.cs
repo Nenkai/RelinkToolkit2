@@ -131,7 +131,7 @@ public partial class ToolboxViewModel : Tool //, IDragSource
     }
 
 
-    public void AddItem(string id, TreeViewItemViewModel item, TreeViewItemViewModel parent = null)
+    public void AddItem(string id, TreeViewItemViewModel item, TreeViewItemViewModel? parent = null)
     {
         if (_idToItem.TryAdd(id, item))
         {

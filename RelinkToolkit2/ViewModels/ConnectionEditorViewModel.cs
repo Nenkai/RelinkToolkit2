@@ -35,7 +35,12 @@ public partial class ConnectionEditorViewModel : Tool
 
         if (Design.IsDesignMode)
         {
-            _connection = new ConnectionViewModel();
+            _connection = new ConnectionViewModel()
+            {
+                Source = new NodeViewModel(),
+                Target = new NodeViewModel(),
+            };
+
             for (int i = 0; i < 5; i++)
             {
                 _connection.Transitions.Add(new TransitionViewModel(_connection)

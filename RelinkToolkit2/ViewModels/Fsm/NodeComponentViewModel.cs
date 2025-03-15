@@ -21,7 +21,7 @@ public partial class NodeComponentViewModel : ObservableObject
     [ObservableProperty]
     private IBrush _borderBrush = GraphColors.ComponentBorderNormal;
 
-    public BehaviorTreeComponent Component { get; set; }
+    public required BehaviorTreeComponent Component { get; set; }
 
     public NodeViewModel Parent { get; set; }
 
