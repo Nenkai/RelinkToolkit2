@@ -21,7 +21,7 @@ public class DocumentsViewModel : DocumentDock
         IsCollapsable = false;
         CanCreateDocument = false;
         CanPin = true;
-        Proportion = 0.7;
+        Proportion = 0.6;
     }
 
     public void AddDocument(IDocument document, bool setActive = true)

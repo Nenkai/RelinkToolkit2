@@ -37,8 +37,6 @@ public class DockFactory : Factory
 
     public override IRootDock CreateLayout()
     {
-        // Refer to DocumentsViewModel.cs for default values such as deck proportion.
-
         var leftSide = CreateLeftSide();
         var rightSideDock = CreateRightSide();
 
@@ -51,7 +49,7 @@ public class DockFactory : Factory
             (
                 leftSide,
                 new ProportionalDockSplitter(),
-                _documentsViewModel,
+                _documentsViewModel, // Refer to DocumentsViewModel.cs for default values such as deck proportion.
                 new ProportionalDockSplitter(),
                 rightSideDock
             ),
@@ -100,7 +98,7 @@ public class DockFactory : Factory
             Orientation = Orientation.Vertical,
             IsCollapsable = true,
             ActiveDockable = toolboxDock,
-            Proportion = 0.15,
+            Proportion = 0.20,
             VisibleDockables = CreateList<IDockable>
             (
                 toolboxDock,
@@ -143,7 +141,7 @@ public class DockFactory : Factory
             Orientation = Orientation.Vertical,
             IsCollapsable = true,
             ActiveDockable = solutionExplorerToolDock,
-            Proportion = 0.15,
+            Proportion = 0.20,
             VisibleDockables = CreateList<IDockable>
             (
                 solutionExplorerToolDock,

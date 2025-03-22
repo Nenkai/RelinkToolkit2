@@ -229,15 +229,15 @@ public partial class FsmEditorViewModel : Document
             }
         }
 
-        for (int i = 0; i < node.BranchTransitions.Count; i++)
+        for (int i = 0; i < node.RegularTransitions.Count; i++)
         {
-            Transition trans = node.BranchTransitions[i];
+            Transition trans = node.RegularTransitions[i];
             AddTransition(trans, node, nodeList, depth, graphNode, i);
         }
         
-        for (int i = 0; i < node.LeafTransitions.Count; i++)
+        for (int i = 0; i < node.OverrideTransitions.Count; i++)
         {
-            Transition trans = node.LeafTransitions[i];
+            Transition trans = node.OverrideTransitions[i];
             AddTransition(trans, node, nodeList, depth, graphNode, i, true);
         }
 
@@ -253,8 +253,8 @@ public partial class FsmEditorViewModel : Document
     /// <param name="sourceNodeVm"></param>
     /// <param name="i"></param>
     /// <param name="trans"></param>
-    /// <param name="isLeaf"></param>
-    private void AddTransition(Transition trans, FSMNode sourceNode, List<FSMNode> allNodesList, int depth, NodeViewModel sourceNodeVm, int i, bool isLeaf = false)
+    /// <param name="isOverrideTransition"></param>
+    private void AddTransition(Transition trans, FSMNode sourceNode, List<FSMNode> allNodesList, int depth, NodeViewModel sourceNodeVm, int i, bool isOverrideTransition = false)
     {
         FSMNode? toFsmNode = sourceNode.Children.FirstOrDefault(e => e.Guid == trans.FromNodeGuid);
 
@@ -304,7 +304,7 @@ public partial class FsmEditorViewModel : Document
             {
                 Source = sourceNodeVm,
                 Target = toNode,
-                ArrowColor = isLeaf ? GraphColors.UnkTransition : GraphColors.NormalTransition,
+                ArrowColor = isOverrideTransition ? GraphColors.OverrideTransition : GraphColors.NormalTransition,
             };
 
             Connections.Add(connection);
@@ -413,7 +413,7 @@ public partial class FsmEditorViewModel : Document
                     foreach (NodeComponentViewModel componentViewModel in connection.Source.Components)
                         sourceFsmNode.ExecutionComponents.Add(componentViewModel.Component);
 
-                    sourceFsmNode.BranchTransitions.Add(fsmTransition);
+                    sourceFsmNode.RegularTransitions.Add(fsmTransition);
 
                     fsmNodes.Add(sourceFsmNode.Guid, sourceFsmNode);
                 }
@@ -487,10 +487,10 @@ public partial class FsmEditorViewModel : Document
             },
             new MenuItemViewModel()
             {
-                Header = "Unknown Transition",
+                Header = "Override Transition",
                 Enabled = canConnect,
                 IconKind = "Material.RayStartArrow",
-                IconBrush = GraphColors.UnkTransition,
+                IconBrush = GraphColors.OverrideTransition,
             },
         ];
 

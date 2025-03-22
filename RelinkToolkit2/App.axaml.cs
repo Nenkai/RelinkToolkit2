@@ -48,7 +48,7 @@ public partial class App : Application
         services.AddSingleton<TopMenuViewModel>();
         services.AddSingleton<MainViewModel>();
 
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow is not null)
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             services.AddSingleton<IFilesService>(x => new FilesService(desktop.MainWindow.StorageProvider));
             Services = services.BuildServiceProvider();
