@@ -21,7 +21,8 @@ namespace RelinkToolkit2.ViewModels.Fsm;
 /// </summary>
 public partial class GroupNodeViewModel : NodeViewModelBase //, IDropTarget
 {
+    // Leave this here even though NodeViewModelBase has it.
+    // Causes an issue with uh, group sizing.
     [ObservableProperty]
     private Size _size;
-
 }

@@ -55,8 +55,7 @@
 								<controls:VectorIconDrawingImage Drawing="{Binding IconKind, Converter={StaticResource vectorIconConverter}}"/>
 							</Image.Source>
 						</Image>
-						<TextBlock Text=" "/>
-						<TextBlock Text="{Binding TreeViewName}"/>
+						<TextBlock Text="{Binding TreeViewName}" Padding="4,0,0,0"/>
 				    </StackPanel>
 				</TreeDataTemplate>
 			</TreeView.ItemTemplate>

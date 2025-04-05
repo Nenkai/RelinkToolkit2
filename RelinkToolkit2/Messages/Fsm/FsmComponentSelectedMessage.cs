@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using RelinkToolkit2.ViewModels.Fsm;
 
 using CommunityToolkit.Mvvm.Messaging.Messages;
-using GBFRDataTools.FSM.Entities;
+using GBFRDataTools.FSM.Components;
 
 namespace RelinkToolkit2.Messages.Fsm;
 

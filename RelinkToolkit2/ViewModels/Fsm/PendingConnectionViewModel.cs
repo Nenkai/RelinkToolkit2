@@ -26,10 +26,10 @@ namespace RelinkToolkit2.ViewModels.Fsm;
 public partial class PendingConnectionViewModel : ObservableObject
 {
     [ObservableProperty]
-    private NodeViewModel? _source;
+    private NodeViewModel _source;
 
     [ObservableProperty]
-    private NodeViewModel? _target;
+    private NodeViewModel _target;
 
     [ObservableProperty]
     private bool _isVisible;

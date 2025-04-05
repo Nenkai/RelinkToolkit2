@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,7 +26,7 @@ namespace RelinkToolkit2.ViewModels.Fsm;
 /// <summary>
 /// Represents a connection on the graph (which can be bi-directional).
 /// </summary>
-public partial class ConnectionViewModel : ObservableObject
+public partial class GraphConnectionViewModel : ObservableObject
 {
     [ObservableProperty]
     private Point _anchor;
@@ -56,9 +57,27 @@ public partial class ConnectionViewModel : ObservableObject
     /// </summary>
     public ObservableCollection<TransitionViewModel> Transitions { get; set; } = [];
 
-    public ConnectionViewModel()
+    public GraphConnectionViewModel()
     {
         Transitions.CollectionChanged += Transitions_CollectionChanged;
+    }
+
+    public void SetAnimatingState(bool animating)
+    {
+        if (Source == Target)
+            return;
+
+        IsAnimating = animating;
+        if (animating)
+        {
+            DirectionalArrowCount = 4;
+            ArrowHeadEnds = Nodify.ArrowHeadEnds.None;
+        }
+        else
+        {
+            DirectionalArrowCount = 0;
+            ArrowHeadEnds = Transitions.Count == 2 ? Nodify.ArrowHeadEnds.Both : Nodify.ArrowHeadEnds.End;
+        }
     }
 
     private void Transitions_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -68,7 +87,12 @@ public partial class ConnectionViewModel : ObservableObject
 
     public void UpdateConnection()
     {
-        if (Transitions.Count == 0)
+        if (Source == Target)
+        {
+            Title = string.Empty;
+            ArrowHeadEnds = ArrowHeadEnds.None;
+        }
+        else if (Transitions.Count == 0)
         {
             Title = string.Empty;
         }
@@ -96,11 +120,24 @@ public partial class ConnectionViewModel : ObservableObject
     [RelayCommand]
     public void OnTransitionDeleted(TransitionViewModel transition)
     {
-        Transitions.Remove(transition);
+        bool hadSelfConnection = Transitions.Any(e => e.Source == e.Target);
+        if (transition.Source == transition.Target)
+            transition.Source.HasSelfTransition = false;
 
-        if (Transitions.Count == 0)
+        Transitions.Remove(transition);
+        transition.Source.Transitions.Remove(transition);
+
+        if (Transitions.Count == 0 || (hadSelfConnection && !Transitions.Any(e => e.Source == e.Target)))
         {
             WeakReferenceMessenger.Default.Send(new DeleteNodeConnectionRequest(this));
         }
+    }
+
+    public override string ToString()
+    {
+        if (Transitions.Count == 2)
+            return $"{Source.Guid} <-> {Target.Guid}";
+        else
+            return $"{Source.Guid} -> {Target.Guid}";
     }
 }

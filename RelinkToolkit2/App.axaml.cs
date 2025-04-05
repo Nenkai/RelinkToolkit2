@@ -7,10 +7,13 @@ using Avalonia.Styling;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using RelinkToolkit2.Controls.PropertyGrid;
 using RelinkToolkit2.Services;
 using RelinkToolkit2.ViewModels;
 using RelinkToolkit2.ViewModels.Documents;
 using RelinkToolkit2.Views;
+
+using Avalonia.PropertyGrid.Services;
 
 using System;
 
@@ -28,6 +31,8 @@ public partial class App : Application
 
     public override void Initialize()
     {
+        CellEditFactoryService.Default.AddFactory(new eObjIdCellEditFactory());
+
         AvaloniaXamlLoader.Load(this);
     }
 

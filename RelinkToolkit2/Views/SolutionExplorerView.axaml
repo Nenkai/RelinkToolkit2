@@ -22,22 +22,25 @@
 		<TreeView Name="treeView" ItemsSource="{Binding DisplayedItems}">
 			<TreeView.ItemTemplate>
 				<TreeDataTemplate ItemsSource="{Binding DisplayedItems}" x:DataType="viewmodels:TreeViewItemViewModel">
-					<StackPanel Orientation="Horizontal" IsVisible="{Binding Visible}" PointerPressed="StackPanel_PointerPressed">
+					<StackPanel Orientation="Horizontal" IsVisible="{Binding Visible}" Background="Transparent" PointerPressed="StackPanel_PointerPressed">
 						<Image Width="14" Height="14">
 							<Image.Source>
 								<controls:VectorIconDrawingImage Drawing="{Binding IconKind, Converter={StaticResource vectorIconConverter}}"/>
 							</Image.Source>
 						</Image>
-						<TextBlock Text=" "/>
-						<TextBlock Text="{Binding TreeViewName}"/>
+						<TextBlock Padding="4,0,0,0" Text="{Binding TreeViewName}"/>
 					</StackPanel>
 				</TreeDataTemplate>
 			</TreeView.ItemTemplate>
+			<TreeView.Resources>
+				<SolidColorBrush Color="Transparent" x:Key="ThemeControlHighlightMidBrush"/>
+			</TreeView.Resources>
 			<TreeView.Styles>
 				<Style Selector="TreeViewItem" x:DataType="viewmodels:TreeViewItemViewModel">
 					<Setter Property="MinHeight" Value="24" />
 					<Setter Property="IsExpanded" Value="{Binding IsExpanded}"/>
 				</Style>
+
 			</TreeView.Styles>
 		</TreeView>
     </Grid>

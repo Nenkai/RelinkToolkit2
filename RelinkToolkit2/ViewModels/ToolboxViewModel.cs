@@ -11,9 +11,11 @@ using CommunityToolkit.Mvvm.Input;
 
 using Dock.Model.Mvvm.Controls;
 
-using GBFRDataTools.FSM.Entities;
+using GBFRDataTools.FSM.Components;
+using GBFRDataTools.FSM.Components.Actions;
 
 using RelinkToolkit2.ViewModels.Documents;
+using RelinkToolkit2.ViewModels.TreeView;
 
 //using MsBox.Avalonia;
 

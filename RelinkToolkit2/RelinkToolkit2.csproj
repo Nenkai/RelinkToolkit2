@@ -17,6 +17,7 @@
     <PackageReference Include="Avalonia" Version="11.2.5" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.5" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.5" />
+    <PackageReference Include="Avalonia.Xaml.Interactions" Version="11.2.0.14" />
     <PackageReference Include="Avalonia.Xaml.Interactions.DragAndDrop" Version="11.2.0.14" />
     <PackageReference Include="Avalonia.Xaml.Interactions.Draggable" Version="11.2.0.14" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
@@ -35,5 +36,12 @@
   <ItemGroup>
     <ProjectReference Include="..\..\GRBFDataTools\GBFRDataTools.FSM\GBFRDataTools.FSM.csproj" />
     <ProjectReference Include="..\Avalonia.PropertyGrid\Sources\Avalonia.PropertyGrid\Avalonia.PropertyGrid.csproj" />
+    <ProjectReference Include="..\trienet\TrieNet\TrieNet.csproj" />
+  </ItemGroup>
+	
+  <ItemGroup>
+    <Compile Update="Views\ComponentSearchView.axaml.cs">
+      <DependentUpon>ComponentSearchView.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
 </Project>

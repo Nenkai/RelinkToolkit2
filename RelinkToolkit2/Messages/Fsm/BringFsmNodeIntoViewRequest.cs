@@ -13,11 +13,14 @@ namespace RelinkToolkit2.Messages.Fsm;
 /// <summary>
 /// Represents a message for when a node should be brought into view.
 /// </summary>
-public class NodeBringIntoViewRequest : RequestMessage<bool>
+public class BringFsmNodeIntoViewRequest : RequestMessage<bool>
 {
-    public NodeViewModel Node { get; set; }
-    public NodeBringIntoViewRequest(NodeViewModel value)
+    public NodeViewModelBase Node { get; set; }
+    public bool Animated { get; set; }
+
+    public BringFsmNodeIntoViewRequest(NodeViewModelBase value, bool animated = true)
     {
         Node = value;
+        Animated = animated;
     }
 }

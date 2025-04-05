@@ -1,16 +1,22 @@
-﻿using System;
+﻿using Avalonia.Controls;
+
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+
+using Dock.Model.Mvvm.Controls;
+
+using RelinkToolkit2.Messages;
+using RelinkToolkit2.Messages.Fsm;
+using RelinkToolkit2.ViewModels.Documents;
+using RelinkToolkit2.ViewModels.TreeView;
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
-using Dock.Model.Mvvm.Controls;
-
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
-using RelinkToolkit2.Messages.Fsm;
 
 
 namespace RelinkToolkit2.ViewModels;
@@ -24,7 +30,39 @@ public partial class SolutionExplorerViewModel : Tool
     {
         Id = "SolutionExplorer";
         Title = "Solution Explorer";
+
+        if (Design.IsDesignMode)
+        {
+            var editor = new FsmEditorViewModel();
+
+            AddItem("one", new FSMTreeViewItemViewModel()
+            {
+                Id = "one",
+                TreeViewName = "FSM",
+                FsmEditor = new(),
+                DisplayedItems =
+                [
+                    new FSMLayerTreeViewItemViewModel()
+                    {
+                        LayerGroup = new() { ParentEditor = editor, },
+                        TreeViewName = "Layer",
+                    },
+                    new FSMLayerTreeViewItemViewModel()
+                    {
+                        LayerGroup = new() { ParentEditor = editor, },
+                        TreeViewName = "Layer",
+                    },
+                    new FSMLayerTreeViewItemViewModel()
+                    {
+                        LayerGroup = new() { ParentEditor = editor, },
+                        TreeViewName = "Layer",
+                    },
+                ]
+            });
+        }
     }
+
+    
 
     public void AddItem(string id, TreeViewItemViewModel item)
     {

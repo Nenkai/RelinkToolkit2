@@ -18,6 +18,7 @@ using GBFRDataTools.FSM.Components.Conditions.Quest;
 
 using RelinkToolkit2.Messages;
 using RelinkToolkit2.Messages.Fsm;
+using RelinkToolkit2.ViewModels.Documents;
 using RelinkToolkit2.ViewModels.Fsm;
 using RelinkToolkit2.ViewModels.Fsm.TransitionComponents;
 
@@ -26,7 +27,7 @@ namespace RelinkToolkit2.ViewModels;
 public partial class ConnectionEditorViewModel : Tool
 {
     [ObservableProperty]
-    private ConnectionViewModel? _connection;
+    private GraphConnectionViewModel? _connection;
 
     public ConnectionEditorViewModel() 
     {
@@ -35,10 +36,11 @@ public partial class ConnectionEditorViewModel : Tool
 
         if (Design.IsDesignMode)
         {
-            _connection = new ConnectionViewModel()
+            var editor = new FsmEditorViewModel();
+            _connection = new GraphConnectionViewModel()
             {
-                Source = new NodeViewModel(),
-                Target = new NodeViewModel(),
+                Source = new NodeViewModel() { ParentEditor = editor, },
+                Target = new NodeViewModel() { ParentEditor = editor, },
             };
 
             for (int i = 0; i < 5; i++)
@@ -47,10 +49,12 @@ public partial class ConnectionEditorViewModel : Tool
                 {
                     Source = new()
                     {
+                        ParentEditor = editor,
                         Title = "Source",
                     },
                     Target = new()
                     {
+                        ParentEditor = editor,
                         Title = "Target"
                     },
                     ConditionComponents = 
@@ -59,7 +63,7 @@ public partial class ConnectionEditorViewModel : Tool
                         {
                             Title = "Condition 1",
                         },
-                        new TransitionConditionOpViewModel() { Title = "AND", Priority = 0 },
+                        new TransitionConditionOpViewModel() { Operand = TransitionOperandType.AND, Priority = 0 },
                         new TransitionConditionViewModel(new CheckChallengeMissionClear())
                         {
                             Title = "Condition 2",
@@ -69,9 +73,9 @@ public partial class ConnectionEditorViewModel : Tool
             }
         }
 
-        WeakReferenceMessenger.Default.Register<ConnectionSelectionChangedMessage>(this, (recipient, message) =>
+        WeakReferenceMessenger.Default.Register<EditConnectionRequest>(this, (recipient, message) =>
         {
-            Connection = message.Value;
+            Connection = message.Connection;
         });
     }
 
@@ -79,6 +83,6 @@ public partial class ConnectionEditorViewModel : Tool
     public void OnNodeClicked(NodeViewModel node)
     {
         WeakReferenceMessenger.Default.Send(new NodeGraphSelectionChangeRequest(node));
-        WeakReferenceMessenger.Default.Send(new NodeBringIntoViewRequest(node)); // Highlight it on the graph
+        WeakReferenceMessenger.Default.Send(new BringFsmNodeIntoViewRequest(node)); // Highlight it on the graph
     }
 }

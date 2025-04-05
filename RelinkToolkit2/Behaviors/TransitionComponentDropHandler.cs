@@ -24,8 +24,8 @@ public class TransitionComponentDropHandler : DropHandlerBase
             return false;
 
         var items = targetTransitionViewModel.ConditionComponents;
-        var sourceIndex = items.IndexOf(sourceComponent);
-        var targetIndex = items.IndexOf(targetComponent);
+        int sourceIndex = items.IndexOf(sourceComponent);
+        int targetIndex = items.IndexOf(targetComponent);
         if (sourceIndex == -1) // If this is -1, then we are moving it to a different node
         {
             return true;
@@ -33,7 +33,15 @@ public class TransitionComponentDropHandler : DropHandlerBase
         else
         {
             if (bExecute)
+            {
                 MoveItem(items, sourceIndex, targetIndex);
+
+                // Ensure to adjust the old item since they're between conditions.
+                if (sourceIndex > targetIndex)
+                    MoveItem(items, targetIndex + 1, sourceIndex);
+                else
+                    MoveItem(items, targetIndex - 1, sourceIndex);
+            }
 
             return true;
         }

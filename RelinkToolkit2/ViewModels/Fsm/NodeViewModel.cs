@@ -13,8 +13,9 @@ using Avalonia.Media;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-
-using GBFRDataTools.FSM.Entities;
+using GBFRDataTools.FSM.Components.Actions.Quest;
+using GBFRDataTools.FSM.Components.Actions.Enemy;
+using GBFRDataTools.FSM.Components;
 
 namespace RelinkToolkit2.ViewModels.Fsm;
 
@@ -33,18 +34,37 @@ public partial class NodeViewModel : NodeViewModelBase //, IDropTarget
     private CornerRadius _cornerRadius = new(5);
 
     [ObservableProperty]
-    public uint _guid;
-
-    [ObservableProperty]
-    public int _layerIndex;
-
-    [ObservableProperty]
-    private Size _size;
+    private uint _guid;
 
     [ObservableProperty]
     private string? _fsmSource;
 
+    [ObservableProperty]
+    private bool _hasSelfTransition;
+
+    [ObservableProperty]
+    private bool _isRenaming;
+
+    public string FsmFolderName { get; set; }
+    public string FsmName { get; set; }
+    public uint NameHash { get; set; }
+
+    /// <summary>
+    /// Transitions FROM this node.
+    /// </summary>
+    public ObservableCollection<TransitionViewModel> Transitions { get; set; } = [];
+
+    /// <summary>
+    /// Execution components.
+    /// </summary>
     public ObservableCollection<NodeComponentViewModel> Components { get; set; } = [];
+
+    /// <summary>
+    /// Whether this node is the root of the layer it belongs to.
+    /// </summary>
+    public bool IsLayerRootNode { get; set; }
+
+    public bool IsEndNode { get; set; }
 
     public NodeViewModel()
     {
@@ -52,8 +72,31 @@ public partial class NodeViewModel : NodeViewModelBase //, IDropTarget
         {
             Title = "Test Node";
             Guid = 123456789;
+            HasSelfTransition = true;
+            FsmSource = "my/source/file";
+            Components =
+            [
+                new NodeComponentViewModel(this)
+                {
+                    Component = new CallSe(),
+                },
+                new NodeComponentViewModel(this)
+                {
+                    Component = new EmLockonActivate(),
+                }
+            ];
         }
     }
+
+    public void RemoveAllTransitionsWithGuid(uint guid)
+    {
+        for (int i = Transitions.Count - 1; i >= 0; i--)
+        {
+            if (Transitions[i].Source.Guid == guid || Transitions[i].Target.Guid == guid)
+                Transitions.Remove(Transitions[i]);
+        }
+    }
+
 
     /*
     public void DragOver(IDropInfo dropInfo)
@@ -104,31 +147,26 @@ public partial class NodeViewModel : NodeViewModelBase //, IDropTarget
         if (param is not NodeComponentViewModel nodeComponentVM)
             return;
 
-        Components.Remove(nodeComponentVM);
+        DeleteComponent(nodeComponentVM);
+    }
+
+    /// <summary>
+    /// Deletes a component from the node.
+    /// </summary>
+    /// <param name="component"></param>
+    public void DeleteComponent(NodeComponentViewModel component)
+    {
+        Components.Remove(component);
+        ParentEditor.UnregisterFsmElementGuid(component.Component.Guid);
     }
 
     private void AddComponentFromToolboxItem(ComponentTreeViewItemViewModel componentTvi)
     {
         BehaviorTreeComponent component = (BehaviorTreeComponent)Activator.CreateInstance(componentTvi.ComponentType)!;
-        component.ComponentName = componentTvi.TreeViewName;
         Components.Add(new NodeComponentViewModel(this)
         {
             Component = component,
             Name = component.ComponentName,
         });
-    }
-
-    [RelayCommand]
-    public async Task OnCopyGuid(object obj)
-    {
-        // FIXME: Not MVVM friendly.
-
-        var clipboard = TopLevel.GetTopLevel((Visual?)obj)?.Clipboard;
-        if (clipboard is not null)
-        {
-            var dataObject = new DataObject();
-            dataObject.Set(DataFormats.Text, Guid.ToString());
-            await clipboard.SetDataObjectAsync(dataObject);
-        }
     }
 }

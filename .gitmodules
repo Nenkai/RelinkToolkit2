@@ -1,3 +1,6 @@
 [submodule "Avalonia.IconPacks"]
 	path = Avalonia.IconPacks
 	url = https://github.com/ahopper/Avalonia.IconPacks.git
+[submodule "trienet"]
+	path = trienet
+	url = https://github.com/Nenkai/trienet.git

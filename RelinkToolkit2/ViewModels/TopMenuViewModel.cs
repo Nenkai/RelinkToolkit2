@@ -64,13 +64,7 @@ public partial class TopMenuViewModel : ObservableObject
         };
         MenuItems.Add(windowMenuItem);
 
-        _menuItem_SaveCurrentFSMGraph = new MenuItemViewModel()
-        {
-            Header = "Current FSM Graph",
-            Command = new RelayCommand(OnSave),
-            IconKind = "Material.Graph",
-            Checked = false,
-        };
+        
 
         WeakReferenceMessenger.Default.Register<FSMFileLoadStateChangedMessage>(this, (recipient, message)
             => _menuItem_SaveCurrentFSMGraph.Enabled = message.Value);
@@ -78,6 +72,14 @@ public partial class TopMenuViewModel : ObservableObject
 
     private MenuItemViewModel CreateFileMenu()
     {
+        _menuItem_SaveCurrentFSMGraph = new MenuItemViewModel()
+        {
+            Header = "Current FSM Graph",
+            Command = new RelayCommand(OnSaveGraph),
+            IconKind = "Material.Graph",
+            Checked = false,
+        };
+
         return new MenuItemViewModel()
         {
             Header = "File",
@@ -174,17 +176,18 @@ public partial class TopMenuViewModel : ObservableObject
         WeakReferenceMessenger.Default.Send(new FileOpenRequestMessage(new FileOpenResult(file.Path, stream)));
     }
 
-    public async void OnSave()
+    public async void OnSaveGraph()
     {
         var filesService = App.Current?.Services?.GetService<IFilesService>();
         if (filesService is not null)
         {
             var file = await filesService.SaveFileAsync("Save FSM file", "JSON Files|*.json|" +
-                              "MessagePack|*.msg");
+                              "MessagePack|*.msg",
+                              "fsm.json");
             if (file is null)
                 return;
 
-            WeakReferenceMessenger.Default.Send(new FileSaveRequestMessage(file.Path.AbsolutePath));
+            WeakReferenceMessenger.Default.Send(new GraphFileSaveRequestMessage(file.Path.LocalPath));
         }
         else
         {

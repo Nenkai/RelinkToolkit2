@@ -9,10 +9,13 @@ using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-using GBFRDataTools.FSM.Entities;
+using GBFRDataTools.FSM.Components;
 
 namespace RelinkToolkit2.ViewModels.Fsm;
 
+/// <summary>
+/// Execution component within a node.
+/// </summary>
 public partial class NodeComponentViewModel : ObservableObject
 {
     [ObservableProperty]
@@ -29,6 +32,7 @@ public partial class NodeComponentViewModel : ObservableObject
     {
         Parent = parent;
     }
+
 
     [RelayCommand]
     public void OnComponentDelete(object param)

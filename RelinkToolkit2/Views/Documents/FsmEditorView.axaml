@@ -4,8 +4,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:nodify="https://miroiu.github.io/nodify"
 			 xmlns:local="clr-namespace:RelinkToolkit2;assembly=RelinkToolkit2"
+			 xmlns:views="using:RelinkToolkit2.Views"
 			 xmlns:fsmViews="using:RelinkToolkit2.Views.Fsm"
-			 xmlns:vms="using:RelinkToolkit2.ViewModels"
+			 xmlns:searchVMs="using:RelinkToolkit2.ViewModels.Search"
 			 xmlns:docVMs="using:RelinkToolkit2.ViewModels.Documents"
 			 xmlns:fsmVMs="using:RelinkToolkit2.ViewModels.Fsm"
 			 xmlns:collections="clr-namespace:System.Collections;assembly=System.Runtime"
@@ -13,13 +14,15 @@
 			 xmlns:controls="using:RelinkToolkit2.Controls"
 			 xmlns:menuVMs="using:RelinkToolkit2.ViewModels.Menu"
 			 xmlns:b="using:RelinkToolkit2.Behaviors"
+			 xmlns:i="using:Avalonia.Xaml.Interactivity"
+             xmlns:ia="using:Avalonia.Xaml.Interactions.Core"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="RelinkToolkit2.Views.Documents.FsmEditorView"
 			 x:DataType="docVMs:FsmEditorViewModel">
 	<UserControl.Resources>
 		<converters:ConnectorOffsetConverter x:Key="ConnectorOffsetConverter" />
 		<converters:VectorIconConverter x:Key="vectorIconConverter"/>
-		
+
 		<!-- Nodify -->
 		<GeometryDrawing x:Key="SmallGridGeometry"
                          Geometry="M0,0 L0,1 0.03,1 0.03,0.03 1,0.03 1,0 Z"
@@ -55,6 +58,7 @@
 			<Setter Property="IsChecked" Value="{Binding Checked}" />
 			<Setter Property="ToggleType" Value="{Binding ToggleType}" />
 			<Setter Property="ItemsSource" Value="{Binding MenuItems}"/>
+			<Setter Property="IsHitTestVisible" Value="{Binding IsHitTestVisible}"/>
 		</Style>
 
 		<!-- Ensure to only apply an icon when there is no specific toggle type, otherwise there will be a gap. -->
@@ -69,10 +73,8 @@
 				</Template>
 			</Setter>
 		</Style>
-
-
 	</UserControl.Styles>
-	
+
 	<Design.DataContext>
 		<docVMs:FsmEditorViewModel/>
 	</Design.DataContext>
@@ -84,9 +86,16 @@
 				 Connections="{Binding Connections}"
 				 Background="{StaticResource SmallGridLinesDrawingBrush}"
 				 SelectedItem="{Binding SelectedNode}"
+			     SelectedItems="{Binding SelectedNodes}"
 				 SelectedConnection="{Binding SelectedConnection}"
 			     PendingConnection="{Binding PendingConnection}"
-			     Loaded="NodifyEditor_Loaded">
+				 ItemsDragCompletedCommand="{Binding ItemsDragCompletedCommand}"
+			     Loaded="NodifyEditor_Loaded"
+				 Unloaded="NodifyEditor_Unloaded_1"
+			     MouseLocation="{Binding MouseLocation, Mode=OneWayToSource}">
+			<nodify:NodifyEditor.ContextFlyout>
+				<MenuFlyout ItemsSource="{Binding EditorContextMenuItems}"/>
+			</nodify:NodifyEditor.ContextFlyout>
 			
 			<nodify:NodifyEditor.ItemContainerTheme>
 				<ControlTheme TargetType="nodify:ItemContainer" x:DataType="fsmVMs:NodeViewModel" BasedOn="{StaticResource {x:Type nodify:ItemContainer}}">
@@ -97,24 +106,24 @@
 			</nodify:NodifyEditor.ItemContainerTheme>
 
 			<nodify:NodifyEditor.ConnectionTemplate>
-				<DataTemplate DataType="fsmVMs:ConnectionViewModel">
+				<DataTemplate x:DataType="fsmVMs:GraphConnectionViewModel">
 					<nodify:LineConnection
-								   Source="{Binding Source.Anchor}"
-								   Target="{Binding Target.Anchor}"
-								   SourceOffset="{Binding Source.Size, Converter={StaticResource ConnectorOffsetConverter}, ConverterParameter=20}"
-								   TargetOffset="{Binding Target.Size, Converter={StaticResource ConnectorOffsetConverter}, ConverterParameter=20}"
-								   ArrowSize="15,15"
-								   Spacing="0"
-								   Text="{Binding Title}"
-								   FontWeight="Bold"
-								   ArrowEnds="{Binding ArrowHeadEnds}"
-								   Stroke="{Binding ArrowColor}"
-								   IsAnimatingDirectionalArrows="{Binding IsAnimating}"
-								   DirectionalArrowsCount="{Binding DirectionalArrowCount}"
-								   StrokeDashArray="{Binding StrokeDashArray}"
-								   SourceOffsetMode="Edge"
-								   TargetOffsetMode="Edge"
-								   nodify:BaseConnection.IsSelectable="True">
+							   Source="{Binding Source.Anchor}"
+							   Target="{Binding Target.Anchor}"
+							   SourceOffset="{Binding Source.Size, Converter={StaticResource ConnectorOffsetConverter}, ConverterParameter=20}"
+							   TargetOffset="{Binding Target.Size, Converter={StaticResource ConnectorOffsetConverter}, ConverterParameter=20}"
+							   ArrowSize="15,15"
+							   Spacing="0"
+							   Text="{Binding Title}"
+							   FontWeight="Bold"
+							   ArrowEnds="{Binding ArrowHeadEnds}"
+							   Stroke="{Binding ArrowColor}"
+							   IsAnimatingDirectionalArrows="{Binding IsAnimating}"
+							   DirectionalArrowsCount="{Binding DirectionalArrowCount}"
+							   StrokeDashArray="{Binding StrokeDashArray}"
+							   SourceOffsetMode="Edge"
+							   TargetOffsetMode="Edge"
+							   nodify:BaseConnection.IsSelectable="True">
 						<nodify:LineConnection.Theme>
 							<ControlTheme TargetType="{x:Type nodify:LineConnection}"
 								   BasedOn="{StaticResource {x:Type nodify:LineConnection}}">
@@ -135,11 +144,11 @@
 						 CompletedCommand="{Binding #Editor.((docVMs:FsmEditorViewModel)DataContext).ConnectionCompletedCommand}" />
 				</DataTemplate>
 			</nodify:NodifyEditor.PendingConnectionTemplate>
-			
+
 			<!-- Set how every node should be displayed -->
 			<nodify:NodifyEditor.DataTemplates>
 				<DataTemplate DataType="fsmVMs:NodeViewModel">
-					<fsmViews:FsmNodeView/>
+					<fsmViews:FsmNodeView PointerPressed="FsmNodeView_PointerPressed"/>
 				</DataTemplate>
 				<DataTemplate DataType="fsmVMs:GroupNodeViewModel">
 					<!-- Refer to ItemContainerStyle for location. -->

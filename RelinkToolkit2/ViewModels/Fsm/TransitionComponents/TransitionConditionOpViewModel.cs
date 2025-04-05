@@ -24,4 +24,23 @@ public partial class TransitionConditionOpViewModel : TransitionConditionBase
 {
     [ObservableProperty]
     private int _priority;
+
+    [ObservableProperty]
+    private TransitionOperandType? _operand;
+
+    public TransitionConditionOpViewModel()
+    {
+        Operand = TransitionOperandType.AND;
+    }
+
+    partial void OnOperandChanged(TransitionOperandType? value)
+    {
+        Title = value.ToString();
+    }
+}
+
+public enum TransitionOperandType
+{
+    AND,
+    OR,
 }

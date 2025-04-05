@@ -1,21 +1,22 @@
-﻿using System;
-using System.IO;
-
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using CommunityToolkit.Mvvm.ComponentModel;
 
 using Dock.Model.Controls;
 using Dock.Model.Core;
 
-using RelinkToolkit2.ViewModels.Documents;
-using RelinkToolkit2.Messages.IO;
-using RelinkToolkit2.Messages;
-using RelinkToolkit2.Messages.Fsm;
-
-using GBFRDataTools.FSM.Entities;
-using GBFRDataTools.FSM.Components.Actions.Quest;
 using GBFRDataTools.Entities.Quest;
 using GBFRDataTools.FSM;
+using GBFRDataTools.FSM.Components.Actions.Quest;
+using GBFRDataTools.FSM.Entities;
+
+using RelinkToolkit2.Messages;
+using RelinkToolkit2.Messages.IO;
+using RelinkToolkit2.ViewModels.Documents;
+using RelinkToolkit2.ViewModels.TreeView;
+
+using System;
+using System.IO;
 
 namespace RelinkToolkit2.ViewModels;
 
@@ -53,13 +54,18 @@ public partial class MainViewModel : ObservableObject
             message.Reply(true);
         });
 
-        WeakReferenceMessenger.Default.Register<OpenFsmDocumentRequest>(this, (recipient, message) =>
+        WeakReferenceMessenger.Default.Register<OpenDocumentRequest>(this, (recipient, message) =>
         {
-            if (!DocumentsViewModel.IsDocumentOpen(message.Id))
-                AddNewFSMDocument(message.Id, message.Name, message.FSM);
+            if (!DocumentsViewModel.IsDocumentOpen(message.Document.Id))
+                AddNewFSMDocument(message.Document.Id, message.Document.Title, null);
             else
             {
-                DocumentsViewModel.SetActiveDocument(message.Id);
+                var currentDocument = DocumentsViewModel.ActiveDockable;
+                if (currentDocument is not null && currentDocument.Id != message.Document.Id)
+                {
+                    (currentDocument as EditorDocumentBase)!.UnregisterMessageListeners();
+                    DocumentsViewModel.SetActiveDocument(message.Document.Id);
+                }
             }
 
             message.Reply(true);
@@ -103,6 +109,7 @@ public partial class MainViewModel : ObservableObject
                 if (questDir.Parent?.Parent is not null)
                 {
                     DirectoryInfo baseGameDir = questDir.Parent.Parent;
+
                     for (int i = 0; i < questInfo.FsmDataList.Count; i++)
                     {
                         FsmDataInfo fsmFile = questInfo.FsmDataList[i];
@@ -110,15 +117,19 @@ public partial class MainViewModel : ObservableObject
                         string fsmFilePath = Path.Combine(baseGameDir.FullName, "system", "fsm", "quest", fsmFileName);
                         byte[] questFsmFileBuf = File.ReadAllBytes(fsmFilePath);
 
+                        string id = $"{questId:X6}_fsm_{fsmFile.Suffix}";
+                        string name = $"[{i}] {fsmFile.Name}";
+
                         var parser = new FSMParser();
                         parser.Parse(questFsmFileBuf, asMessagePack: true);
+
+                        FsmEditorViewModel editorViewModel = AddNewFSMDocument(id, name, parser);
 
                         fsmRoot.DisplayedItems.Add(new FSMTreeViewItemViewModel()
                         {
                             Id = $"{questId:X6}_fsm_{fsmFile.Suffix}",
-                            FSM = parser,
                             TreeViewName = $"[{i}] {fsmFile.Name}",
-                            IconKind = "Material.ChartTimelineVariant",
+                            FsmEditor = editorViewModel,
                         });
                     }
 
@@ -134,16 +145,29 @@ public partial class MainViewModel : ObservableObject
             string fsmName = Path.GetFileNameWithoutExtension(fileResult.Uri.LocalPath).Replace("_fsm_ingame", string.Empty);
             string identifier = fsmName;
 
-            AddNewFSMDocument(identifier, fsmName, parser);
-            var fsm = new FSMTreeViewItemViewModel()
+            FsmEditorViewModel editorViewModel = AddNewFSMDocument(identifier, fsmName, parser);
+            var fsmTreeItem = new FSMTreeViewItemViewModel()
             {
                 Id = identifier,
                 TreeViewName = fsmName,
-                IconKind = "Material.ChartTimelineVariant",
-                FSM = parser,
+                FsmEditor = editorViewModel,
+                IsExpanded = true,
             };
 
-            SolutionExplorerViewModel.AddItem(fsmName, fsm);
+            foreach (var layerGroup in editorViewModel.LayerGroups.Values)
+            {
+                if (layerGroup.LayerIndex == 0)
+                    continue;
+
+                fsmTreeItem.DisplayedItems.Add(new FSMLayerTreeViewItemViewModel()
+                {
+                    Id = $"{fsmTreeItem.Id}_layer{layerGroup.LayerIndex}",
+                    TreeViewName = $"Layer {layerGroup.LayerIndex}",
+                    LayerGroup = layerGroup,
+                });
+            }
+
+            SolutionExplorerViewModel.AddItem(fsmName, fsmTreeItem);
         }
     }
 
@@ -152,19 +176,19 @@ public partial class MainViewModel : ObservableObject
     /// </summary>
     /// <param name="identifier"></param>
     /// <param name="name"></param>
-    /// <param name="fsm"></param>
-    private void AddNewFSMDocument(string identifier, string name, FSMParser fsm)
+    /// <param name="fsmParser"></param>
+    private FsmEditorViewModel AddNewFSMDocument(string identifier, string name, FSMParser fsmParser)
     {
-        var fsmEditorViewModel = new FsmEditorViewModel
+        FsmEditorViewModel fsmEditorViewModel = new()
         {
             Id = identifier,
             Title = name,
-            FSM = fsm,
             Documents = DocumentsViewModel,
         };
-        fsmEditorViewModel.InitGraph(name);
+        fsmEditorViewModel.InitGraph(name, fsmParser);
 
         DocumentsViewModel.AddDocument(fsmEditorViewModel);
+        return fsmEditorViewModel;
     }
 
     /// <summary>

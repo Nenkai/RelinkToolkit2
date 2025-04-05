@@ -11,7 +11,7 @@ using CommunityToolkit.Mvvm.Messaging.Messages;
 namespace RelinkToolkit2.Messages.Fsm;
 
 /// <summary>
-/// Represents a request for a node change on the graph.
+/// Represents a request for a node selection change on the graph.
 /// </summary>
 public class NodeGraphSelectionChangeRequest : RequestMessage<bool>
 {

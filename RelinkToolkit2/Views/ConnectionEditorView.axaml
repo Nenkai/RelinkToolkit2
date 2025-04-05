@@ -12,7 +12,8 @@
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:b="using:RelinkToolkit2.Behaviors"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="350"
+             d:DesignHeight="450" d:DesignWidth="600"
+			 Name="Test"
 			 x:DataType="VMs:ConnectionEditorViewModel">
     <Design.DataContext>
 		<VMs:ConnectionEditorViewModel/>
@@ -49,14 +50,14 @@
 	</UserControl.Styles>
 	
 	<!--TRANSITIONS-->
-	<Border Padding="10"
+	<Border Padding="5"
             HorizontalAlignment="Left">
 		<ScrollViewer VerticalScrollBarVisibility="Auto">
 			<StackPanel>
 				<ItemsControl x:Name="TransitionControl" ItemsSource="{Binding Connection.Transitions}" HorizontalAlignment="Left">
 					<ItemsControl.ItemTemplate>
 						<DataTemplate DataType="{x:Type fsmVMs:TransitionViewModel}">
-							<Expander x:Name="ConnectionExpander" CornerRadius="5 5 5 5" IsExpanded="True" Margin="0 0 5 4"
+							<Expander x:Name="ConnectionExpander" CornerRadius="4 4 4 4" IsExpanded="True" Margin="0 0 5 2"
 									  BorderThickness="1" BorderBrush="Gray"
 									  PointerEntered="ConnectionExpander_PointerEntered"
 									  PointerExited="ConnectionExpander_PointerExited"
@@ -64,46 +65,59 @@
 
 								<!-- Expander Header with node to node info -->
 								<Expander.Header>
-									<DockPanel Margin="0 5 5 5" HorizontalAlignment="Stretch" LastChildFill="True">
-										<TextBlock DockPanel.Dock="Left" Text="Go from " VerticalAlignment="Center" />
-										<Button DockPanel.Dock="Left" Foreground="DodgerBlue"
+									<Grid>
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="Auto"/>
+											<ColumnDefinition Width="*"/>
+											<ColumnDefinition Width="Auto"/>
+											<ColumnDefinition Width="*"/>
+											<ColumnDefinition Width="Auto"/>
+											<ColumnDefinition Width="*" MaxWidth="30"/>
+											<ColumnDefinition Width="Auto"/>
+										</Grid.ColumnDefinitions>
+										<TextBlock Grid.Column="0" TextTrimming="CharacterEllipsis" Text="Go from " VerticalAlignment="Center" FontSize="11" />
+										<Button Grid.Column="1" Foreground="DodgerBlue"
 												IsEnabled="True"
 												Margin="2,0,0,0"
+												Height="18"
 												Command="{Binding #TransitionControl.((VMs:ConnectionEditorViewModel)DataContext).NodeClickedCommand}"
 												CommandParameter="{Binding Source}">
-											<TextBlock Text="{Binding Source.Title}" TextDecorations="Underline" />
+											<TextBlock Text="{Binding Source.Title}" Margin="0,-8,0,-8" TextTrimming="CharacterEllipsis" TextDecorations="Underline" FontSize="11" />
 										</Button>
 
-										<Image DockPanel.Dock="Left" Width="14" Height="12" Margin="5 1 5 0">
+										<Image Grid.Column="2" DockPanel.Dock="Left" Width="10" Height="10" Margin="5 1 5 0">
 											<Image.Source>
 												<controls:VectorIconDrawingImage Drawing="{DynamicResource Material.ChevronDoubleRight}"/>
 											</Image.Source>
 										</Image>
-										<Button DockPanel.Dock="Left" Foreground="DodgerBlue"
+										<Button Grid.Column="3" Foreground="DodgerBlue"
 												IsEnabled="True"
-												Command="{Binding #TransitionControl.((VMs:ConnectionEditorViewModel)DataContext).NodeClickedCommand}" 
+												Height="18"
+												Command="{Binding #TransitionControl.((VMs:ConnectionEditorViewModel)DataContext).NodeClickedCommand}"
 												CommandParameter="{Binding Target}">
-											<TextBlock Text="{Binding Target.Title}" TextDecorations="Underline" />
+											<TextBlock Text="{Binding Target.Title}" Margin="0,-8,0,-8" TextTrimming="CharacterEllipsis" TextDecorations="Underline" FontSize="11"/>
 										</Button>
-										<TextBlock DockPanel.Dock="Left" Text=" if" VerticalAlignment="Center" />
+
+										<TextBlock Grid.Column="4" Text="if" Padding="4,0,0,0" VerticalAlignment="Center" FontSize="11"/>
+										<Grid Grid.Column="5"/>
 
 										<!-- Deleter -->
-										<Button DockPanel.Dock="Right" Width="24" Height="24" Margin="4 0 4 0"
+										<Button Grid.Column="6" Width="18" Height="18" Margin="4 0 4 0"
 											Command="{Binding #TransitionControl.((VMs:ConnectionEditorViewModel)DataContext).Connection.TransitionDeletedCommand}"
 											CommandParameter="{Binding}">
-											<Image Width="16" Height="16">
+											<Image Width="12" Height="12">
 												<Image.Source>
 													<controls:VectorIconDrawingImage Drawing="{DynamicResource Material.Delete}"/>
 												</Image.Source>
 											</Image>
 										</Button>
-										<Grid/>
-									</DockPanel>
+
+									</Grid>
 								</Expander.Header>
 
 								<!-- Connection information -->
 								<Border BorderThickness="0 1 0 0" BorderBrush="LightGray">
-									<StackPanel Orientation="Vertical" Margin="12 4 4 4">
+									<StackPanel Orientation="Vertical" Margin="4 2 4 2">
 										<ItemsControl x:Name="ConditionsControl" ItemsSource="{Binding ConditionComponents}" Classes="ItemsDragAndDrop">
 											<ItemsControl.DataTemplates>
 												<DataTemplate DataType="{x:Type condVMs:TransitionConditionViewModel}">
@@ -111,26 +125,26 @@
 														<Expander>
 															<Expander.Header>
 																<!-- Binding is needed. Otherwise it won't spread across -->
-																<DockPanel HorizontalAlignment="Left" Height="24" Width="{Binding #TransitionStackPanel.Bounds.Width}" Margin="0 4 0 4" LastChildFill="True">
-																	<Grid DockPanel.Dock="Left" Background="Transparent" Cursor="SizeAll" Margin="4 0 10 0">
-																		<Image Stretch="Uniform">
+																<DockPanel HorizontalAlignment="Left" Height="20" Width="{Binding #TransitionStackPanel.Bounds.Width}" Margin="0 4 0 4" LastChildFill="True">
+																	<Grid DockPanel.Dock="Left" Background="Transparent" Cursor="SizeAll" Margin="2 1 6 0">
+																		<Image Width="14">
 																			<Image.Source>
-																				<controls:VectorIconDrawingImage Drawing="{DynamicResource Material.DragVertical}"/>
+																				<controls:VectorIconDrawingImage Drawing="{DynamicResource Material.DragHorizontalVariant}" Brush="Gray"/>
 																			</Image.Source>
 																		</Image>
 																	</Grid>
-																	
-																	<TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold" Text="{Binding Title}"/>
-																	<TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" HorizontalAlignment="Center" Text=" is "/>
+
+																	<TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold" Text="{Binding Title}" FontSize="11"/>
+																	<TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" HorizontalAlignment="Center" Text=" is " FontSize="11"/>
 																	<CheckBox  DockPanel.Dock="Left" VerticalAlignment="Center" Margin="2 0 2 0" IsChecked="{Binding !IsFalse}" />
-																	<TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" IsVisible="{Binding IsFalse}" Text="false" />
-																	<TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" IsVisible="{Binding !IsFalse}" Text="true"/>
+																	<TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" IsVisible="{Binding IsFalse}" Text="false" FontSize="11"/>
+																	<TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" IsVisible="{Binding !IsFalse}" Text="true" FontSize="11"/>
 
 																	<!-- Excessive right side margin because for some reason it clips past. -->
 																	<Button DockPanel.Dock="Right" Margin="4 0 25 0"
 																		Command="{Binding #ConditionsControl.((fsmVMs:TransitionViewModel)DataContext).TransitionComponentDeletedCommand}"
 																		CommandParameter="{Binding}">
-																		<Image Width="16" Height="16">
+																		<Image Width="12" Height="12">
 																			<Image.Source>
 																				<controls:VectorIconDrawingImage Drawing="{DynamicResource Material.Delete}"/>
 																			</Image.Source>
@@ -155,10 +169,12 @@
 														</Expander>
 													</StackPanel>
 												</DataTemplate>
+
+												<!-- Condition Operator -->
 												<DataTemplate DataType="{x:Type condVMs:TransitionConditionOpViewModel}">
-													<Grid Width="385" HorizontalAlignment="Left">
+													<Grid Width="385" HorizontalAlignment="Left" Margin="0,2,0,2">
 														<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-															<Button Padding="2,1,2,1" Content="{Binding Title}" FontWeight="Bold"/>
+															<Button Name="Button_OperandType" Padding="2,1,2,1" Content="{Binding Title}" FontWeight="Bold" Click="Button_OperandType_Click"/>
 															<Label Content="(Priority: " Padding="2,4,2,0"/>
 															<NumericUpDown Value="{Binding Priority}" Width="39" Height="23" Padding="8,0,0,0" FormatString="0"/>
 															<Label Content=")" Padding="2,4,2,0"/>
@@ -167,6 +183,16 @@
 												</DataTemplate>
 											</ItemsControl.DataTemplates>
 										</ItemsControl>
+										<Button HorizontalContentAlignment="Left" Click="Button_AddConditionComponent" Cursor="Hand" Margin="0,2,0,2">
+											<StackPanel Orientation="Horizontal">
+												<Image Width="12" Height="12" Margin="0,0,4,0">
+													<Image.Source>
+														<controls:VectorIconDrawingImage Drawing="{DynamicResource Material.Plus}"/>
+													</Image.Source>
+												</Image>
+												<TextBlock Text="Add Condition..." FontSize="11"/>
+											</StackPanel>
+										</Button>
 									</StackPanel>
 								</Border>
 							</Expander>

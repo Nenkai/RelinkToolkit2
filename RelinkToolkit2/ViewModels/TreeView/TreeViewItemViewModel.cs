@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Avalonia;
+using System.Windows.Input;
 
 namespace RelinkToolkit2.ViewModels;
 
@@ -31,5 +32,26 @@ public partial class TreeViewItemViewModel : ObservableObject
     [ObservableProperty]
     private bool _canDrop;
 
+    [ObservableProperty]
+    private ICommand? _doubleClickedCommand;
+
     public ObservableCollection<TreeViewItemViewModel> DisplayedItems { get; set; } = [];
+    private Dictionary<string, TreeViewItemViewModel> _keyDictionary { get; set; } = [];
+
+    public void AddChild(TreeViewItemViewModel itemViewModel)
+    {
+        DisplayedItems.Add(itemViewModel);
+        _keyDictionary.Add(itemViewModel.Id, itemViewModel);
+    }
+
+    public void GetChild()
+    {
+
+    }
+
+    public void RemoveChild(TreeViewItemViewModel itemViewModel)
+    {
+        DisplayedItems.Remove(itemViewModel);
+        _keyDictionary.Remove(itemViewModel.Id);
+    }
 }

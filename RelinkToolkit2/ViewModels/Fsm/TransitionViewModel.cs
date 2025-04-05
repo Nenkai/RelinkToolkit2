@@ -23,14 +23,15 @@ namespace RelinkToolkit2.ViewModels.Fsm;
 /// </summary>
 public partial class TransitionViewModel : ObservableObject
 {
-    public ConnectionViewModel ParentConnection { get; set; }
+    public GraphConnectionViewModel ParentConnection { get; set; }
 
     public required NodeViewModel Source { get; set; }
     public required NodeViewModel Target { get; set; }
+    public bool IsOverrideTransition { get; set; }
 
     public ObservableCollection<TransitionConditionBase> ConditionComponents { get; set; } = [];
 
-    public TransitionViewModel(ConnectionViewModel parentConnection)
+    public TransitionViewModel(GraphConnectionViewModel parentConnection)
     {
         ParentConnection = parentConnection;
     }

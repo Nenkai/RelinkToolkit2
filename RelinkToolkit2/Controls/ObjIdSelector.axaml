@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="using:RelinkToolkit2.Controls"
+		x:Class="RelinkToolkit2.Controls.ObjIdSelector"
+		xmlns:converters="using:RelinkToolkit2.Converters"
+		mc:Ignorable="d">
+
+	<UserControl.Resources>
+		<converters:HexTextConverter x:Key="HexTextConverter" />
+	</UserControl.Resources>
+	<Design.PreviewWith>
+
+	</Design.PreviewWith>
+
+	<Grid ColumnDefinitions="Auto,Auto,*">
+		<CheckBox x:Name="CheckBox_IsSet" Grid.Column="0" Margin="0,0,2,0" Checked="CheckBox_Checked" Unchecked="CheckBox_Checked"/>
+		<ComboBox Name="Combo_ObjIdType" Width="60" Grid.Column="1" Margin="2,0,2,0" IsEnabled="{Binding #CheckBox_IsSet.IsChecked}" SelectionChanged="ComboBox_SelectionChanged"/>
+		<NumericUpDown Name="NumUpDown_ObjId" Grid.Column="2" Margin="2,0,0,0" IsEnabled="{Binding #CheckBox_IsSet.IsChecked}" Value="10000" TextConverter="{StaticResource HexTextConverter}" Maximum="65535" ValueChanged="NumUpDown_ObjId_ValueChanged"/>
+	</Grid>
+</UserControl>

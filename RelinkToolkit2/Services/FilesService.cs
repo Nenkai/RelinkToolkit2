@@ -39,7 +39,7 @@ public class FilesService : IFilesService
         return files.Count >= 1 ? files[0] : null;
     }
 
-    public async Task<IStorageFile?> SaveFileAsync(string title, string filter)
+    public async Task<IStorageFile?> SaveFileAsync(string title, string filter, string? suggestedFileName)
     {
         if (_storageProvider is null)
             throw new ArgumentNullException("Storage provider is null. It was not initialized.");
@@ -47,6 +47,7 @@ public class FilesService : IFilesService
         return await _storageProvider.SaveFilePickerAsync(new FilePickerSaveOptions()
         {
             Title = title,
+            SuggestedFileName = suggestedFileName,
         });
     }
 }

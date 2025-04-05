@@ -3,12 +3,21 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:nodify="https://miroiu.github.io/nodify"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="200"
 			 xmlns:fsmVMs="using:RelinkToolkit2.ViewModels.Fsm"
+			 xmlns:search="using:RelinkToolkit2.Views"
 			 xmlns:b="using:RelinkToolkit2.Behaviors"
 			 xmlns:controls="using:RelinkToolkit2.Controls"
+			 xmlns:local="using:RelinkToolkit2"
+			 xmlns:converters="using:RelinkToolkit2.Converters"
              x:Class="RelinkToolkit2.Views.Fsm.FsmNodeView"
+			 xmlns:sys="clr-namespace:System;assembly=netstandard"
 			 x:DataType="fsmVMs:NodeViewModel">
+
+	<UserControl.Resources>
+		<converters:VectorIconConverter x:Key="vectorIconConverter"/>
+	</UserControl.Resources>
+	
 	<UserControl.Styles>
 		<Style Selector="ItemsControl.ItemsDragAndDrop">
 			<Style.Resources>
@@ -38,56 +47,63 @@
 	<Design.DataContext>
 		<fsmVMs:NodeViewModel/>
 	</Design.DataContext>
+	
 	<nodify:StateNode x:Name="Node"
-					  IsConnected="True"
-					  BorderBrush="{Binding BorderBrush}"
-					  Content="{Binding}"
-					  CornerRadius="{Binding CornerRadius}"
-					  Anchor="{Binding Anchor, Mode=OneWayToSource}"
-					  DragDrop.AllowDrop="True"
-					  PointerPressed="StateNode_PointerPressed" >
-		<nodify:StateNode.ContextMenu>
-			<ContextMenu>
-				<MenuItem Header="{Binding Guid, StringFormat='Copy Guid ({0})'}" Command="{Binding CopyGuidCommand}"
-						  CommandParameter="{Binding #Node}"/> <!-- FIXME: Not MVVM friendly. -->
-			</ContextMenu>
-		</nodify:StateNode.ContextMenu>
+			IsConnected="True"
+			BorderBrush="{Binding BorderBrush}"
+			Content="{Binding}"
+			CornerRadius="{Binding CornerRadius}"
+			Anchor="{Binding Anchor, Mode=OneWayToSource}"
+			DragDrop.AllowDrop="True">
 		<!-- For execution components -->
 		<nodify:StateNode.ContentTemplate>
 			<DataTemplate DataType="fsmVMs:NodeViewModel">
 				<StackPanel Orientation="Vertical">
-					<StackPanel Orientation="Horizontal">
+					<Grid ColumnDefinitions="Auto,Auto,*,Auto">
 						<!-- Make sure to not display edit cursor while hovering over the text block
 							 We don't want the cursor types to change too much while moving around nodes.
 							 You can double click to edit the label. -->
-						<controls:EditableTextBlock Cursor="SizeAll" Text="{Binding Title}" FontWeight="Bold" Margin="4,2,2,2"/>
-						<TextBlock Text="{Binding LayerIndex, StringFormat='(L{0})'}}" Foreground="DimGray" FontSize="8" Margin="0,2,2,2" />
-					</StackPanel>
+						<controls:EditableTextBlock IsEditing="{Binding IsRenaming}" Grid.Column="0" Cursor="SizeAll" Text="{Binding Title}" FontWeight="Bold" Margin="4,2,2,2"/>
+						<TextBlock Grid.Column="1" Text="{Binding LayerIndex, StringFormat='(L{0})'}}" Foreground="DimGray" FontSize="10" Margin="0,2,2,2" />
+						<Panel Grid.Column="3" Background="Transparent" IsVisible="{Binding HasSelfTransition}" Cursor="Hand" PointerPressed="Panel_PointerPressed">
+							<Image Width="18" Height="18" IsVisible="{Binding HasSelfTransition}">
+								<Image.Source>
+									<controls:VectorIconDrawingImage Drawing="{Binding Source='Material.Repeat', Converter={StaticResource vectorIconConverter}}"/>
+								</Image.Source>
+							</Image>
+						</Panel>
+					</Grid>
 
 					<TextBlock Text="{Binding Guid}" Foreground="DimGray" FontSize="10" Margin="4,-1,0,0"/>
 
-					<!-- Caption/Path to external fsm -->
-					<TextBlock Text="{Binding FsmSource}" Foreground="DimGray" FontSize="10" Margin="4,0,2,2"
-							IsVisible="{Binding FsmSource, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+					<Grid>
+						<!-- Caption/Path to external fsm -->
+						<TextBlock Text="{Binding FsmSource}" Foreground="DimGray" FontSize="10" Margin="4,0,2,2"
+								IsVisible="{Binding FsmSource, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
 
-					<ItemsControl ItemsSource="{Binding Components}" Classes="ItemsDragAndDrop">
+						<ItemsControl ItemsSource="{Binding Components}" Classes="ItemsDragAndDrop">
 
-						<!-- Spacing between execution components -->
-						<ItemsControl.ItemTemplate>
-							<DataTemplate DataType="fsmVMs:NodeComponentViewModel">
-								<Border Cursor="Hand" BorderBrush="{Binding BorderBrush}" BorderThickness="1" PointerEntered="Border_PointerEntered" PointerExited="Border_PointerExited" Margin="0 5 0 0" Tapped="Component_Tapped" PointerPressed="Border_PointerPressed">
+							<!-- Spacing between execution components -->
+							<ItemsControl.ItemTemplate>
+								<DataTemplate DataType="fsmVMs:NodeComponentViewModel">
+									<Border Cursor="Hand" BorderBrush="{Binding BorderBrush}" BorderThickness="1" 
+											PointerEntered="Border_PointerEntered" 
+											PointerExited="Border_PointerExited" Margin="0 5 0 0" 
+											Tapped="Component_Tapped" 
+											PointerPressed="Border_PointerPressed">
 
-									<!-- Setting to transparent is needed for the hit test to work everywhere (otherwise doesn't work on the gap) -->
-									<Grid ColumnDefinitions="*,*,10" Background="Transparent">
-										<StackPanel Grid.Column="0" Orientation="Horizontal" IsHitTestVisible="False">
-											<Label Grid.Column="0" Width="26" FontWeight="Bold" Content=">>"/>
-											<Label Grid.Column="1" Content="{Binding Name}"/>
-										</StackPanel>
-									</Grid>
-								</Border>
-							</DataTemplate>
-						</ItemsControl.ItemTemplate>
-					</ItemsControl>
+										<!-- Setting to transparent is needed for the hit test to work everywhere (otherwise doesn't work on the gap) -->
+										<Grid ColumnDefinitions="*,*,10" Background="Transparent">
+											<StackPanel Grid.Column="0" Orientation="Horizontal" IsHitTestVisible="False">
+												<Label Grid.Column="0" Width="26" FontWeight="Bold" Content=">>"/>
+												<Label Grid.Column="1" Content="{Binding Name}"/>
+											</StackPanel>
+										</Grid>
+									</Border>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+					</Grid>
 				</StackPanel>
 			</DataTemplate>
 		</nodify:StateNode.ContentTemplate>

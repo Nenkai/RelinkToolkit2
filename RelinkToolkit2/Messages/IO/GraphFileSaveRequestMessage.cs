@@ -8,9 +8,9 @@ using CommunityToolkit.Mvvm.Messaging.Messages;
 
 namespace RelinkToolkit2.Messages.IO;
 
-public class FileSaveRequestMessage : ValueChangedMessage<string>
+public class GraphFileSaveRequestMessage : ValueChangedMessage<string>
 {
-    public FileSaveRequestMessage(string value) : base(value)
+    public GraphFileSaveRequestMessage(string value) : base(value)
     {
 
     }

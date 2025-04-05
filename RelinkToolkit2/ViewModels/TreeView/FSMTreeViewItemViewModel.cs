@@ -5,12 +5,27 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using GBFRDataTools.FSM;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 
-namespace RelinkToolkit2.ViewModels;
+using RelinkToolkit2.Messages;
+using RelinkToolkit2.Messages.Fsm;
+using RelinkToolkit2.ViewModels.Documents;
+
+namespace RelinkToolkit2.ViewModels.TreeView;
 
 public partial class FSMTreeViewItemViewModel : TreeViewItemViewModel
 {
-    public required FSMParser FSM { get; set; }
+    public required FsmEditorViewModel FsmEditor { get; set; }
 
+    public FSMTreeViewItemViewModel()
+    {
+        IconKind = "Material.ChartTimelineVariant";
+        DoubleClickedCommand = new RelayCommand(OnDoubleClicked);
+    }
+
+    public void OnDoubleClicked()
+    {
+        WeakReferenceMessenger.Default.Send(new OpenDocumentRequest(FsmEditor));
+    }
 }

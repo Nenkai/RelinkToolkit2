@@ -73,7 +73,7 @@ public class DockFactory : Factory
             Title = "Toolbox",
             IsCollapsable = true,
             GripMode = GripMode.Visible,
-            Proportion = 0.55,
+            Proportion = 0.40,
             VisibleDockables = CreateList<IDockable>
             (
                 _toolboxViewModel
@@ -86,7 +86,7 @@ public class DockFactory : Factory
             Title = "Connection Editor",
             IsCollapsable = true,
             GripMode = GripMode.Visible,
-            Proportion = 0.45,
+            Proportion = 0.60,
             VisibleDockables = CreateList<IDockable>
             (
                 _connectionEditorViewModel

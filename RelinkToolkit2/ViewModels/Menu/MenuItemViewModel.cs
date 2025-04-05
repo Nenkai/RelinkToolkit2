@@ -52,5 +52,8 @@ public partial class MenuItemViewModel : ObservableObject, IMenuItemViewModel
     [ObservableProperty]
     private IBrush? _iconBrush;
 
+    [ObservableProperty]
+    private bool _isHitTestVisible = true;
+
     public ObservableCollection<IMenuItemViewModel> MenuItems { get; set; } = [];
 }
