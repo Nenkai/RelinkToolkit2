@@ -11,7 +11,8 @@ namespace RelinkToolkit2.ViewModels.Documents;
 
 public class DocumentsViewModel : DocumentDock
 {
-    public Dictionary<string, IDocument> _openDocuments = [];
+    public Dictionary<string, EditorDocumentBase> _openDocuments = [];
+    public EditorDocumentBase? LastDocument { get; private set; }
 
     public DocumentsViewModel()
     {
@@ -24,7 +25,7 @@ public class DocumentsViewModel : DocumentDock
         Proportion = 0.6;
     }
 
-    public void AddDocument(IDocument document, bool setActive = true)
+    public void AddDocument(EditorDocumentBase document, bool setActive = true)
     {
         Factory?.AddDockable(this, document);
 
@@ -32,6 +33,7 @@ public class DocumentsViewModel : DocumentDock
         {
             Factory?.SetActiveDockable(document);
             Factory?.SetFocusedDockable(this, document);
+            LastDocument = document;
         }
 
         if (!IsDocumentOpen(document.Id))
@@ -46,6 +48,14 @@ public class DocumentsViewModel : DocumentDock
         }
     }
 
+    public void OnNewDocumentOpen(EditorDocumentBase newDocument)
+    {
+        LastDocument?.UnregisterMessageListeners();
+        LastDocument = newDocument;
+
+        newDocument.RegisterMessageListeners();
+    }
+
     public void Remove(string id)
     {
         _openDocuments.Remove(id);
@@ -53,11 +63,12 @@ public class DocumentsViewModel : DocumentDock
 
     public bool SetActiveDocument(string id)
     {
-        if (!_openDocuments.TryGetValue(id, out IDocument? document))
+        if (!_openDocuments.TryGetValue(id, out EditorDocumentBase? document))
             return false;
 
         Factory?.SetActiveDockable(document);
         Factory?.SetFocusedDockable(this, document);
+        LastDocument = document;
         return true;
     }
 

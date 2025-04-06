@@ -88,8 +88,7 @@
 								<DataTemplate DataType="fsmVMs:NodeComponentViewModel">
 									<Border Cursor="Hand" BorderBrush="{Binding BorderBrush}" BorderThickness="1" 
 											PointerEntered="Border_PointerEntered" 
-											PointerExited="Border_PointerExited" Margin="0 5 0 0" 
-											Tapped="Component_Tapped" 
+											PointerExited="Border_PointerExited" Margin="0 2 0 0" 
 											PointerPressed="Border_PointerPressed">
 
 										<!-- Setting to transparent is needed for the hit test to work everywhere (otherwise doesn't work on the gap) -->

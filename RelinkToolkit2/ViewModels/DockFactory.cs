@@ -61,8 +61,17 @@ public class DockFactory : Factory
         rootDock.DefaultDockable = mainPane;
         rootDock.IsCollapsable = false;
 
+        this.ActiveDockableChanged += DockFactory_ActiveDockableChanged;
         _rootDock = rootDock;
         return rootDock;
+    }
+
+    private void DockFactory_ActiveDockableChanged(object? sender, Dock.Model.Core.Events.ActiveDockableChangedEventArgs e)
+    {
+        if (e.Dockable?.Owner is DocumentsViewModel documents)
+        {
+            documents.OnNewDocumentOpen((EditorDocumentBase)e.Dockable);
+        }
     }
 
     public ProportionalDock CreateLeftSide()
@@ -168,6 +177,4 @@ public class DockFactory : Factory
 
         base.InitLayout(layout);
     }
-
-   
 }

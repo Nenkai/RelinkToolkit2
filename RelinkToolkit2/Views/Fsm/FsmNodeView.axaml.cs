@@ -59,18 +59,6 @@ public partial class FsmNodeView : UserControl
 
     }
 
-    // HACK: We hook both. Why? PointerPressed for some reason only works the first time. Debug window shows it marked as on further uses, but event doesn't fire (??)
-    private void Component_Tapped(object? sender, TappedEventArgs e)
-    {
-        if (sender is not Control control)
-            return;
-
-        if (control.DataContext is not NodeComponentViewModel componentViewModel)
-            return;
-
-        WeakReferenceMessenger.Default.Send(new FsmComponentSelectedMessage(componentViewModel.Component));
-    }
-
     private void Border_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
         if (sender is not Control control)
@@ -92,8 +80,9 @@ public partial class FsmNodeView : UserControl
 
                 // We gotta pass this to the editor's view to make the context menu.
                 WeakReferenceMessenger.Default.Send(new FsmComponentContextMenuRequest(parentNodeView, componentViewModel));
-                e.Handled = true;
             }
+
+            e.Handled = true;
         }
     }
 

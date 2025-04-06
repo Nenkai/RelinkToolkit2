@@ -44,8 +44,6 @@ public partial class FsmEditorView : UserControl
     public FsmEditorView()
     {
         InitializeComponent();
-
-        RegisterMessages();
     }
 
     private void RegisterMessages()
@@ -90,6 +88,14 @@ public partial class FsmEditorView : UserControl
         });
     }
 
+    private void NodifyEditor_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        var test = BindingOperations.GetBindingExpressionBase(Editor, NodifyEditor.PendingConnectionProperty);
+
+        RegisterMessages();
+        PerformAutomaticNodeLayouting();
+    }
+
     private void NodifyEditor_Unloaded_1(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         UnregisterMessages();
@@ -104,7 +110,7 @@ public partial class FsmEditorView : UserControl
     /// Fired when nodes are loaded.
     /// Any automatic node layouting happens here.
     /// </summary>
-    private void EditorViewModel_NodesLoaded()
+    private void PerformAutomaticNodeLayouting()
     {
         if (Editor.Items.Any() && Editor.Tag as bool? != true)
         {
@@ -147,7 +153,8 @@ public partial class FsmEditorView : UserControl
                 {
                     Transformation = PlaneTransformation.Rotation(Math.PI / 2), // Make LR (Left-To-Right)
                     NodeSeparation = 80,
-                    EdgeRoutingSettings = { EdgeRoutingMode = EdgeRoutingMode.StraightLine },
+                    EdgeRoutingSettings = { EdgeRoutingMode = EdgeRoutingMode.Rectilinear  },
+                    
                 });
 
                 layerLayout.Run();
@@ -302,12 +309,6 @@ public partial class FsmEditorView : UserControl
     {
         return CurveFactory.CreateRectangle(w, h, new Microsoft.Msagl.Core.Geometry.Point(w, h));
     }
-
-    private void NodifyEditor_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-    {
-        EditorViewModel_NodesLoaded();
-    }
-
 
     private void FsmNodeView_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
@@ -485,11 +486,14 @@ public partial class FsmEditorView : UserControl
             _searchFlyout ??= new Flyout() { ShowMode = FlyoutShowMode.Transient };
             _searchFlyout.VerticalOffset = 4;
             _searchFlyout.OverlayDismissEventPassThrough = true;
-            BuildSearch(nodeView!);
         }
 
+        BuildSearch(nodeView!); // TODO: Cache?
         _searchFlyout.ShowAt(nodeView!, showAtPointer: false);
     }
+
+    private static IEnumerable<Type> _actionComponentTypes = Assembly.GetAssembly(typeof(BehaviorTreeComponent))!.GetTypes()
+            .Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(typeof(ActionComponent)));
 
     private void BuildSearch(FsmNodeView nodeView)
     {
@@ -500,12 +504,9 @@ public partial class FsmEditorView : UserControl
         content.DataContext = searchVM;
         searchVM.Context = nodeView.DataContext as NodeViewModel;
         
-        IEnumerable<Type> componentTypes = Assembly.GetAssembly(typeof(BehaviorTreeComponent))!.GetTypes()
-            .Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(typeof(ActionComponent)));
-
         string baseNamespace = typeof(ActionComponent).Namespace!;
         ComponentSearchPageViewModel mainPage = new ComponentSearchPageViewModel();
-        foreach (Type compType in componentTypes)
+        foreach (Type compType in _actionComponentTypes)
         {
             if (compType.Namespace is null)
                 continue;

@@ -63,7 +63,6 @@ public partial class MainViewModel : ObservableObject
                 var currentDocument = DocumentsViewModel.ActiveDockable;
                 if (currentDocument is not null && currentDocument.Id != message.Document.Id)
                 {
-                    (currentDocument as EditorDocumentBase)!.UnregisterMessageListeners();
                     DocumentsViewModel.SetActiveDocument(message.Document.Id);
                 }
             }

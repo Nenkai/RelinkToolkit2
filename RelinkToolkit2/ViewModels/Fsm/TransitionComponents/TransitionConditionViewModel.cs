@@ -32,6 +32,9 @@ public partial class TransitionConditionViewModel : TransitionConditionBase
     private bool _isFalse;
 
     [ObservableProperty]
+    private bool _isExpanded = true;
+
+    [ObservableProperty]
     private ConditionComponent _conditionComponent;
 
     public TransitionConditionViewModel(ConditionComponent conditionComponent)

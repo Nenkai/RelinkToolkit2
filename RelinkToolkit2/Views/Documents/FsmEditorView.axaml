@@ -46,6 +46,14 @@
                       Transform="{Binding DpiScaledViewportTransform, ElementName=Editor}"
                       Drawing="{StaticResource LargeGridGeometry}" />
 
+		<DataTemplate x:Key="PendingConnectionTemplate" 
+					  DataType="{x:Type fsmVMs:PendingConnectionViewModel}">
+			<nodify:PendingConnection
+				 Source="{Binding Source, Mode=OneWayToSource}"
+				 Target="{Binding Target, Mode=OneWayToSource}"
+				 TargetAnchor="{Binding TargetLocation, Mode=OneWayToSource}"
+				 CompletedCommand="{Binding #Editor.((docVMs:FsmEditorViewModel)DataContext).ConnectionCompletedCommand}" />
+		</DataTemplate>
 	</UserControl.Resources>
 
 	<UserControl.Styles>
@@ -90,6 +98,7 @@
 				 SelectedConnection="{Binding SelectedConnection}"
 			     PendingConnection="{Binding PendingConnection}"
 				 ItemsDragCompletedCommand="{Binding ItemsDragCompletedCommand}"
+				 PendingConnectionTemplate="{StaticResource PendingConnectionTemplate}"
 			     Loaded="NodifyEditor_Loaded"
 				 Unloaded="NodifyEditor_Unloaded_1"
 			     MouseLocation="{Binding MouseLocation, Mode=OneWayToSource}">
@@ -133,17 +142,6 @@
 					</nodify:LineConnection>
 				</DataTemplate>
 			</nodify:NodifyEditor.ConnectionTemplate>
-
-			<nodify:NodifyEditor.PendingConnectionTemplate>
-				<DataTemplate DataType="{x:Type fsmVMs:PendingConnectionViewModel}">
-					<nodify:PendingConnection
-						 IsVisible="{Binding IsVisible}"
-                         Source="{Binding Source, Mode=OneWayToSource}"
-                         Target="{Binding Target, Mode=OneWayToSource}"
-                         TargetAnchor="{Binding TargetLocation, Mode=OneWayToSource}"
-						 CompletedCommand="{Binding #Editor.((docVMs:FsmEditorViewModel)DataContext).ConnectionCompletedCommand}" />
-				</DataTemplate>
-			</nodify:NodifyEditor.PendingConnectionTemplate>
 
 			<!-- Set how every node should be displayed -->
 			<nodify:NodifyEditor.DataTemplates>

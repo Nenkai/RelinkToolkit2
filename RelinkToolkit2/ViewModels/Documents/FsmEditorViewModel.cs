@@ -67,7 +67,8 @@ public partial class FsmEditorViewModel : EditorDocumentBase
     /// </summary>
     public Dictionary<int, GroupNodeViewModel> LayerGroups { get; set; } = [];
 
-    public PendingConnectionViewModel PendingConnection { get; set; } = new();
+    [ObservableProperty]
+    private PendingConnectionViewModel _pendingConnection = new();
 
     /// <summary>
     /// Currently selected node.
@@ -104,8 +105,6 @@ public partial class FsmEditorViewModel : EditorDocumentBase
 
     public FsmEditorViewModel()
     {
-        RegisterMessageListeners();
-
         if (Design.IsDesignMode)
         {
             var node = new NodeViewModel()
