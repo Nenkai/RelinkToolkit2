@@ -153,8 +153,7 @@ public partial class FsmEditorView : UserControl
                 {
                     Transformation = PlaneTransformation.Rotation(Math.PI / 2), // Make LR (Left-To-Right)
                     NodeSeparation = 80,
-                    EdgeRoutingSettings = { EdgeRoutingMode = EdgeRoutingMode.Rectilinear  },
-                    
+                    EdgeRoutingSettings = { EdgeRoutingMode = EdgeRoutingMode.StraightLine },
                 });
 
                 layerLayout.Run();
