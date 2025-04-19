@@ -64,7 +64,7 @@
 							 We don't want the cursor types to change too much while moving around nodes.
 							 You can double click to edit the label. -->
 						<controls:EditableTextBlock IsEditing="{Binding IsRenaming}" Grid.Column="0" Cursor="SizeAll" Text="{Binding Title}" FontWeight="Bold" Margin="4,2,2,2"/>
-						<TextBlock Grid.Column="1" Text="{Binding LayerIndex, StringFormat='(L{0})'}}" Foreground="DimGray" FontSize="10" Margin="0,2,2,2" />
+						<Label Grid.Column="1" Content="{Binding LayerIndex, StringFormat='• (Layer {0})'}}" Foreground="DimGray" FontSize="10" Margin="-2,0,0,0" VerticalContentAlignment="Center" />
 						<Panel Grid.Column="3" Background="Transparent" IsVisible="{Binding HasSelfTransition}" Cursor="Hand" PointerPressed="Panel_PointerPressed">
 							<Image Width="18" Height="18" IsVisible="{Binding HasSelfTransition}">
 								<Image.Source>
@@ -93,9 +93,12 @@
 
 										<!-- Setting to transparent is needed for the hit test to work everywhere (otherwise doesn't work on the gap) -->
 										<Grid ColumnDefinitions="*,*,10" Background="Transparent">
-											<StackPanel Grid.Column="0" Orientation="Horizontal" IsHitTestVisible="False">
-												<Label Grid.Column="0" Width="26" FontWeight="Bold" Content=">>"/>
-												<Label Grid.Column="1" Content="{Binding Name}"/>
+											<StackPanel Orientation="Vertical">
+												<StackPanel Grid.Column="0" Orientation="Horizontal" IsHitTestVisible="False">
+													<Label Width="26" FontWeight="Bold" Content=">>"/>
+													<Label Content="{Binding Name}"/>
+												</StackPanel>
+												<TextBlock Margin="29,-4,0,2" Text="{Binding Caption}" FontSize="8" Foreground="DimGray" IsVisible="{Binding Caption, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
 											</StackPanel>
 										</Grid>
 									</Border>

@@ -1,12 +1,12 @@
 ﻿<UserControl x:Class="RelinkToolkit2.Views.SolutionExplorerView"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="using:RelinkToolkit2"
 			 xmlns:converters="using:RelinkToolkit2.Converters"
 			 xmlns:controls="using:RelinkToolkit2.Controls"
              xmlns:viewmodels="using:RelinkToolkit2.ViewModels"
-			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="400"
 			 x:DataType="viewmodels:SolutionExplorerViewModel">
@@ -28,7 +28,10 @@
 								<controls:VectorIconDrawingImage Drawing="{Binding IconKind, Converter={StaticResource vectorIconConverter}}"/>
 							</Image.Source>
 						</Image>
-						<TextBlock Padding="4,0,0,0" Text="{Binding TreeViewName}"/>
+						<StackPanel Orientation="Horizontal">
+							<TextBlock Padding="4,0,0,0" Text="{Binding TreeViewName}"/>
+							<TextBlock Text="{Binding Caption, StringFormat='• {0}'}" Foreground="DimGray" Margin="4,0,0,0" IsVisible="{Binding Caption, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+						</StackPanel>
 					</StackPanel>
 				</TreeDataTemplate>
 			</TreeView.ItemTemplate>

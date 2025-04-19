@@ -1,12 +1,13 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:RelinkToolkit2.ViewModels"
 			 xmlns:local="clr-namespace:RelinkToolkit2.Views"
 			 x:Class="RelinkToolkit2.Views.TopMenuView"
 			 xmlns:controls="using:RelinkToolkit2.Controls"
 			 xmlns:converters="using:RelinkToolkit2.Converters"
-			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:b="using:RelinkToolkit2.Behaviors"
 			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="200"
              x:DataType="vm:TopMenuViewModel" x:CompileBindings="False">
 	<Design.DataContext>
@@ -49,6 +50,10 @@
 			<Setter Property="IsChecked" Value="{Binding Checked}" />
 			<Setter Property="ToggleType" Value="{Binding ToggleType}" />
 			<Setter Property="ItemsSource" Value="{Binding MenuItems}"/>
+			<Setter Property="IsSubMenuOpen" Value="{Binding IsSubMenuOpen}"/>
+			<Setter Property="StaysOpenOnClick" Value="{Binding StaysOpenOnClick}"/>
+			<Setter Property="InputGesture" Value="{Binding HotKey}"/>
+			<Setter Property="HotKey" Value="{Binding HotKey}"/>
 		</Style>
 
 		<!-- Ensure to only apply an icon when there is no specific toggle type, otherwise there will be a gap. -->
@@ -65,7 +70,7 @@
 		</Style>
 	</UserControl.Styles>
 	
-	<Menu ItemsSource="{Binding MenuItems}" >
+	<Menu ItemsSource="{Binding MenuItems}">
 
 	</Menu>
 </UserControl>

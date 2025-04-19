@@ -46,8 +46,17 @@ public partial class GraphConnectionViewModel : ObservableObject
     [ObservableProperty]
     private string? _title;
 
+    [ObservableProperty]
+    private ConnectionDirection? _direction;
+
+    [ObservableProperty]
+    public bool _isSelectable = true;
+
     public required NodeViewModel Source { get; set; }
     public required NodeViewModel Target { get; set; }
+
+
+    public bool IsLayerConnection => Source.LayerIndex != Target.LayerIndex;
 
     [ObservableProperty]
     private AvaloniaList<double>? _strokeDashArray;
@@ -62,7 +71,15 @@ public partial class GraphConnectionViewModel : ObservableObject
         Transitions.CollectionChanged += Transitions_CollectionChanged;
     }
 
-    public void SetAnimatingState(bool animating)
+    public void SetAsLayerConnection()
+    {
+        StrokeDashArray = [1];
+        ArrowHeadEnds = ArrowHeadEnds.None;
+        ArrowColor = Brushes.DimGray;
+        IsSelectable = false;
+    }
+
+    public void SetAnimatingState(bool animating, bool backwards)
     {
         if (Source == Target)
             return;
@@ -72,11 +89,13 @@ public partial class GraphConnectionViewModel : ObservableObject
         {
             DirectionalArrowCount = 4;
             ArrowHeadEnds = Nodify.ArrowHeadEnds.None;
+            Direction = backwards ? ConnectionDirection.Backward : ConnectionDirection.Forward;
         }
         else
         {
             DirectionalArrowCount = 0;
             ArrowHeadEnds = Transitions.Count == 2 ? Nodify.ArrowHeadEnds.Both : Nodify.ArrowHeadEnds.End;
+            Direction = ConnectionDirection.Forward;
         }
     }
 
@@ -108,7 +127,8 @@ public partial class GraphConnectionViewModel : ObservableObject
             else
                 Title = string.Empty;
 
-            ArrowHeadEnds = ArrowHeadEnds.End;
+            if (Transitions[0].Source.LayerIndex == Transitions[0].Target.LayerIndex)
+                ArrowHeadEnds = ArrowHeadEnds.End;
         }
         else if (Transitions.Count == 2)
         {

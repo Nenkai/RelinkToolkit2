@@ -1,0 +1,58 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:RelinkToolkit2.ViewModels"
+		xmlns:views="using:RelinkToolkit2.Views"
+        mc:Ignorable="d" d:DesignWidth="480" d:DesignHeight="160"
+        x:Class="RelinkToolkit2.Views.Tools.StringHasherWindow"
+		x:DataType="vm:StringHasherViewModel" x:CompileBindings="True"
+        Title="String Hasher"
+		Width="480" Height="160"
+		CanResize="False"
+		WindowStartupLocation="CenterScreen">
+	<Window.DataContext>
+		<vm:StringHasherViewModel/>
+	</Window.DataContext>
+	
+	<StackPanel Orientation="Vertical">
+		<Grid ColumnDefinitions="*,100" Margin="2">
+			<TextBox Watermark="String to hash..." Text="{Binding InputString}" Margin="2,2,8,2"/>
+			<CheckBox Grid.Column="1" Content="To Lower (?)" IsChecked="{Binding ToLower}" ToolTip.Tip="'Hello' will become 'hello' before hashing if checked."/>
+		</Grid>
+
+		<Grid ColumnDefinitions="120,*" Margin="2">
+			<Label Grid.Column="0" Content="Expected Hash (?)" VerticalContentAlignment="Center" ToolTip.Tip="If any of the generated hashes below match the expected string, they will be shown in green."/>
+			<TextBox Grid.Column="1" Text="{Binding ExpectedString}"/>
+		</Grid>
+		
+		<Separator Margin="0,4,0,4"/>
+		<Grid ColumnDefinitions="80,40,*,40,*" Margin="2">
+			<Label Grid.Column="0" Content="XXHash32" VerticalContentAlignment="Center"/>
+			
+			<Label Content="Hex" Grid.Column="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center"/>
+			<TextBox Grid.Column="2" IsReadOnly="True" Text="{Binding XXHash32Hex}" Background="{Binding XXHash32HexBackground}"/>
+
+			<Label Content="Dec" Grid.Column="3" HorizontalContentAlignment="Right" VerticalContentAlignment="Center"/>
+			<TextBox Grid.Column="4" IsReadOnly="True" Text="{Binding XXHash32Dec}" Background="{Binding XXHash32DecBackground}"/>
+		</Grid>
+		<Grid ColumnDefinitions="80,40,*,40,*" Margin="2">
+			<Label Grid.Column="0" Content="XXHash64" VerticalContentAlignment="Center"/>
+
+			<Label Content="Hex" Grid.Column="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center"/>
+			<TextBox Grid.Column="2" IsReadOnly="True" Text="{Binding XXHash64Hex}" Background="{Binding XXHash64HexBackground}"/>
+
+			<Label Content="Dec" Grid.Column="3" HorizontalContentAlignment="Right" VerticalContentAlignment="Center"/>
+			<TextBox Grid.Column="4" IsReadOnly="True" Text="{Binding XXHash64Dec}" Background="{Binding XXHash64DecBackground}"/>
+		</Grid>
+		<Grid ColumnDefinitions="80,40,*,40,*" Margin="2">
+			<Label Grid.Column="0" Content="CRC32" VerticalContentAlignment="Center"/>
+
+			<Label Content="Hex" Grid.Column="1" HorizontalContentAlignment="Right" VerticalContentAlignment="Center"/>
+			<TextBox Grid.Column="2" IsReadOnly="True" Text="{Binding CRC32Hex}" Background="{Binding CRC32HexBackground}"/>
+
+			<Label Content="Dec" Grid.Column="3" HorizontalContentAlignment="Right" VerticalContentAlignment="Center"/>
+			<TextBox Grid.Column="4" IsReadOnly="True" Text="{Binding CRC32Dec}" Background="{Binding CRC32DecBackground}"/>
+		</Grid>
+	</StackPanel>
+</Window>

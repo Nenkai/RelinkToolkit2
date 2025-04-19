@@ -10,6 +10,7 @@ using System.Windows.Input;
 
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Input;
 
 namespace RelinkToolkit2.ViewModels.Menu;
 
@@ -54,6 +55,16 @@ public partial class MenuItemViewModel : ObservableObject, IMenuItemViewModel
 
     [ObservableProperty]
     private bool _isHitTestVisible = true;
+
+    [ObservableProperty]
+    private KeyGesture? _hotKey;
+
+    [ObservableProperty]
+    private bool _isSubMenuOpen;
+
+    [ObservableProperty]
+    private bool _staysOpenOnClick;
+
 
     public ObservableCollection<IMenuItemViewModel> MenuItems { get; set; } = [];
 }

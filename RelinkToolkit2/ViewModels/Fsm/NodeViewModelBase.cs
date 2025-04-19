@@ -48,6 +48,9 @@ public partial class NodeViewModelBase : ObservableObject
     [ObservableProperty]
     private string? _title;
 
+    [ObservableProperty]
+    private bool _isRenaming;
+
     /// <summary>
     /// Center location. For top right, refer to <see cref="Location"/>
     /// </summary>
@@ -57,4 +60,13 @@ public partial class NodeViewModelBase : ObservableObject
     /// Boundary box.
     /// </summary>
     public Rect BoundaryBox => new(Location, Size);
+
+    public static bool AreIntersected(Rect r1, Rect r2)
+    {
+        return (r2.X < r1.X + r1.Width) &&
+            (r1.X < (r2.X + r2.Width)) &&
+            (r2.Y < r1.Y + r1.Height) &&
+            (r1.Y < r2.Y + r2.Height);
+    }
 }
+

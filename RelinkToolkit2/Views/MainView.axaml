@@ -24,11 +24,15 @@
 	</UserControl.Resources>
 	<DockPanel>
 		<views:TopMenuView DockPanel.Dock="Top" DataContext="{Binding TopMenuViewModel}"/>
-
+		<views:StatusBarView DockPanel.Dock="Bottom" Height="24" DataContext="{Binding StatusBarViewModel}" />
 		<Panel DockPanel.Dock="Bottom">
-			
+			<!-- Doesn't work with .NET 9 currently
+				https://github.com/AvaloniaUI/Avalonia/issues/18508 -->
+			<!--
 			<ExperimentalAcrylicBorder IsHitTestVisible="False" Material="{StaticResource AcrylicMaterial}"/>
+			-->
 			<DockControl Name="DockControl" Layout="{Binding Layout}"/>
 		</Panel>
+		
 	</DockPanel>
 </UserControl>

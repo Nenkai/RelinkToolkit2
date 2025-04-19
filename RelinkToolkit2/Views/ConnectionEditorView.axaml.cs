@@ -44,7 +44,8 @@ public partial class ConnectionEditorView : UserControl
             return;
 
         GraphConnectionViewModel connection = transition.ParentConnection;
-        connection.SetAnimatingState(true);
+        bool isBackwards = connection.Target == transition.Source;
+        connection.SetAnimatingState(true, isBackwards);
     }
 
     private void ConnectionExpander_PointerExited(object? sender, Avalonia.Input.PointerEventArgs e)
@@ -57,7 +58,7 @@ public partial class ConnectionEditorView : UserControl
             return;
 
         GraphConnectionViewModel connection = transition.ParentConnection;
-        connection.SetAnimatingState(false);
+        connection.SetAnimatingState(false, false);
     }
 
     private void Button_OperandType_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

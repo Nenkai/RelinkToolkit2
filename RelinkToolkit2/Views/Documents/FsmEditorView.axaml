@@ -16,7 +16,7 @@
 			 xmlns:b="using:RelinkToolkit2.Behaviors"
 			 xmlns:i="using:Avalonia.Xaml.Interactivity"
              xmlns:ia="using:Avalonia.Xaml.Interactions.Core"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="650"
              x:Class="RelinkToolkit2.Views.Documents.FsmEditorView"
 			 x:DataType="docVMs:FsmEditorViewModel">
 	<UserControl.Resources>
@@ -67,6 +67,7 @@
 			<Setter Property="ToggleType" Value="{Binding ToggleType}" />
 			<Setter Property="ItemsSource" Value="{Binding MenuItems}"/>
 			<Setter Property="IsHitTestVisible" Value="{Binding IsHitTestVisible}"/>
+			<Setter Property="HotKey" Value="{Binding HotKey}"/>
 		</Style>
 
 		<!-- Ensure to only apply an icon when there is no specific toggle type, otherwise there will be a gap. -->
@@ -101,22 +102,37 @@
 				 PendingConnectionTemplate="{StaticResource PendingConnectionTemplate}"
 			     Loaded="NodifyEditor_Loaded"
 				 Unloaded="NodifyEditor_Unloaded_1"
-			     MouseLocation="{Binding MouseLocation, Mode=OneWayToSource}">
+			     MouseLocation="{Binding MouseLocation, Mode=OneWayToSource}"
+				 ViewportLocation="{Binding ViewportLocation}"
+				 ViewportSize="{Binding ViewportSize, Mode=OneWayToSource}"
+				 ViewportZoom="{Binding ViewportZoom, Mode=OneWayToSource}">
+			<!--TODO: ^ Find out how to use Viewport* with Mode=TwoWay without shit breaking when panning/zooming. -->
+
 			<nodify:NodifyEditor.ContextFlyout>
-				<MenuFlyout ItemsSource="{Binding EditorContextMenuItems}"/>
+				<MenuFlyout Opening="MenuFlyout_Opening" ItemsSource="{Binding EditorContextMenuItems}"/>
 			</nodify:NodifyEditor.ContextFlyout>
 			
 			<nodify:NodifyEditor.ItemContainerTheme>
 				<ControlTheme TargetType="nodify:ItemContainer" x:DataType="fsmVMs:NodeViewModel" BasedOn="{StaticResource {x:Type nodify:ItemContainer}}">
 					<Setter Property="Location" Value="{Binding Location}"/>
-					<Setter Property="ActualSize" Value="{Binding Size, Mode=OneWayToSource}" />
+					<Setter Property="ActualSize" Value="{Binding Size, Mode=TwoWay}" />
 					<Setter Property="Tag" Value="{Binding}"/>
+					<Setter Property="(Interaction.Behaviors)">
+						<BehaviorCollectionTemplate>
+							<BehaviorCollection>
+								<EventTriggerBehavior EventName="DragCompleted">
+									<InvokeCommandAction Command="{Binding #Editor.((docVMs:FsmEditorViewModel)DataContext).PreviewItemsDragCompletedCommand}" PassEventArgsToCommand="True"/>
+								</EventTriggerBehavior>
+							</BehaviorCollection>
+						</BehaviorCollectionTemplate>
+					</Setter>
 				</ControlTheme>
 			</nodify:NodifyEditor.ItemContainerTheme>
 
 			<nodify:NodifyEditor.ConnectionTemplate>
 				<DataTemplate x:DataType="fsmVMs:GraphConnectionViewModel">
 					<nodify:LineConnection
+							   Name="Connection"
 							   Source="{Binding Source.Anchor}"
 							   Target="{Binding Target.Anchor}"
 							   SourceOffset="{Binding Source.Size, Converter={StaticResource ConnectorOffsetConverter}, ConverterParameter=20}"
@@ -129,14 +145,28 @@
 							   Stroke="{Binding ArrowColor}"
 							   IsAnimatingDirectionalArrows="{Binding IsAnimating}"
 							   DirectionalArrowsCount="{Binding DirectionalArrowCount}"
+							   Direction="{Binding Direction}"
 							   StrokeDashArray="{Binding StrokeDashArray}"
 							   SourceOffsetMode="Edge"
 							   TargetOffsetMode="Edge"
-							   nodify:BaseConnection.IsSelectable="True">
+							   OutlineThickness="1"
+							   nodify:BaseConnection.IsSelectable="{Binding IsSelectable}">
 						<nodify:LineConnection.Theme>
 							<ControlTheme TargetType="{x:Type nodify:LineConnection}"
 								   BasedOn="{StaticResource {x:Type nodify:LineConnection}}">
 								<Setter Property="StrokeThickness" Value="4" />
+								<Setter Property="(Interaction.Behaviors)">
+									<BehaviorCollectionTemplate>
+										<BehaviorCollection>
+											<DataTriggerBehavior Binding="{Binding #Connection.IsPointerOver}" Value="True">
+												<ChangePropertyAction PropertyName="OutlineBrush" Value="Orange"/>
+											</DataTriggerBehavior>
+											<DataTriggerBehavior Binding="{Binding #Connection.IsPointerOver}" Value="False">
+												<ChangePropertyAction PropertyName="OutlineBrush" Value="Transparent" />
+											</DataTriggerBehavior>
+										</BehaviorCollection>
+									</BehaviorCollectionTemplate>
+								</Setter>
 							</ControlTheme>
 						</nodify:LineConnection.Theme>
 					</nodify:LineConnection>
@@ -150,10 +180,17 @@
 				</DataTemplate>
 				<DataTemplate DataType="fsmVMs:GroupNodeViewModel">
 					<!-- Refer to ItemContainerStyle for location. -->
-					<nodify:GroupingNode ActualSize="{Binding Size}">
+					<nodify:GroupingNode ActualSize="{Binding Size}" PointerPressed="GroupingNode_PointerPressed">
 						<nodify:GroupingNode.Header>
-							<StackPanel Orientation="Horizontal">
-								<controls:EditableTextBlock Text="{Binding Title}" FontWeight="Bold"/>
+							<StackPanel Orientation="Horizontal" Focusable="True" HorizontalAlignment="Stretch">
+								<controls:EditableTextBlock Text="{Binding Title}" FontWeight="Bold" IsEditing="{Binding IsRenaming}">
+									<Interaction.Behaviors>
+										<DataTriggerBehavior Binding="{Binding IsRenaming}" Value="False">
+											<InvokeCommandAction Command="{Binding #Editor.((docVMs:FsmEditorViewModel)DataContext).LayerNodeRenamedCommand}" CommandParameter="{Binding}"/>
+										</DataTriggerBehavior>
+									</Interaction.Behaviors>
+								</controls:EditableTextBlock>
+								<Label Content="{Binding LayerIndex, StringFormat='• (Layer {0})'}}" FontSize="9" Foreground="Gray" VerticalContentAlignment="Center"/>
 							</StackPanel>
 						</nodify:GroupingNode.Header>
 					</nodify:GroupingNode>

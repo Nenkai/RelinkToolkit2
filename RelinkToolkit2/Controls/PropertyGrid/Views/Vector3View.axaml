@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="using:RelinkToolkit2.Controls"
+		xmlns:viewmodels="using:RelinkToolkit2.Controls.PropertyGrid.ViewModel"
+		xmlns:converters="using:RelinkToolkit2.Converters"
+		mc:Ignorable="d" d:DesignWidth="350"
+		x:Class="RelinkToolkit2.Controls.PropertyGrid.Views.Vector3View"
+		x:DataType="viewmodels:Vector3ViewModel">
+	<Grid ColumnDefinitions="*,*,*">
+		<NumericUpDown Name="NumUpDown_X" Grid.Column="0" FormatString="0.00" ShowButtonSpinner="False" Value="{Binding X}">
+			<NumericUpDown.InnerLeftContent>
+				<TextBlock Text="X" Margin="0,0,4,0" Foreground="DimGray"/>
+			</NumericUpDown.InnerLeftContent>
+		</NumericUpDown>
+		<NumericUpDown Name="NumUpDown_Y" Grid.Column="1" FormatString="0.00" ShowButtonSpinner="False" Value="{Binding Y}">
+			<NumericUpDown.InnerLeftContent>
+				<TextBlock Text="Y" Margin="0,0,4,0" Foreground="DimGray"/>
+			</NumericUpDown.InnerLeftContent>
+		</NumericUpDown>
+		<NumericUpDown Name="NumUpDown_Z" Grid.Column="2" FormatString="0.00" ShowButtonSpinner="False" Value="{Binding Z}">
+			<NumericUpDown.InnerLeftContent>
+				<TextBlock Text="Z" Margin="0,0,4,0" Foreground="DimGray"/>
+			</NumericUpDown.InnerLeftContent>
+		</NumericUpDown>
+	</Grid>
+</UserControl>

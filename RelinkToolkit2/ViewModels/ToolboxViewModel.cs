@@ -31,6 +31,7 @@ public partial class ToolboxViewModel : Tool //, IDragSource
         Id = "Toolbox";
         Title = "Toolbox";
 
+        /*
         var componentTvm = new TreeViewItemViewModel()
         {
             TreeViewName = "Components",
@@ -130,6 +131,7 @@ public partial class ToolboxViewModel : Tool //, IDragSource
                 AddItem(actionType.Name, elem, parent: actionsTvm);
             }
         }
+        */
     }
 
 
@@ -162,33 +164,6 @@ public partial class ToolboxViewModel : Tool //, IDragSource
         }
     }
 
-    /*
-    public void StartDrag(IDragInfo dragInfo)
-    {
-        GongSolutions.Wpf.DragDrop.DragDrop.DefaultDragHandler.StartDrag(dragInfo);
-    }
-
-    public bool CanStartDrag(IDragInfo dragInfo)
-    {
-        if (dragInfo.SourceItem is not TreeViewItemViewModel item)
-            return false;
-
-        if (item.DisplayedItems.Count > 0)
-            return false;
-
-        return GongSolutions.Wpf.DragDrop.DragDrop.DefaultDragHandler.CanStartDrag(dragInfo);
-    }
-
-    public void Dropped(IDropInfo dropInfo)
-    {
-        GongSolutions.Wpf.DragDrop.DragDrop.DefaultDragHandler.Dropped(dropInfo);
-    }
-
-    public void DragDropOperationFinished(DragDropEffects operationResult, IDragInfo dragInfo)
-    {
-        GongSolutions.Wpf.DragDrop.DragDrop.DefaultDragHandler.DragDropOperationFinished(operationResult, dragInfo);
-    }
-    */
 
     public void DragCancelled()
     {

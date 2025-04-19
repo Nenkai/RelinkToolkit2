@@ -13,7 +13,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 
-namespace RelinkToolkit2.Controls;
+namespace RelinkToolkit2.Controls.PropertyGrid.Views;
 
 public partial class ObjIdSelector : UserControl
 {

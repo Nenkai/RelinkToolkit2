@@ -25,6 +25,12 @@ using RelinkToolkit2.Services;
 using RelinkToolkit2.ViewModels.Documents;
 using RelinkToolkit2.ViewModels.Menu;
 using RelinkToolkit2.Messages.Fsm;
+using System.Diagnostics.CodeAnalysis;
+using RelinkToolkit2.Messages.Documents;
+using RelinkToolkit2.Messages.Dialogs;
+using RelinkToolkit2.Messages.StatusBar;
+using RelinkToolkit2.ViewModels.Documents.Interfaces;
+using RelinkToolkit2.Views.Tools;
 
 namespace RelinkToolkit2.ViewModels;
 
@@ -33,11 +39,25 @@ public partial class TopMenuViewModel : ObservableObject
     public ObservableCollection<IMenuItemViewModel> MenuItems { get; set; } = [];
     public ObservableCollection<MenuItemViewModel> _themeMenuItems = [];
 
-    private MenuItemViewModel? _menuItem_SaveCurrentFSMGraph;
+    private MenuItemViewModel _saveMenuItem;
+    private MenuItemViewModel _saveAsMenuItem;
 
     public TopMenuViewModel() 
     {
         BuildMenu();
+
+        WeakReferenceMessenger.Default.Register<ActiveDocumentChangedMessage>(this, (recipient, message) =>
+        {
+            EditorDocumentBase? doc = message.Value;
+            bool isSaveable = doc is ISaveableDocument;
+            _saveMenuItem!.Enabled = isSaveable;
+            _saveAsMenuItem!.Enabled = isSaveable;
+
+            if (isSaveable)
+                _saveAsMenuItem!.Header = $"Save {doc!.Title} As...";
+            else
+                _saveAsMenuItem!.Header = $"Save As...";
+        });
     }
 
     public void BuildMenu()
@@ -47,6 +67,9 @@ public partial class TopMenuViewModel : ObservableObject
 
         MenuItemViewModel viewMenuItem = CreateViewMenu();
         MenuItems.Add(viewMenuItem);
+
+        MenuItemViewModel toolsMenuItem = CreateToolsMenu();
+        MenuItems.Add(toolsMenuItem);
 
         MenuItemViewModel windowMenuItem = new()
         {
@@ -63,64 +86,68 @@ public partial class TopMenuViewModel : ObservableObject
             ]
         };
         MenuItems.Add(windowMenuItem);
-
-        
-
-        WeakReferenceMessenger.Default.Register<FSMFileLoadStateChangedMessage>(this, (recipient, message)
-            => _menuItem_SaveCurrentFSMGraph.Enabled = message.Value);
     }
 
     private MenuItemViewModel CreateFileMenu()
     {
-        _menuItem_SaveCurrentFSMGraph = new MenuItemViewModel()
-        {
-            Header = "Current FSM Graph",
-            Command = new RelayCommand(OnSaveGraph),
-            IconKind = "Material.Graph",
-            Checked = false,
-        };
-
-        return new MenuItemViewModel()
+        var file = new MenuItemViewModel()
         {
             Header = "File",
             Enabled = true,
+        };
+        file.MenuItems.Add(new MenuItemViewModel()
+        {
+            Header = "New",
+            Enabled = true,
+            IconKind = "Material.File",
             MenuItems = [new MenuItemViewModel()
             {
-                Header = "New",
-                Enabled = true,
-                IconKind = "Material.File",
-                MenuItems = [new MenuItemViewModel()
-                {
-                    Header = "Quest",
-                    Command = new RelayCommand(OnNewQuestClicked),
-                    IconKind = "Material.Script",
-                    Enabled = true,
-                }]
-            },
-            new MenuItemViewModel()
-            {
-                Header = "Open File",
-                Command = new RelayCommand(OnOpenFileClicked),
-                IconKind = "Material.FileFind",
-                Enabled = true,
-            },
-            MenuItemViewModel.Separator,
-            new MenuItemViewModel()
-            {
-                Header = "Save",
-                IconKind = "Material.ContentSave",
-                MenuItems = [_menuItem_SaveCurrentFSMGraph],
-                Enabled = true,
-            },
-            MenuItemViewModel.Separator,
-            new MenuItemViewModel()
-            {
-                Header = "Exit",
-                Command = new RelayCommand(OnExit),
-                IconKind = "Material.ExitToApp",
+                Header = "Quest",
+                Command = new RelayCommand(OnNewQuestClicked),
+                IconKind = "Material.Script",
                 Enabled = true,
             }]
+        });
+
+        file.MenuItems.Add(new MenuItemViewModel()
+        {
+            Header = "Open File",
+            Command = new RelayCommand(OnOpenFileClicked),
+            IconKind = "Material.FileFind",
+            HotKey = new Avalonia.Input.KeyGesture(Avalonia.Input.Key.O, modifiers: Avalonia.Input.KeyModifiers.Control),
+            Enabled = true,
+        });
+
+        file.MenuItems.Add(MenuItemViewModel.Separator);
+
+        _saveMenuItem = new MenuItemViewModel()
+        {
+            Header = $"Save",
+            IconKind = "Material.ContentSave",
+            Command = new RelayCommand<bool>(OnSave),
+            Parameter = false,
+            HotKey = new Avalonia.Input.KeyGesture(Avalonia.Input.Key.S, modifiers: Avalonia.Input.KeyModifiers.Control),
+            Enabled = false,
         };
+        file.MenuItems.Add(_saveMenuItem);
+        _saveAsMenuItem = new MenuItemViewModel()
+        {
+            Header = $"Save As...",
+            Command = new RelayCommand<bool>(OnSave),
+            Parameter = true,
+            Enabled = false,
+        };
+        file.MenuItems.Add(_saveAsMenuItem);
+        file.MenuItems.Add(MenuItemViewModel.Separator);
+        file.MenuItems.Add(new MenuItemViewModel()
+        {
+            Header = "Exit",
+            Command = new RelayCommand(OnExit),
+            IconKind = "Material.ExitToApp",
+            Enabled = true,
+        });
+
+        return file;
     }
 
     private MenuItemViewModel CreateViewMenu()
@@ -144,7 +171,7 @@ public partial class TopMenuViewModel : ObservableObject
             var themeChangedCommand = new RelayCommand<AppTheme>(OnThemeChanged);
             var themeMenuItem = new MenuItemViewModel
             {
-                Header = style.ToString(),
+                Header = style == AppTheme.Default ? "System Default" : style.ToString(),
                 IconKind = style != AppTheme.Default ? style == AppTheme.Light ? "Material.Brightness5" : "Material.Brightness2"
                                     : null,
 
@@ -162,6 +189,32 @@ public partial class TopMenuViewModel : ObservableObject
         return viewMenuItem;
     }
 
+    private MenuItemViewModel CreateToolsMenu()
+    {
+        var toolsMenuItem = new MenuItemViewModel()
+        {
+            Header = "Tools",
+            Enabled = true,
+        };
+
+        var themesMenuItem = new MenuItemViewModel()
+        {
+            Header = "String Hasher",
+            Enabled = true,
+            IconKind = "Material.Pound",
+            Command = new RelayCommand(StringHasherClicked),
+        };
+        toolsMenuItem.MenuItems.Add(themesMenuItem);
+
+        return toolsMenuItem;
+    }
+
+    public void StringHasherClicked()
+    {
+        var window = new StringHasherWindow();
+        window.Show();
+    }
+
     public async void OnOpenFileClicked()
     {
         var filesService = App.Current?.Services?.GetService<IFilesService>();
@@ -176,22 +229,17 @@ public partial class TopMenuViewModel : ObservableObject
         WeakReferenceMessenger.Default.Send(new FileOpenRequestMessage(new FileOpenResult(file.Path, stream)));
     }
 
-    public async void OnSaveGraph()
+    public async void OnSave(bool isSaveAs)
     {
-        var filesService = App.Current?.Services?.GetService<IFilesService>();
-        if (filesService is not null)
-        {
-            var file = await filesService.SaveFileAsync("Save FSM file", "JSON Files|*.json|" +
-                              "MessagePack|*.msg",
-                              "fsm.json");
-            if (file is null)
-                return;
+        var document = WeakReferenceMessenger.Default.Send(new GetCurrentDocumentRequest());
+        if (!document.HasReceivedResponse || document.Response is null || document.Response is not ISaveableDocument saveableDocument)
+            return;
 
-            WeakReferenceMessenger.Default.Send(new GraphFileSaveRequestMessage(file.Path.LocalPath));
-        }
-        else
+        var filesService = (App.Current?.Services?.GetService<IFilesService>()) ?? throw new Exception("Could not fetch IFilesService");
+        string? res = await saveableDocument.SaveDocument(filesService, isSaveAs);
+        if (!string.IsNullOrEmpty(res))
         {
-            throw new Exception("Could not fetch IFilesService");
+            WeakReferenceMessenger.Default.Send(new SetStatusBarTextRequest($"{DateTime.Now} - Saved as {res}."));
         }
     }
 

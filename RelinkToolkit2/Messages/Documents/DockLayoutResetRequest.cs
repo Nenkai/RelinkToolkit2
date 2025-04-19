@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RelinkToolkit2.Messages;
+namespace RelinkToolkit2.Messages.Documents;
 
 /// <summary>
 /// Represents a message for when a quest file has been loaded.

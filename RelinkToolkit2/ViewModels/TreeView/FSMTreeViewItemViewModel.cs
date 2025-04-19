@@ -9,7 +9,7 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 
 using RelinkToolkit2.Messages;
-using RelinkToolkit2.Messages.Fsm;
+using RelinkToolkit2.Messages.Documents;
 using RelinkToolkit2.ViewModels.Documents;
 
 namespace RelinkToolkit2.ViewModels.TreeView;

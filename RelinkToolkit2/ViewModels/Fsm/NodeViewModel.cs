@@ -1,21 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using GBFRDataTools.FSM.Components.Actions.Quest;
-using GBFRDataTools.FSM.Components.Actions.Enemy;
+
 using GBFRDataTools.FSM.Components;
+using GBFRDataTools.FSM.Components.Actions.AI.Enemy;
+using GBFRDataTools.FSM.Components.Actions.Quest;
+
+using Nodify.Compatibility;
+
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace RelinkToolkit2.ViewModels.Fsm;
 
@@ -28,10 +32,10 @@ public partial class NodeViewModel : NodeViewModelBase //, IDropTarget
     private Point _anchor;
 
     [ObservableProperty]
-    private IBrush _borderBrush = Brushes.DimGray;
+    private IBrush _borderBrush = GraphColors.DefaultNode;
 
     [ObservableProperty]
-    private CornerRadius _cornerRadius = new(5);
+    private CornerRadius _cornerRadius = new(3);
 
     [ObservableProperty]
     private uint _guid;
@@ -42,12 +46,14 @@ public partial class NodeViewModel : NodeViewModelBase //, IDropTarget
     [ObservableProperty]
     private bool _hasSelfTransition;
 
-    [ObservableProperty]
-    private bool _isRenaming;
-
     public string FsmFolderName { get; set; }
     public string FsmName { get; set; }
     public uint NameHash { get; set; }
+
+    /// <summary>
+    /// Parent group/layer this node belongs to.
+    /// </summary>
+    public GroupNodeViewModel ParentGroup { get; set; }
 
     /// <summary>
     /// Transitions FROM this node.
@@ -74,26 +80,48 @@ public partial class NodeViewModel : NodeViewModelBase //, IDropTarget
             Guid = 123456789;
             HasSelfTransition = true;
             FsmSource = "my/source/file";
-            Components =
-            [
-                new NodeComponentViewModel(this)
-                {
-                    Component = new CallSe(),
-                },
-                new NodeComponentViewModel(this)
-                {
-                    Component = new EmLockonActivate(),
-                }
-            ];
+
+            AddComponent(new CallSe());
+            AddComponent(new EmLockonActivate());
         }
     }
 
-    public void RemoveAllTransitionsWithGuid(uint guid)
+    public void AddComponent(BehaviorTreeComponent btComponent)
     {
-        for (int i = Transitions.Count - 1; i >= 0; i--)
+        Components.Add(new NodeComponentViewModel(this, btComponent)
         {
-            if (Transitions[i].Source.Guid == guid || Transitions[i].Target.Guid == guid)
-                Transitions.Remove(Transitions[i]);
+            Name = btComponent.ComponentName,
+        });
+        
+    }
+
+    public void SetRootNodeState(bool isRootNode)
+    {
+        IsLayerRootNode = isRootNode;
+        if (isRootNode)
+            CornerRadius = new CornerRadius(3);
+        else
+            CornerRadius = new CornerRadius(0);
+
+        UpdateBorderColor();
+    }
+
+    public void UpdateBorderColor()
+    {
+        if (IsLayerRootNode)
+        {
+            BorderBrush = GraphColors.NodeLayerRoot;
+        }
+        else if (IsEndNode)
+        {
+            BorderBrush = GraphColors.EndingNode;
+        }
+        else
+        {
+            if (Components.Count > 0)
+                BorderBrush = GraphColors.DefaultNodeWithComponents;
+            else
+                BorderBrush = GraphColors.DefaultNode;
         }
     }
 
@@ -158,15 +186,7 @@ public partial class NodeViewModel : NodeViewModelBase //, IDropTarget
     {
         Components.Remove(component);
         ParentEditor.UnregisterFsmElementGuid(component.Component.Guid);
-    }
 
-    private void AddComponentFromToolboxItem(ComponentTreeViewItemViewModel componentTvi)
-    {
-        BehaviorTreeComponent component = (BehaviorTreeComponent)Activator.CreateInstance(componentTvi.ComponentType)!;
-        Components.Add(new NodeComponentViewModel(this)
-        {
-            Component = component,
-            Name = component.ComponentName,
-        });
+        component.Parent.UpdateBorderColor();
     }
 }

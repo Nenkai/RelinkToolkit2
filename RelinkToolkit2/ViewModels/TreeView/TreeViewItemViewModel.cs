@@ -15,7 +15,10 @@ namespace RelinkToolkit2.ViewModels;
 public partial class TreeViewItemViewModel : ObservableObject
 {
     [ObservableProperty]
-    private string _id;
+    private Guid _guid = Guid.CreateVersion7();
+
+    [ObservableProperty]
+    private string _caption;
 
     [ObservableProperty]
     private string _treeViewName = "No Name";
@@ -35,23 +38,13 @@ public partial class TreeViewItemViewModel : ObservableObject
     [ObservableProperty]
     private ICommand? _doubleClickedCommand;
 
+    public TreeViewItemViewModel? Parent { get; set; }
+
+
+    /// <summary>
+    /// Sub-tree items.<br/>
+    /// <br/>
+    /// You should not add directly to this (unless this item is the root).
+    /// </summary>
     public ObservableCollection<TreeViewItemViewModel> DisplayedItems { get; set; } = [];
-    private Dictionary<string, TreeViewItemViewModel> _keyDictionary { get; set; } = [];
-
-    public void AddChild(TreeViewItemViewModel itemViewModel)
-    {
-        DisplayedItems.Add(itemViewModel);
-        _keyDictionary.Add(itemViewModel.Id, itemViewModel);
-    }
-
-    public void GetChild()
-    {
-
-    }
-
-    public void RemoveChild(TreeViewItemViewModel itemViewModel)
-    {
-        DisplayedItems.Remove(itemViewModel);
-        _keyDictionary.Remove(itemViewModel.Id);
-    }
 }

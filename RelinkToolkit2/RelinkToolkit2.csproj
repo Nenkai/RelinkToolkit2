@@ -14,32 +14,44 @@
   </ItemGroup>
 	
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="11.2.5" />
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.5" />
-    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.5" />
-    <PackageReference Include="Avalonia.Xaml.Interactions" Version="11.2.0.14" />
-    <PackageReference Include="Avalonia.Xaml.Interactions.DragAndDrop" Version="11.2.0.14" />
-    <PackageReference Include="Avalonia.Xaml.Interactions.Draggable" Version="11.2.0.14" />
+    <PackageReference Include="Avalonia" Version="11.2.7" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.7" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.7" />
+    <PackageReference Include="Avalonia.Xaml.Behaviors" Version="11.2.7" />
+    <PackageReference Include="Avalonia.Xaml.Interactions" Version="11.2.7" />
+    <PackageReference Include="Avalonia.Xaml.Interactions.DragAndDrop" Version="11.2.7" />
+    <PackageReference Include="Avalonia.Xaml.Interactions.Draggable" Version="11.2.7" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-    <PackageReference Include="Dock.Avalonia" Version="11.2.0.2" />
-    <PackageReference Include="Dock.Model.Avalonia" Version="11.2.0.2" />
-    <PackageReference Include="Dock.Model.Mvvm" Version="11.2.0.2" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.3" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.3" />
+    <PackageReference Include="Dock.Avalonia" Version="11.2.7" />
+    <PackageReference Include="Dock.Model.Avalonia" Version="11.2.7" />
+    <PackageReference Include="Dock.Model.Mvvm" Version="11.2.7" />
+    <PackageReference Include="MessageBox.Avalonia" Version="3.2.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.4" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.4" />
 
 	  <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-    <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.2.5" />
+    <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.2.7" />
     <PackageReference Include="Microsoft.Msagl" Version="1.1.6" />
   </ItemGroup>
 	
   <ItemGroup>
     <ProjectReference Include="..\..\GRBFDataTools\GBFRDataTools.FSM\GBFRDataTools.FSM.csproj" />
+    <ProjectReference Include="..\..\GRBFDataTools\GBFRDataTools.Hashing\GBFRDataTools.Hashing.csproj" />
     <ProjectReference Include="..\Avalonia.PropertyGrid\Sources\Avalonia.PropertyGrid\Avalonia.PropertyGrid.csproj" />
     <ProjectReference Include="..\nodify-avalonia\Nodify\Nodify.csproj" />
     <ProjectReference Include="..\trienet\TrieNet\TrieNet.csproj" />
   </ItemGroup>
 	
   <ItemGroup>
+    <Compile Update="Controls\PropertyGrid\Views\Vector2View.axaml.cs">
+      <DependentUpon>Vector2View.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Controls\PropertyGrid\Views\Vector3View.axaml.cs">
+      <DependentUpon>Vector3View.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Controls\PropertyGrid\Views\Vector4View.axaml.cs">
+      <DependentUpon>Vector4View.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\ComponentSearchView.axaml.cs">
       <DependentUpon>ComponentSearchView.axaml</DependentUpon>
     </Compile>

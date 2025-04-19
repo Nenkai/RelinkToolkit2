@@ -13,7 +13,7 @@ using GBFRDataTools.FSM;
 
 using RelinkToolkit2.ViewModels.Documents;
 
-namespace RelinkToolkit2.Messages;
+namespace RelinkToolkit2.Messages.Documents;
 
 /// <summary>
 /// Requests a document (dock system) to be opened.

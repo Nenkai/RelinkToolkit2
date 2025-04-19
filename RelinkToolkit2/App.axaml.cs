@@ -28,10 +28,12 @@ public partial class App : Application
     /// </summary>
     public IServiceProvider? Services { get; private set; }
 
+    public Window? MainWindow { get; private set; }
 
     public override void Initialize()
     {
         CellEditFactoryService.Default.AddFactory(new eObjIdCellEditFactory());
+        CellEditFactoryService.Default.AddFactory(new Vector4CellEditFactory());
 
         AvaloniaXamlLoader.Load(this);
     }
@@ -51,6 +53,7 @@ public partial class App : Application
         services.AddSingleton<DocumentsViewModel>();
         services.AddSingleton<DockFactory>();
         services.AddSingleton<TopMenuViewModel>();
+        services.AddSingleton<StatusBarViewModel>();
         services.AddSingleton<MainViewModel>();
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
@@ -64,6 +67,7 @@ public partial class App : Application
             {
                 DataContext = vm,
             };
+            MainWindow = desktop.MainWindow;
 
         }
         else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
