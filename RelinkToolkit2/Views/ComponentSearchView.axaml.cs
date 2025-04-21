@@ -69,4 +69,12 @@ public partial class ComponentSearchView : UserControl
             }
         }
     }
+
+    private void TextBox_AttachedToVisualTree(object? sender, Avalonia.VisualTreeAttachmentEventArgs e)
+    {
+        if (sender is Control control)
+        {
+            control.Focus();
+        }
+    }
 }

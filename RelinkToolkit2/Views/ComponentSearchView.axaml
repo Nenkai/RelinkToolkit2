@@ -25,7 +25,8 @@
 	</Design.DataContext>
 
 	<StackPanel Name="SearchPanel" Orientation="Vertical">
-		<TextBox Watermark="Search Components..." Text="{Binding SearchText}" CornerRadius="2,2,2,2" FontSize="10" Margin="3,3,3,3">
+		<TextBox Watermark="Search Components..." Text="{Binding SearchText}" CornerRadius="2,2,2,2" FontSize="10" Margin="3,3,3,3"
+				 AttachedToVisualTree="TextBox_AttachedToVisualTree">
 			<TextBox.InnerLeftContent>
 				<Image Width="8" Height="8" Margin="0,0,4,0">
 					<Image.Source>

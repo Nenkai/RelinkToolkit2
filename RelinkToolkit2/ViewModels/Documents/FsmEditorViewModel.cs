@@ -1,9 +1,6 @@
 ﻿
 using Avalonia;
-using Avalonia.Animation;
-using Avalonia.Collections;
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
 
@@ -11,20 +8,13 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 
-using Dock.Model.Core;
-using Dock.Model.Mvvm.Controls;
-
 using GBFRDataTools.FSM;
-using GBFRDataTools.FSM.BehaviorTree;
 using GBFRDataTools.FSM.Components;
-using GBFRDataTools.FSM.Components.Actions.Quest;
 using GBFRDataTools.FSM.Entities;
 using GBFRDataTools.Hashing;
 
-using MessagePack.Formatters;
-
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Msagl.Core.Layout;
+using Microsoft.Extensions.Logging;
 
 using MsBox.Avalonia;
 
@@ -33,7 +23,6 @@ using Nodify.Compatibility;
 
 using RelinkToolkit2.Messages.Dialogs;
 using RelinkToolkit2.Messages.Fsm;
-using RelinkToolkit2.Messages.IO;
 using RelinkToolkit2.Services;
 using RelinkToolkit2.ViewModels.Documents.Interfaces;
 using RelinkToolkit2.ViewModels.Fsm;
@@ -44,19 +33,18 @@ using RelinkToolkit2.ViewModels.TreeView;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics;
-using System.Reflection.Emit;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace RelinkToolkit2.ViewModels.Documents;
 
 public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument
 {
+    private ILogger? _logger;
+
     /// <summary>
     /// Lookup table for all elements with a guid (nodes, or components).
     /// </summary>
@@ -113,11 +101,6 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument
 
     public Point MouseLocation { get; set; }
 
-    /// <summary>
-    /// Parent document view.
-    /// </summary>
-    public DocumentsViewModel? Documents { get; set; }
-
     private string? _currentFsmName;
 
     private NodeViewModel _rootNode;
@@ -137,7 +120,7 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument
 
     public FsmEditorViewModel()
     {
-        NodifyEditor.EnableSnappingCorrection = false;
+        _logger = App.Current.Services.GetService<ILogger<FsmEditorViewModel>>();
 
         // We are essentially swapping out gestures here.
         // We want group layer click to select the whole layer. not just the group.
@@ -270,13 +253,9 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument
         WeakReferenceMessenger.Default.UnregisterAll(this);
     }
 
-    // Document closing
-    public override bool OnClose()
-    {
-        Documents?.Remove(Id);
-        return base.OnClose();
-    }
-
+    /// <summary>
+    /// Resets graph state.
+    /// </summary>
     private void ResetGraph()
     {
         _processedNodes.Clear();
@@ -285,6 +264,9 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument
         Nodes.Clear();
         Connections.Clear();
         LayerGroups.Clear();
+
+        SelectedNode = null;
+        SelectedNodes.Clear();
 
         var rootLayer = new GroupNodeViewModel() { ParentEditor = this, LayerIndex = 0 };
         LayerGroups.Add(0, rootLayer);
@@ -354,7 +336,7 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument
     }
 
     /// <summary>
-    /// Inits the graph from the loaded nodes.
+    /// Inits the graph from the specified parser.
     /// </summary>
     public bool InitGraph(string fsmName, FSMParser fsmParser)
     {
@@ -434,7 +416,7 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument
     }
 
     /// <summary>
-    /// Adds a new node to the graph, using the current mouse location.
+    /// Adds a new node to the graph, using the current mouse location on the graph.
     /// </summary>
     public void AddNewLayer()
     {
@@ -458,6 +440,7 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument
             LayerGroup = layerGroup,
             TreeViewName = layerGroup.Title,
             Guid = layerGroup.Id,
+            Caption = $"Layer {layerGroup.LayerIndex}",
         }, SolutionTreeViewItem.Guid);
     }
 
@@ -482,6 +465,10 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument
         UnregisterFsmElementGuid(nodeVm.Guid);
     }
 
+    /// <summary>
+    /// Removes a layer from the graph.
+    /// </summary>
+    /// <param name="layerGroup"></param>
     public void RemoveLayer(GroupNodeViewModel layerGroup)
     {
         foreach (var node in layerGroup.Nodes)
@@ -494,6 +481,10 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument
         solutionExplorerVM.RemoveItem(layerGroup.Id);
     }
 
+    /// <summary>
+    /// Removes a connection from the graph.
+    /// </summary>
+    /// <param name="connection"></param>
     public void RemoveConnection(GraphConnectionViewModel connection)
     {
         RemoveAllTransitionsOfNodeToTargetNode(connection.Source, connection.Source.Guid);
@@ -502,6 +493,11 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument
         Connections.Remove(connection);
     }
 
+    /// <summary>
+    /// Removes all transitions to the specified node.
+    /// </summary>
+    /// <param name="nodeVM"></param>
+    /// <param name="guid"></param>
     private void RemoveAllTransitionsOfNodeToTargetNode(NodeViewModel nodeVM, uint guid)
     {
         for (int i = nodeVM.Transitions.Count - 1; i >= 0; i--)
@@ -563,9 +559,7 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument
             nodeViewModel.Size = new Size(node.BoundaryBox.Z, node.BoundaryBox.W);
 
         if (!string.IsNullOrEmpty(node.FsmFolderName))
-        {
-            nodeViewModel.FsmSource = $"{node.FsmFolderName}/{node.FsmFolderName}_{node.FsmName}";
-        }
+            nodeViewModel.SetBaseFsm(node.FsmFolderName, node.FsmName);
 
         foreach (BehaviorTreeComponent component in node.ExecutionComponents)
         {
@@ -650,6 +644,11 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument
         flyout.ShowAt(message.Response, showAtPointer: true);
     }
 
+    /// <summary>
+    /// Fired when dragging is completed, but previewed - before location assignments are done.<br/>
+    /// Used to perform validation.
+    /// </summary>
+    /// <param name="obj"></param>
     [RelayCommand]
     private void OnPreviewItemsDragCompleted(DragCompletedEventArgs obj)
     {
@@ -662,15 +661,15 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument
                 if (SelectedNodes.Contains(nodeViewModel.ParentGroup))
                     continue;
 
-                var newBbox = nodeViewModel.BoundaryBox
-                    .Translate(new Avalonia.Vector(obj.HorizontalChange, obj.VerticalChange));
-                newBbox = newBbox.Deflate(new Thickness(nodeViewModel.Size.Width * 0.25, nodeViewModel.Size.Height * 0.25));
+                // Preview new bbox
+                Rect newNodeBbox = nodeViewModel.BoundaryBox.Translate(new Avalonia.Vector(obj.HorizontalChange, obj.VerticalChange));
+                Rect newNodeCollision = newNodeBbox.Deflate(new Thickness(nodeViewModel.Size.Width * 0.25, nodeViewModel.Size.Height * 0.25));
 
-                var parentGroup = nodeViewModel.ParentGroup;
+                GroupNodeViewModel parentLayerGroup = nodeViewModel.ParentGroup;
+                Rect groupBbox = parentLayerGroup.BoundaryBox;
 
                 // Was it dragged outside of its layer?
-                if (newBbox.X < parentGroup.Location.X || newBbox.Right > parentGroup.Location.X + parentGroup.Size.Width ||
-                    newBbox.Y < parentGroup.Location.Y || newBbox.Bottom > parentGroup.Location.Y + parentGroup.Size.Height)
+                if (!groupBbox.Contains(newNodeCollision))
                 {
                     obj.Canceled = true;
                     return;
@@ -678,13 +677,12 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument
                 else
                 {
                     // Was it dragged in another layer?
-                    foreach (var group in LayerGroups.Values)
+                    foreach (GroupNodeViewModel group in LayerGroups.Values)
                     {
-                        if (group == parentGroup)
+                        if (group == parentLayerGroup)
                             continue;
 
-                        if (newBbox.X >= group.Location.X && newBbox.Right <= group.Location.X + group.Size.Width &&
-                            newBbox.Y >= group.Location.Y && newBbox.Bottom <= group.Location.Y + group.Size.Height)
+                        if (group.BoundaryBox.Contains(newNodeCollision))
                         {
                             obj.Canceled = true;
                             return;
@@ -695,7 +693,7 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument
             }
             else if (item is GroupNodeViewModel group)
             {
-                var groupNewBbox = group.BoundaryBox.Translate(new Avalonia.Vector(obj.HorizontalChange, obj.VerticalChange));
+                Rect groupNewBbox = group.BoundaryBox.Translate(new Avalonia.Vector(obj.HorizontalChange, obj.VerticalChange));
 
                 // Try not to drag whole group on other groups
                 foreach (var otherGroup in LayerGroups.Values)
@@ -710,26 +708,74 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument
                     }
                 }
 
-                // Check that the root of the group is still inside
-                var root = group.Nodes.FirstOrDefault(e => e.IsLayerRootNode);
-                if (root is null)
-                    continue;
+                // Check new nodes added?
+                foreach (NodeViewModelBase nodeBase in Nodes)
+                {
+                    if (nodeBase is not NodeViewModel nodeVm)
+                        continue;
+
+                    if (groupNewBbox.Contains(nodeVm.CollisionBox))
+                    {
+                        if (nodeBase.LayerIndex == group.LayerIndex)
+                            continue;
+
+                        // The group has been dragged over a node that wasn't previously in this layer.
+
+                        // We dragged the group over the root of another layer. No-go.
+                        if (nodeVm.IsLayerRootNode)
+                        {
+                            obj.Canceled = true;
+                            return;
+                        }
+                    }
+                }
             }
         }
     }
 
+    /// <summary>
+    /// Fired when node dragging is completed, used to perform layer assignments.
+    /// </summary>
+    /// <param name="data"></param>
     [RelayCommand]
     private void OnItemsDragCompleted(object data)
     {
         foreach (NodeViewModelBase node in SelectedNodes)
         {
-            if (node is GroupNodeViewModel)
-                continue;
-
             if (node is not NodeViewModel nodeVM)
                 continue; 
 
             UpdateNodeLayerFromLocation(nodeVM);
+        }
+
+        foreach (NodeViewModelBase node in SelectedNodes)
+        {
+            if (node is not GroupNodeViewModel groupNodeVM)
+                continue;
+
+            UpdateNodesWithinLayerBoundary(groupNodeVM);
+        }
+    }
+
+    /// <summary>
+    /// Updates nodes on the graph based on the visual location of the specified layer group.
+    /// </summary>
+    /// <param name="layerGroup"></param>
+    private void UpdateNodesWithinLayerBoundary(GroupNodeViewModel layerGroup)
+    {
+        Rect groupBbox = layerGroup.BoundaryBox;
+        foreach (NodeViewModelBase nodeBase in Nodes)
+        {
+            if (nodeBase is not NodeViewModel nodeVm)
+                continue;
+
+            if (groupBbox.Contains(nodeVm.CollisionBox))
+            {
+                if (nodeVm.LayerIndex == layerGroup.LayerIndex)
+                    continue;
+
+                SetNodeToLayer(nodeVm, layerGroup);
+            }
         }
     }
 
@@ -750,37 +796,28 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument
         tvi.TreeViewName = groupVm.Title;
     }
 
+    /// <summary>
+    /// Updates a node's layer relationship based on its visual location.
+    /// </summary>
+    /// <param name="node"></param>
     private void UpdateNodeLayerFromLocation(NodeViewModel node)
     {
         // Allow 1/4 on each edge
-        double bboxStartX = node.Location.X + (node.Size.Width * 0.25);
-        double bboxEndX = node.Location.X - (node.Size.Width * 0.25);
-
-        double bboxStartY = node.Location.Y + (node.Size.Height * 0.25);
-        double bboxEndY = node.Location.Y - (node.Size.Height * 0.25);
+        var nodeCollision = node.CollisionBox;
 
         int i = 0;
-        foreach (var layer in LayerGroups.Values)
+        foreach (GroupNodeViewModel layer in LayerGroups.Values)
         {
-            double layerEndX = layer.Location.X + layer.Size.Width;
-            double layerEndY = layer.Location.Y + layer.Size.Height;
-
             // Node is in layer/group boundary?
-            if (bboxStartX >= layer.Location.X && bboxEndX <= layerEndX &&
-                bboxStartY >= layer.Location.Y && bboxEndY <= layerEndY)
+            var layerBbox = layer.BoundaryBox;
+            if (nodeCollision.X >= layerBbox.X && nodeCollision.Right <= layerBbox.Right &&
+                nodeCollision.Y >= layerBbox.Y && nodeCollision.Bottom <= layerBbox.Bottom)
             {
                 // Is it a different layer?
-                if (node.LayerIndex != layer.LayerIndex)
+                if (node.LayerIndex != layer.LayerIndex && layer.LayerIndex != 0)
                 {
                     // Yes, update relationship
-                    node.LayerIndex = layer.LayerIndex;
-                    node.ParentGroup.Nodes.Remove(node);
-
-                    layer.Nodes.Add(node);
-                    node.ParentGroup = layer;
-
-                    if (node.ParentGroup.Nodes.Count == 1)
-                        node.SetRootNodeState(true);
+                    SetNodeToLayer(node, layer);
                 }
                 
                 break;
@@ -793,20 +830,27 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument
                 if (node.LayerIndex != 0)
                 {
                     // Yes, now it's not, so assign it to the root
-                    node.LayerIndex = 0;
-                    node.ParentGroup.Nodes.Remove(node);
-
                     var rootLayer = LayerGroups[0];
-                    LayerGroups[0].Nodes.Add(node);
-                    node.ParentGroup = rootLayer;
-
-                    if (node.IsLayerRootNode && rootLayer.Nodes.Count != 0)
-                        node.SetRootNodeState(false);
+                    SetNodeToLayer(node, rootLayer);
                 }
             }
 
             i++;
         }
+    }
+
+    private void SetNodeToLayer(NodeViewModel node, GroupNodeViewModel layerGroup)
+    {
+        node.LayerIndex = layerGroup.LayerIndex;
+        node.ParentGroup.Nodes.Remove(node);
+
+        layerGroup.Nodes.Add(node);
+        node.ParentGroup = layerGroup;
+
+        if (node.IsLayerRootNode && layerGroup.Nodes.Count != 0)
+            node.SetRootNodeState(false);
+        else if (layerGroup.Nodes.Count == 1)
+            node.SetRootNodeState(true);
     }
 
     public enum FsmNodeConnectionType
@@ -816,6 +860,10 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument
         Layer
     }
 
+    /// <summary>
+    /// Applies the current pending connection with the specified connection type.
+    /// </summary>
+    /// <param name="connectType"></param>
     public void ConnectNodes(FsmNodeConnectionType connectType)
     {
         if (PendingConnection?.Source is null || PendingConnection?.Target is null)
@@ -863,9 +911,9 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument
     /// <summary>
     /// Creates a node view model for the specified fsm node.
     /// </summary>
-    /// <param name="node"></param>
-    /// <param name="nodeList"></param>
-    /// <param name="depth"></param>
+    /// <param name="node">FSM file source node</param>
+    /// <param name="nodeList">List of all nodes</param>
+    /// <param name="depth">Current depth</param>
     /// <returns></returns>
     private NodeViewModel? CreateViewModelFromFSMNode(FSMNode node, List<FSMNode> nodeList, ref int depth, bool loadEditorParameters)
     {
@@ -965,11 +1013,20 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument
         return guid;
     }
 
+    /// <summary>
+    /// Registers a graph component (node, bt component) to the guid mapping.
+    /// </summary>
+    /// <param name="guid"></param>
+    /// <param name="elem"></param>
     public void RegisterFsmElementGuid(uint guid, object elem)
     {
         _guidToFsmElement.TryAdd(guid, elem);
     }
 
+    /// <summary>
+    /// Unregisters a graph component from the guid mapping.
+    /// </summary>
+    /// <param name="guid"></param>
     public void UnregisterFsmElementGuid(uint guid)
     {
         _guidToFsmElement.Remove(guid);
@@ -978,13 +1035,14 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument
     /// <summary>
     /// Creates a transition.
     /// </summary>
-    /// <param name="sourceNode"></param>
-    /// <param name="allNodesList"></param>
-    /// <param name="depth"></param>
-    /// <param name="sourceNodeVm"></param>
-    /// <param name="i"></param>
-    /// <param name="trans"></param>
-    /// <param name="isOverrideTransition"></param>
+    /// <param name="trans">FSM file source transition.</param>
+    /// <param name="sourceNode">FSM file source node.</param>
+    /// <param name="allNodesList">List of all nodes.</param>
+    /// <param name="depth">Current depth.</param>
+    /// <param name="sourceNodeVm">Source node view model.</param>
+    /// <param name="i">Index (for location placement, before auto-layouting).</param>
+    /// <param name="isOverrideTransition">Whether this is an override transition.</param>
+    /// <param name="loadEditorParameters">Whether to load editor parameters such as node names and node locations.</param>
     private void AddTransition(Transition trans, FSMNode sourceNode, List<FSMNode> allNodesList, int depth, NodeViewModel sourceNodeVm, int i, 
         bool isOverrideTransition = false, bool loadEditorParameters = false)
     {

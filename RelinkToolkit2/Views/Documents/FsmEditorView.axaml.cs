@@ -2,17 +2,16 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Input;
-using Avalonia.Interactivity;
-using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
-using Avalonia.VisualTree;
+using Avalonia.Platform.Storage;
 
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 
 using GBFRDataTools.FSM.Components;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Msagl.Core.Geometry.Curves;
 using Microsoft.Msagl.Core.Layout;
 using Microsoft.Msagl.Core.Routing;
@@ -20,27 +19,28 @@ using Microsoft.Msagl.Core.Routing;
 using Microsoft.Msagl.Layout.Layered;
 
 using MsBox.Avalonia;
+using MsBox.Avalonia.Enums;
 
 using Nodify;
 
-using RelinkToolkit2.Controls;
-using RelinkToolkit2.Messages;
-using RelinkToolkit2.Messages.Dialogs;
 using RelinkToolkit2.Messages.Fsm;
+using RelinkToolkit2.Services;
 using RelinkToolkit2.ViewModels;
 using RelinkToolkit2.ViewModels.Documents;
 using RelinkToolkit2.ViewModels.Fsm;
+using RelinkToolkit2.ViewModels.Fsm.TransitionComponents;
 using RelinkToolkit2.ViewModels.Menu;
 using RelinkToolkit2.ViewModels.Search;
-using RelinkToolkit2.Views.Fsm;
+using RelinkToolkit2.Views.Documents.Fsm;
 
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace RelinkToolkit2.Views.Documents;
@@ -366,10 +366,10 @@ public partial class FsmEditorView : UserControl
 
         items.Add(new MenuItemViewModel()
         {
-            Header = $"Create Self Transition",
+            Header = !nodeVM.HasSelfTransition ? "Create Self Transition" : $"Remove Self Transition",
             IconKind = "Material.ShapeCirclePlus",
-            Enabled = !nodeVM.HasSelfTransition && !nodeVM.IsEndNode,
-            Command = new RelayCommand<NodeViewModel>(NodeContextMenu_CreateSelfTransition),
+            Enabled = (!nodeVM.HasSelfTransition && !nodeVM.IsEndNode) || nodeVM.HasSelfTransition,
+            Command = new RelayCommand<NodeViewModel>(NodeContextMenu_CreateSelfTransition!),
             Parameter = nodeVM,
         });
 
@@ -382,11 +382,21 @@ public partial class FsmEditorView : UserControl
             Parameter = nodeVM,
         });
 
+        bool hasBaseFsm = !string.IsNullOrEmpty(nodeVM.FsmName);
         items.Add(new MenuItemViewModel()
         {
-            Header = $"Set as End Node",
+            Header = !hasBaseFsm ? $"Link to Base FSM" : "Remove Base FSM Link",
+            IconKind = !hasBaseFsm ? "Material.LinkVariantPlus" : "Material.LinkVariantRemove",
+            Enabled = (!hasBaseFsm && !nodeVM.Components.Any() && !nodeVM.IsEndNode) || hasBaseFsm,
+            Command = new AsyncRelayCommand<NodeViewModel>(NodeContextMenu_LinkToBaseFSM!),
+            Parameter = nodeVM,
+        });
+
+        items.Add(new MenuItemViewModel()
+        {
+            Header =  !nodeVM.IsEndNode ? "Set as End Node" : "Unset as End Node",
             IconKind = "Material.Octagon",
-            Enabled = canBeEndNode,
+            Enabled = (!nodeVM.IsEndNode && canBeEndNode) || nodeVM.IsEndNode,
             Command = new RelayCommand<NodeViewModel>(NodeContextMenu_SetAsEndNode),
             Parameter = nodeVM,
         });
@@ -485,13 +495,54 @@ public partial class FsmEditorView : UserControl
 
     private void NodeContextMenu_SetAsEndNode(NodeViewModel? nodeVM)
     {
-        nodeVM!.IsEndNode = true;
+        nodeVM!.IsEndNode = !nodeVM.IsEndNode;
         nodeVM.UpdateBorderColor();
     }
 
     private void NodeContextMenu_EditNodeName(NodeViewModel? nodeVM)
     {
         nodeVM!.IsRenaming = true;
+    }
+
+    private async Task NodeContextMenu_LinkToBaseFSM(NodeViewModel nodeViewModel)
+    {
+        if (!string.IsNullOrEmpty(nodeViewModel.FsmName))
+        {
+            nodeViewModel.ClearBaseFsm();
+            return;
+        }
+
+        var filesService = App.Current?.Services?.GetService<IFilesService>();
+        if (filesService is null)
+            return;
+
+        var file = await filesService.OpenFileAsync("Select FSM to link to..", "");
+        if (file is null)
+            return;
+
+        IStorageFolder? parentFolder = await file.GetParentAsync();
+        if (parentFolder is null)
+        {
+            var box = MessageBoxManager.GetMessageBoxStandard("Error", "Could not determine parent folder.", ButtonEnum.Ok, Icon.Warning);
+            await box.ShowWindowDialogAsync(App.Current.MainWindow);
+            return;
+        }
+
+        string className = parentFolder.Name;
+        string fsmName = Path.GetFileNameWithoutExtension(file.Name);
+
+        if (!fsmName.StartsWith($"{className}"))
+        {
+            var box = MessageBoxManager.GetMessageBoxStandard("Warning", "FSM File Name must start with the the folder/class name. " +
+                "Example: if the folder was 'playerai', the file must start with 'playerai_'.", ButtonEnum.Ok, Icon.Warning);
+            await box.ShowWindowDialogAsync(App.Current.MainWindow);
+            return;
+        }
+
+        int end = fsmName.IndexOf("_fsm_ingame");
+        fsmName = fsmName.AsSpan(className.Length + 1, end - (className.Length + 1)).ToString();
+
+        nodeViewModel.SetBaseFsm(className, fsmName);
     }
 
     private void NodeContextMenu_ConnectionSelected(GraphConnectionViewModel graphConnection)
@@ -624,20 +675,38 @@ public partial class FsmEditorView : UserControl
         WeakReferenceMessenger.Default.Send(new FsmComponentSelectedMessage(btComponent));
     }
 
-    private void NodeContextMenu_CreateSelfTransition(NodeViewModel? nodeViewModel)
+    private void NodeContextMenu_CreateSelfTransition(NodeViewModel nodeViewModel)
     {
-        nodeViewModel!.HasSelfTransition = true;
-
-        var connection = new GraphConnectionViewModel() { Source = nodeViewModel, Target = nodeViewModel };
-        var transition = new TransitionViewModel(connection)
+        if (nodeViewModel.HasSelfTransition)
         {
-            Source = nodeViewModel,
-            Target = nodeViewModel
-        };
-        connection.Transitions.Add(transition);
-        nodeViewModel.Transitions.Add(transition);
+            nodeViewModel.HasSelfTransition = false;
 
-        WeakReferenceMessenger.Default.Send(new EditConnectionRequest(connection));
+            TransitionViewModel transition = nodeViewModel.Transitions.FirstOrDefault(e => e.Source == nodeViewModel && e.Target == nodeViewModel)!;
+            transition.ParentConnection.Transitions.Remove(transition);
+            nodeViewModel.Transitions.Remove(transition);
+
+            var editorVm = (FsmEditorViewModel)Editor.DataContext!;
+            foreach (var transitionComponent in transition.ConditionComponents)
+            {
+                if (transitionComponent is TransitionConditionViewModel cond)
+                    editorVm.UnregisterFsmElementGuid(cond.ConditionComponent.Guid); 
+            }
+        }
+        else
+        {
+            nodeViewModel!.HasSelfTransition = true;
+
+            var connection = new GraphConnectionViewModel() { Source = nodeViewModel, Target = nodeViewModel };
+            var transition = new TransitionViewModel(connection)
+            {
+                Source = nodeViewModel,
+                Target = nodeViewModel
+            };
+            connection.Transitions.Add(transition);
+            nodeViewModel.Transitions.Add(transition);
+
+            WeakReferenceMessenger.Default.Send(new EditConnectionRequest(connection));
+        }
     }
 
     private void NodeContextMenu_DeleteNode(NodeViewModel? node)

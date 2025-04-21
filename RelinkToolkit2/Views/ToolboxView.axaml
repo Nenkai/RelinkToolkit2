@@ -8,6 +8,7 @@
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:b="using:RelinkToolkit2.Behaviors"
+			 xmlns:lv="using:Aldwych.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="400"
 			 x:DataType="viewmodels:ToolboxViewModel">
@@ -44,7 +45,8 @@
 	<UserControl.Resources>
 		<converters:VectorIconConverter x:Key="vectorIconConverter"/>
 	</UserControl.Resources>
-	
+
+	<!--
     <Grid>
         <TreeView Name="treeView" ItemsSource="{Binding DisplayedItems}" Classes="NodesDragAndDrop">
 			<TreeView.ItemTemplate>
@@ -67,4 +69,5 @@
 			</TreeView.Styles>
         </TreeView>
     </Grid>
+	-->
 </UserControl>

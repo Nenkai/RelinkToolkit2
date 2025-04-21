@@ -12,7 +12,7 @@ using RelinkToolkit2.ViewModels.Documents;
 using RelinkToolkit2.ViewModels.Fsm;
 using RelinkToolkit2.ViewModels.Fsm.TransitionComponents;
 using RelinkToolkit2.ViewModels.Search;
-using RelinkToolkit2.Views.Fsm;
+using RelinkToolkit2.Views.Documents.Fsm;
 
 using System;
 using System.Collections.Generic;

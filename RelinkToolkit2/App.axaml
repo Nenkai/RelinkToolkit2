@@ -24,6 +24,7 @@
 				<ResourceInclude Source="avares://Nodify/Themes/Dark.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 
+			<!-- For EditableTextBlock -->
 			<ControlTheme x:Key="EditableTextBlockBaseStyle" TargetType="{x:Type controls:EditableTextBlock}">
 				<Setter Property="Background"
 						Value="Transparent" />
@@ -99,11 +100,16 @@
     <Application.Styles>
         <SimpleTheme/>
 		<DockSimpleTheme />
-
+		<StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Simple.xaml"/>
+		
+		<StyleInclude Source="avares://Aldwych.LogView/BasicTheme.axaml"/>
+		<StyleInclude Source="avares://Aldwych.LogView/Styles/LogView.axaml"/>
+		
 		<!-- Icons -->
 		<StyleInclude Source="avares://RelinkToolkit2/Assets/Icons/Bootstrap.xaml"/>
 		<StyleInclude Source="avares://RelinkToolkit2/Assets/Icons/Material.xaml"/>
-		
+
+		<!-- Dock -->
 		<Style Selector="DockControl">
 			<Setter Property="(ControlRecyclingDataTemplate.ControlRecycling)" Value="{StaticResource ControlRecyclingKey}" />
 		</Style>

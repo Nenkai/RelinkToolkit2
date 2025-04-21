@@ -1,33 +1,65 @@
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Threading.Tasks;
-
 using Avalonia;
+using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
-using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+
+using GBFRDataTools.Entities.Scene.Objects;
 
 using Nodify;
 
 using RelinkToolkit2.Messages.Fsm;
 using RelinkToolkit2.ViewModels.Fsm;
-using System.Linq;
-using Avalonia.LogicalTree;
 
-namespace RelinkToolkit2.Views.Fsm;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace RelinkToolkit2.Views.Documents.Fsm;
 
 public partial class FsmNodeView : UserControl
 {
+    private Label _label;
+
     public FsmNodeView()
     {
         InitializeComponent();
 
         AddHandler(DragDrop.DropEvent, Drop);
         AddHandler(DragDrop.DragOverEvent, DragOver);
+    }
+
+    private CancellationTokenSource? _layerLabelAnimCt = new CancellationTokenSource();
+    private void UserControl_DataContextChanged(object? sender, System.EventArgs e)
+    {
+        WeakReferenceMessenger.Default.UnregisterAll(this);
+
+        if (DataContext is not null)
+        {
+            NodeViewModel nvm = (NodeViewModel)DataContext!;
+            WeakReferenceMessenger.Default.Register<FsmNodeLayerChangedMessage, uint>(this, nvm.Guid, async (recipient, message) =>
+            {
+                await AnimateLayerChange();
+            });
+        }
+    }
+
+    private async Task AnimateLayerChange()
+    {
+        _layerLabelAnimCt?.Cancel();
+
+        _layerLabelAnimCt = new CancellationTokenSource();
+        var anim = (Animation)_label!.Resources["LayerChangedAnimation"]!;
+        await anim.RunAsync(_label, cancellationToken: _layerLabelAnimCt.Token);
+        _layerLabelAnimCt = null;
     }
 
     private void Drop(object? sender, DragEventArgs e)
@@ -108,8 +140,12 @@ public partial class FsmNodeView : UserControl
         componentViewModel.BorderBrush = GraphColors.ComponentBorderNormal;
     }
 
-    private void Panel_PointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
+    private void Panel_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
+        // Running XAML animation on the Rect control. 
+        //animation.RunAsync(this);
+
+
         if (e.Pointer.Type == PointerType.Mouse)
         {
             var properties = e.GetCurrentPoint(this).Properties;
@@ -125,5 +161,10 @@ public partial class FsmNodeView : UserControl
 
         TransitionViewModel selfTrans = nvm.Transitions.First(e => e.Source == e.Target);
         WeakReferenceMessenger.Default.Send(new EditConnectionRequest(selfTrans.ParentConnection));
+    }
+
+    private void Label_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        _label = (Label)sender!;
     }
 }

@@ -5,12 +5,15 @@ using Avalonia.Media;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 
 using GBFRDataTools.FSM.Components;
 using GBFRDataTools.FSM.Components.Actions.AI.Enemy;
 using GBFRDataTools.FSM.Components.Actions.Quest;
 
 using Nodify.Compatibility;
+
+using RelinkToolkit2.Messages.Fsm;
 
 using System;
 using System.Collections.Generic;
@@ -80,6 +83,7 @@ public partial class NodeViewModel : NodeViewModelBase //, IDropTarget
             Guid = 123456789;
             HasSelfTransition = true;
             FsmSource = "my/source/file";
+            LayerIndex = 1;
 
             AddComponent(new CallSe());
             AddComponent(new EmLockonActivate());
@@ -93,6 +97,20 @@ public partial class NodeViewModel : NodeViewModelBase //, IDropTarget
             Name = btComponent.ComponentName,
         });
         
+    }
+
+    public void ClearBaseFsm()
+    {
+        FsmFolderName = string.Empty;
+        FsmName = string.Empty;
+        FsmSource = null;
+    }
+
+    public void SetBaseFsm(string fsmFolderName, string fsmName)
+    {
+        FsmFolderName = fsmFolderName;
+        FsmName = fsmName;
+        FsmSource = $"{fsmFolderName}/{fsmFolderName}_{fsmName}";
     }
 
     public void SetRootNodeState(bool isRootNode)

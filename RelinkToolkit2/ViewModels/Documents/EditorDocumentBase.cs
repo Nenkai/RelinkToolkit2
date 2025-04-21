@@ -16,4 +16,16 @@ public class EditorDocumentBase : Document, IMessageableDocument
 
     public virtual void RegisterMessageListeners() { }
     public virtual void UnregisterMessageListeners() { }
+
+    /// <summary>
+    /// Parent document view.
+    /// </summary>
+    public DocumentsViewModel? Documents { get; set; }
+
+    // Document closing
+    public override bool OnClose()
+    {
+        Documents?.Remove(Id);
+        return base.OnClose();
+    }
 }

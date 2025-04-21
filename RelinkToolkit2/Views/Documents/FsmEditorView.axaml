@@ -5,7 +5,7 @@
 			 xmlns:nodify="https://miroiu.github.io/nodify"
 			 xmlns:local="clr-namespace:RelinkToolkit2;assembly=RelinkToolkit2"
 			 xmlns:views="using:RelinkToolkit2.Views"
-			 xmlns:fsmViews="using:RelinkToolkit2.Views.Fsm"
+			 xmlns:fsmViews="using:RelinkToolkit2.Views.Documents.Fsm"
 			 xmlns:searchVMs="using:RelinkToolkit2.ViewModels.Search"
 			 xmlns:docVMs="using:RelinkToolkit2.ViewModels.Documents"
 			 xmlns:fsmVMs="using:RelinkToolkit2.ViewModels.Fsm"
@@ -180,7 +180,8 @@
 				</DataTemplate>
 				<DataTemplate DataType="fsmVMs:GroupNodeViewModel">
 					<!-- Refer to ItemContainerStyle for location. -->
-					<nodify:GroupingNode ActualSize="{Binding Size}" PointerPressed="GroupingNode_PointerPressed">
+					<nodify:GroupingNode ActualSize="{Binding Size}" PointerPressed="GroupingNode_PointerPressed"
+										 >
 						<nodify:GroupingNode.Header>
 							<StackPanel Orientation="Horizontal" Focusable="True" HorizontalAlignment="Stretch">
 								<controls:EditableTextBlock Text="{Binding Title}" FontWeight="Bold" IsEditing="{Binding IsRenaming}">
@@ -190,7 +191,25 @@
 										</DataTriggerBehavior>
 									</Interaction.Behaviors>
 								</controls:EditableTextBlock>
-								<Label Content="{Binding LayerIndex, StringFormat='• (Layer {0})'}}" FontSize="9" Foreground="Gray" VerticalContentAlignment="Center"/>
+								<Label Content="•" Foreground="Gray"/>
+								<Label Name="LayerName" Content="{Binding LayerIndex, StringFormat='(Layer {0})'}}" FontSize="10" Foreground="Gray" VerticalContentAlignment="Center" Margin="-4,0,0,0">
+									<Label.Styles>
+										<Style Selector="Label">
+											<Style.Animations>
+												<Animation Duration="0:0:0.5">
+													<KeyFrame Cue="0%">
+														<Setter Property="Foreground" Value="Orange"/>
+														<Setter Property="FontSize" Value="12"/>
+													</KeyFrame>
+													<KeyFrame Cue="100%">
+														<Setter Property="Foreground" Value="Gray"/>
+														<Setter Property="FontSize" Value="10"/>
+													</KeyFrame>
+												</Animation>
+											</Style.Animations>
+										</Style>
+									</Label.Styles>
+								</Label>
 							</StackPanel>
 						</nodify:GroupingNode.Header>
 					</nodify:GroupingNode>

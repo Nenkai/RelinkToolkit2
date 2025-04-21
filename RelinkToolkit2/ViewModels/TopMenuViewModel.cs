@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Platform.Storage;
+using Avalonia.Input;
 using Avalonia.Styling;
 using Avalonia.Controls.ApplicationLifetimes;
 
@@ -31,19 +31,24 @@ using RelinkToolkit2.Messages.Dialogs;
 using RelinkToolkit2.Messages.StatusBar;
 using RelinkToolkit2.ViewModels.Documents.Interfaces;
 using RelinkToolkit2.Views.Tools;
+using Microsoft.Extensions.Logging;
 
 namespace RelinkToolkit2.ViewModels;
 
 public partial class TopMenuViewModel : ObservableObject
 {
+    private ILogger? _logger;
+
     public ObservableCollection<IMenuItemViewModel> MenuItems { get; set; } = [];
     public ObservableCollection<MenuItemViewModel> _themeMenuItems = [];
 
     private MenuItemViewModel _saveMenuItem;
     private MenuItemViewModel _saveAsMenuItem;
 
-    public TopMenuViewModel() 
+    public TopMenuViewModel(ILogger<TopMenuViewModel>? logger) 
     {
+        _logger = logger;
+
         BuildMenu();
 
         WeakReferenceMessenger.Default.Register<ActiveDocumentChangedMessage>(this, (recipient, message) =>
@@ -158,13 +163,48 @@ public partial class TopMenuViewModel : ObservableObject
             Enabled = true,
         };
 
+        viewMenuItem.MenuItems.Add(new MenuItemViewModel()
+        {
+            Header = "Log Window",
+            Enabled = true,
+            IconKind = "Material.FormatListBulletedType",
+            Command = new RelayCommand(View_OpenLogWindow),
+            HotKey = new KeyGesture(Avalonia.Input.Key.L, Avalonia.Input.KeyModifiers.Control),
+        });
+        return viewMenuItem;
+    }
+
+    private void View_OpenLogWindow()
+    {
+        var logWindow = new LogWindow();
+        logWindow.Show();
+    }
+
+    private MenuItemViewModel CreateToolsMenu()
+    {
+        var toolsMenuItem = new MenuItemViewModel()
+        {
+            Header = "Tools",
+            Enabled = true,
+        };
+
+        var stringHasherMenuItem = new MenuItemViewModel()
+        {
+            Header = "String Hasher",
+            Enabled = true,
+            IconKind = "Material.Pound",
+            Command = new RelayCommand(StringHasherClicked),
+        };
+        toolsMenuItem.MenuItems.Add(stringHasherMenuItem);
+        toolsMenuItem.MenuItems.Add(MenuItemViewModel.Separator);
+
         var themesMenuItem = new MenuItemViewModel()
         {
             Header = "Themes",
             Enabled = true,
             IconKind = "Material.ThemeLightDark",
         };
-        viewMenuItem.MenuItems.Add(themesMenuItem);
+        toolsMenuItem.MenuItems.Add(themesMenuItem);
 
         foreach (var style in Enum.GetValues<AppTheme>())
         {
@@ -185,27 +225,6 @@ public partial class TopMenuViewModel : ObservableObject
             themesMenuItem.MenuItems.Add(themeMenuItem);
             _themeMenuItems.Add(themeMenuItem);
         }
-
-        return viewMenuItem;
-    }
-
-    private MenuItemViewModel CreateToolsMenu()
-    {
-        var toolsMenuItem = new MenuItemViewModel()
-        {
-            Header = "Tools",
-            Enabled = true,
-        };
-
-        var themesMenuItem = new MenuItemViewModel()
-        {
-            Header = "String Hasher",
-            Enabled = true,
-            IconKind = "Material.Pound",
-            Command = new RelayCommand(StringHasherClicked),
-        };
-        toolsMenuItem.MenuItems.Add(themesMenuItem);
-
         return toolsMenuItem;
     }
 
@@ -236,10 +255,11 @@ public partial class TopMenuViewModel : ObservableObject
             return;
 
         var filesService = (App.Current?.Services?.GetService<IFilesService>()) ?? throw new Exception("Could not fetch IFilesService");
-        string? res = await saveableDocument.SaveDocument(filesService, isSaveAs);
-        if (!string.IsNullOrEmpty(res))
+        string? outputFile = await saveableDocument.SaveDocument(filesService, isSaveAs);
+        if (!string.IsNullOrEmpty(outputFile))
         {
-            WeakReferenceMessenger.Default.Send(new SetStatusBarTextRequest($"{DateTime.Now} - Saved as {res}."));
+            _logger?.LogInformation("Saved file as {outputFile}", outputFile);
+            WeakReferenceMessenger.Default.Send(new SetStatusBarTextRequest($"{DateTime.Now} - Saved file as {outputFile}."));
         }
     }
 

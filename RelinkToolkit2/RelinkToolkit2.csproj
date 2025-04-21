@@ -37,6 +37,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\GRBFDataTools\GBFRDataTools.FSM\GBFRDataTools.FSM.csproj" />
     <ProjectReference Include="..\..\GRBFDataTools\GBFRDataTools.Hashing\GBFRDataTools.Hashing.csproj" />
+    <ProjectReference Include="..\Aldwych.LogView\src\LogView\Aldwych.LogView.csproj" />
     <ProjectReference Include="..\Avalonia.PropertyGrid\Sources\Avalonia.PropertyGrid\Avalonia.PropertyGrid.csproj" />
     <ProjectReference Include="..\nodify-avalonia\Nodify\Nodify.csproj" />
     <ProjectReference Include="..\trienet\TrieNet\TrieNet.csproj" />
@@ -54,6 +55,9 @@
     </Compile>
     <Compile Update="Views\ComponentSearchView.axaml.cs">
       <DependentUpon>ComponentSearchView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Tools\LogWindow.axaml.cs">
+      <DependentUpon>LogWindow.axaml</DependentUpon>
     </Compile>
   </ItemGroup>
 </Project>

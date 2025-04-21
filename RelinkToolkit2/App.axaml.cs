@@ -1,19 +1,28 @@
-﻿using Avalonia;
+﻿using Aldwych.Logging;
+using Aldwych.Logging.ViewModels;
+
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
+using Avalonia.PropertyGrid.Services;
 using Avalonia.Styling;
 
+using DynamicData.Binding;
+
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
+using Nodify;
+
+using ReactiveUI;
 
 using RelinkToolkit2.Controls.PropertyGrid;
 using RelinkToolkit2.Services;
 using RelinkToolkit2.ViewModels;
 using RelinkToolkit2.ViewModels.Documents;
 using RelinkToolkit2.Views;
-
-using Avalonia.PropertyGrid.Services;
 
 using System;
 
@@ -35,6 +44,8 @@ public partial class App : Application
         CellEditFactoryService.Default.AddFactory(new eObjIdCellEditFactory());
         CellEditFactoryService.Default.AddFactory(new Vector4CellEditFactory());
 
+        NodifyEditor.EnableSnappingCorrection = false;
+
         AvaloniaXamlLoader.Load(this);
     }
 
@@ -55,6 +66,10 @@ public partial class App : Application
         services.AddSingleton<TopMenuViewModel>();
         services.AddSingleton<StatusBarViewModel>();
         services.AddSingleton<MainViewModel>();
+        services.AddLogging(e =>
+        {
+            e.AddProvider(new LogControlLoggerProvider(new LogControlLoggerConfiguration() { LogLevel = LogLevel.Trace }));
+        });
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {

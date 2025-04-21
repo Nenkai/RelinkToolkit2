@@ -1,14 +1,21 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using Aldwych.Logging;
+using Aldwych.Logging.ViewModels;
+
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 
 using Dock.Model.Controls;
 using Dock.Model.Core;
 
+using DynamicData.Binding;
+
 using GBFRDataTools.Entities.Quest;
 using GBFRDataTools.FSM;
 using GBFRDataTools.FSM.Components.Actions.Quest;
 using GBFRDataTools.FSM.Entities;
+
+using Microsoft.Extensions.Logging;
 
 using MsBox.Avalonia;
 
@@ -22,10 +29,15 @@ using RelinkToolkit2.ViewModels.TreeView;
 using System;
 using System.IO;
 
+using System.Collections.ObjectModel;
+
 namespace RelinkToolkit2.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
+    private ILoggerFactory? _loggerFactory;
+    private ILogger? _logger;
+
     public TopMenuViewModel TopMenuViewModel { get; }
     public DocumentsViewModel DocumentsViewModel { get; }
     public SolutionExplorerViewModel SolutionExplorerViewModel { get; }
@@ -39,7 +51,10 @@ public partial class MainViewModel : ObservableObject
         DocumentsViewModel documentsViewModel, 
         SolutionExplorerViewModel solExplorerViewModel, 
         StatusBarViewModel statusBarViewModel,
-        DockFactory dockFactory)
+        DockFactory dockFactory,
+
+        ILoggerFactory loggerFactory,
+        ILogger<MainViewModel> logger)
     {
         TopMenuViewModel = topMenuViewModel;
         DocumentsViewModel = documentsViewModel;
@@ -47,6 +62,9 @@ public partial class MainViewModel : ObservableObject
         StatusBarViewModel = statusBarViewModel;
 
         _factory = dockFactory;
+
+        _loggerFactory = loggerFactory;
+        _logger = logger;
 
         Layout = dockFactory.CreateLayout();
         if (Layout is not null)
@@ -129,17 +147,34 @@ public partial class MainViewModel : ObservableObject
                         string fsmId = $"fsm_{questIdNumber:X6}_{fsmFile.Suffix}";
                         string fsmName = $"[{i}] {fsmFile.Name}";
 
-                        var parser = new FSMParser();
-                        parser.Parse(questFsmFileBuf, asMessagePack: true);
-
-                        FsmEditorViewModel? editorViewModel = AddNewFSMDocument(fsmId, fsmName, parser);
-                        if (editorViewModel is not null)
+                        try
                         {
-                            SolutionExplorerViewModel.AddItem(new FSMTreeViewItemViewModel()
+                            var parser = new FSMParser();
+                            parser.Parse(questFsmFileBuf, asMessagePack: true);
+                            if (parser.HasErrors)
                             {
-                                TreeViewName = $"[{i}] {fsmFile.Name}",
-                                FsmEditor = editorViewModel,
-                            }, parentId: questTreeItem.Guid);
+                                var box = MessageBoxManager.GetMessageBoxStandard("Error", $"FSM '{fsmFileName}' has loaded with errors, check the log window for more information.\n" +
+                                    $"Do not use it for saving.", icon: MsBox.Avalonia.Enums.Icon.Error);
+                                WeakReferenceMessenger.Default.Send(new ShowDialogRequest(box));
+                            }
+
+                            _logger?.LogInformation("Parsed quest FSM ({fsmFileName}).", fsmFileName);
+
+                            FsmEditorViewModel? editorViewModel = AddNewFSMDocument(fsmId, fsmName, parser);
+                            if (editorViewModel is not null)
+                            {
+                                SolutionExplorerViewModel.AddItem(new FSMTreeViewItemViewModel()
+                                {
+                                    TreeViewName = $"[{i}] {fsmFile.Name}",
+                                    FsmEditor = editorViewModel,
+                                }, parentId: questTreeItem.Guid);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            var box = MessageBoxManager.GetMessageBoxStandard("Error", $"Failed to load FSM file.\n{ex.Message}", icon: MsBox.Avalonia.Enums.Icon.Error);
+                            WeakReferenceMessenger.Default.Send(new ShowDialogRequest(box));
+                            return;
                         }
                     }
                 }
@@ -151,8 +186,17 @@ public partial class MainViewModel : ObservableObject
             try
             {
 
-                parser = new FSMParser();
+                parser = new FSMParser(_loggerFactory);
                 parser.Parse(File.ReadAllBytes(fileResult.Uri.LocalPath), fileResult.Uri.LocalPath.EndsWith(".msg"));
+                if (parser.HasErrors)
+                {
+                    var box = MessageBoxManager.GetMessageBoxStandard("Error", 
+                        $"FSM '{Path.GetFileNameWithoutExtension(fileResult.Uri.LocalPath)}' has loaded with errors, check the log window for more information.\n" +
+                        "Do not use it for saving.", icon: MsBox.Avalonia.Enums.Icon.Error);
+                    WeakReferenceMessenger.Default.Send(new ShowDialogRequest(box));
+                }
+
+                _logger?.LogInformation("FSM Parsed ({file}).", fileResult.Uri.LocalPath);
             }
             catch (Exception ex)
             {

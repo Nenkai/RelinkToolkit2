@@ -9,7 +9,9 @@ using Avalonia;
 using Avalonia.Media;
 
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 
+using RelinkToolkit2.Messages.Fsm;
 using RelinkToolkit2.ViewModels.Documents;
 
 namespace RelinkToolkit2.ViewModels.Fsm;
@@ -60,6 +62,14 @@ public partial class NodeViewModelBase : ObservableObject
     /// Boundary box.
     /// </summary>
     public Rect BoundaryBox => new(Location, Size);
+
+    public Rect CollisionBox => BoundaryBox.Deflate(new Thickness(Size.Width * 0.25, Size.Height * 0.25));
+
+    partial void OnLayerIndexChanged(int value)
+    {
+        if (this is NodeViewModel node)
+            WeakReferenceMessenger.Default.Send(new FsmNodeLayerChangedMessage(this), node.Guid);
+    }
 
     public static bool AreIntersected(Rect r1, Rect r2)
     {

@@ -15,14 +15,11 @@ namespace RelinkToolkit2.Messages.Fsm;
 /// <summary>
 /// Represents a request for a node change on the graph.
 /// </summary>
-public class FsmComponentContextMenuRequest : RequestMessage<bool>
+public class FsmNodeLayerChangedMessage : ValueChangedMessage<NodeViewModelBase>
 {
-    public FsmNodeView NodeView { get; set; }
-    public NodeComponentViewModel Component { get; }
-
-    public FsmComponentContextMenuRequest(FsmNodeView nodeView, NodeComponentViewModel nodeComponentVm)
+    public FsmNodeLayerChangedMessage(NodeViewModelBase nodeViewModel)
+        : base(nodeViewModel)
     {
-        NodeView = nodeView;
-        Component = nodeComponentVm;
+        
     }
 }
