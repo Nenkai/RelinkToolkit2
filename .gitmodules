@@ -4,3 +4,12 @@
 [submodule "trienet"]
 	path = trienet
 	url = https://github.com/Nenkai/trienet.git
+[submodule "Aldwych.LogView"]
+	path = Aldwych.LogView
+	url = https://github.com/Nenkai/Aldwych.LogView
+[submodule "nodify-avalonia"]
+	path = nodify-avalonia
+	url = https://github.com/Nenkai/nodify-avalonia
+[submodule "Avalonia.PropertyGrid"]
+	path = Avalonia.PropertyGrid
+	url = https://github.com/Nenkai/Avalonia.PropertyGrid
