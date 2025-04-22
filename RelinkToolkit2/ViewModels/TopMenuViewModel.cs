@@ -32,6 +32,7 @@ using RelinkToolkit2.Messages.StatusBar;
 using RelinkToolkit2.ViewModels.Documents.Interfaces;
 using RelinkToolkit2.Views.Tools;
 using Microsoft.Extensions.Logging;
+using Avalonia.Platform.Storage;
 
 namespace RelinkToolkit2.ViewModels;
 
@@ -240,7 +241,19 @@ public partial class TopMenuViewModel : ObservableObject
         if (filesService is null)
             return;
 
-        var file = await filesService.OpenFileAsync("Open FSM file", "");
+        var file = await filesService.OpenFileAsync("Open file...", filters:
+        [
+            FilePickerFileTypes.All,
+            new FilePickerFileType("FSM File")
+            {
+                Patterns = ["*_fsm_ingame.msg", "*_fsm_ingame.json"]
+            },
+            new FilePickerFileType("Generic Message File")
+            {
+                Patterns = ["*.msg", "*.json"]
+            },
+        ]);
+
         if (file is null) 
             return;
 

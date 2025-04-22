@@ -15,10 +15,10 @@ using System.Windows.Input;
 
 namespace RelinkToolkit2.Controls.PropertyGrid.Views;
 
-public partial class Vector3View : UserControl
+public partial class Vector3View : TemplatedControl
 {
     public Vector3View()
     {
-        InitializeComponent();
+
     }
 }

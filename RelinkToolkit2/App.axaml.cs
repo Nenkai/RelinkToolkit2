@@ -43,6 +43,8 @@ public partial class App : Application
     {
         CellEditFactoryService.Default.AddFactory(new eObjIdCellEditFactory());
         CellEditFactoryService.Default.AddFactory(new Vector4CellEditFactory());
+        CellEditFactoryService.Default.AddFactory(new Vector3CellEditFactory());
+        CellEditFactoryService.Default.AddFactory(new Vector2CellEditFactory());
 
         NodifyEditor.EnableSnappingCorrection = false;
 

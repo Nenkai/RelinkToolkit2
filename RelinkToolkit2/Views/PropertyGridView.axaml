@@ -30,8 +30,7 @@
 			AllowFilter="False"
 			DataContext="{Binding SelectedObject}"
 			PropertyCategoryStyle="InheritingOrder"
-			AllowQuickFilter="False"
-			 >
+			AllowQuickFilter="False">
 		</pgc:PropertyGrid>
 	</ScrollViewer>
 </UserControl>

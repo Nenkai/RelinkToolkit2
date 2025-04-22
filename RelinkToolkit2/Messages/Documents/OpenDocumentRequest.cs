@@ -20,9 +20,9 @@ namespace RelinkToolkit2.Messages.Documents;
 /// </summary>
 public class OpenDocumentRequest : RequestMessage<bool>
 {
-    public Document Document;
+    public EditorDocumentBase Document;
 
-    public OpenDocumentRequest(Document document)
+    public OpenDocumentRequest(EditorDocumentBase document)
     {
         Document = document;
     }

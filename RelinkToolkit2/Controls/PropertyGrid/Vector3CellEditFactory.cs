@@ -30,7 +30,7 @@ public class Vector3CellEditFactory : AbstractCellEditFactory
         if (propertyDescriptor.PropertyType != typeof(Vector3))
             return null;
 
-        var control = new Vector4View();
+        var control = new Vector3View();
         return control;
     }
 

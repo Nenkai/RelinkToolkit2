@@ -305,8 +305,7 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument
         string? outputPath = LastFile;
         if (isSaveAs || string.IsNullOrEmpty(outputPath))
         {
-            var file = await filesService.SaveFileAsync("Save FSM file", "JSON Files|*.json|" +
-                                  "MessagePack|*.msg",
+            var file = await filesService.SaveFileAsync("Save FSM file", null,
                                   $"{Title}_fsm_ingame.json");
             if (file is null)
                 return null;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using Avalonia.Controls;
@@ -25,7 +26,7 @@ public class FilesService : IFilesService
         _storageProvider = storageProvider;
     }
 
-    public async Task<IStorageFile?> OpenFileAsync(string title, string filter)
+    public async Task<IStorageFile?> OpenFileAsync(string title, IReadOnlyList<FilePickerFileType>? filters = null)
     {
         if (_storageProvider is null)
             throw new ArgumentNullException("Storage provider is null. It was not initialized.");
@@ -33,13 +34,14 @@ public class FilesService : IFilesService
         var files = await _storageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
         {
             Title = title,
+            FileTypeFilter = filters,
             AllowMultiple = false
         });
 
         return files.Count >= 1 ? files[0] : null;
     }
 
-    public async Task<IStorageFile?> SaveFileAsync(string title, string filter, string? suggestedFileName)
+    public async Task<IStorageFile?> SaveFileAsync(string title, IReadOnlyList<FilePickerFileType>? filters = null, string? suggestedFileName = null)
     {
         if (_storageProvider is null)
             throw new ArgumentNullException("Storage provider is null. It was not initialized.");

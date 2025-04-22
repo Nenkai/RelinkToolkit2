@@ -516,7 +516,14 @@ public partial class FsmEditorView : UserControl
         if (filesService is null)
             return;
 
-        var file = await filesService.OpenFileAsync("Select FSM to link to..", "");
+        var file = await filesService.OpenFileAsync("Select FSM to link to..", filters:
+        [
+            new FilePickerFileType("FSM File")
+            {
+                Patterns = ["*_fsm_ingame.msg", "*_fsm_ingame.json"]
+            },
+            FilePickerFileTypes.All,
+        ]);
         if (file is null)
             return;
 

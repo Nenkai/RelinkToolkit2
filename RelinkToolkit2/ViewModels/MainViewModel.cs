@@ -10,6 +10,8 @@ using Dock.Model.Core;
 
 using DynamicData.Binding;
 
+using GBFRDataTools.Entities;
+using GBFRDataTools.Entities.Player;
 using GBFRDataTools.Entities.Quest;
 using GBFRDataTools.FSM;
 using GBFRDataTools.FSM.Components.Actions.Quest;
@@ -27,9 +29,9 @@ using RelinkToolkit2.ViewModels.Fsm;
 using RelinkToolkit2.ViewModels.TreeView;
 
 using System;
-using System.IO;
-
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Xml.Linq;
 
 namespace RelinkToolkit2.ViewModels;
 
@@ -72,7 +74,7 @@ public partial class MainViewModel : ObservableObject
 
         WeakReferenceMessenger.Default.Register<FileOpenRequestMessage>(this, (recipient, message) =>
         {
-            ProcessFileLoadedChanged(message.Value);
+            LoadFile(message.Value.Uri);
         });
 
         WeakReferenceMessenger.Default.Register<DockLayoutResetRequest>(this, (recipient, message) =>
@@ -84,7 +86,9 @@ public partial class MainViewModel : ObservableObject
         WeakReferenceMessenger.Default.Register<OpenDocumentRequest>(this, (recipient, message) =>
         {
             if (!DocumentsViewModel.IsDocumentOpen(message.Document.Id))
-                AddNewFSMDocument(message.Document.Id, message.Document.Title, null);
+            {
+                DocumentsViewModel.AddDocument(message.Document);
+            }
             else
             {
                 var currentDocument = DocumentsViewModel.ActiveDockable;
@@ -98,12 +102,59 @@ public partial class MainViewModel : ObservableObject
         });
     }
 
-    public void ProcessFileLoadedChanged(FileOpenResult fileResult)
+    public void LoadFile(Uri fileResult)
     {
-        byte[] buffer = new byte[fileResult.Stream.Length];
-        fileResult.Stream.ReadExactly(buffer);
+        string fileName = fileResult.OriginalString;
+        if (fileName.Contains("fsm_ingame"))
+        {
+            ProcessFSM(fileResult);
+        }
+        else
+        {
+            string path = fileResult.LocalPath;
 
-        string fileName = Path.GetFileNameWithoutExtension(fileResult.Uri.OriginalString);
+            try
+            {
+                /*
+                foreach (var file in Directory.GetFiles(@"D://Games/SteamLibrary/steamapps/common/Granblue Fantasy Relink/extracted/system/enemy/data", "*", SearchOption.AllDirectories))
+                {
+                    if (!file.Contains("we"))
+                        continue;
+
+                    if (file.EndsWith(".json"))
+                        continue;
+
+                    if (!file.EndsWith("parameter.msg"))
+                        continue;
+                    */
+
+                    var entity = GenericEntitySerializer.Parse(File.ReadAllBytes(path), path.EndsWith(".msg"));
+
+                    GenericEntityEditorViewModel editorViewModel = new()
+                    {
+                        Id = Path.GetFileNameWithoutExtension(path),
+                        Title = Path.GetFileNameWithoutExtension(path),
+                        Documents = DocumentsViewModel,
+                    };
+                editorViewModel.SetObjects(entity);
+                //}
+
+                DocumentsViewModel.AddDocument(editorViewModel);
+            }
+            catch (Exception ex)
+            {
+                var box = MessageBoxManager.GetMessageBoxStandard("Error", $"Failed to load file.\n{ex.Message}", icon: MsBox.Avalonia.Enums.Icon.Error);
+                WeakReferenceMessenger.Default.Send(new ShowDialogRequest(box));
+                return;
+            }
+        }
+    }
+
+    private void ProcessFSM(Uri uri)
+    {
+        byte[] buffer = File.ReadAllBytes(uri.LocalPath);
+
+        string fileName = Path.GetFileNameWithoutExtension(uri.OriginalString);
         if (fileName.Contains("baseinfo", StringComparison.Ordinal))
         {
             var questInfo = BaseInfo.Read(buffer);
@@ -125,7 +176,7 @@ public partial class MainViewModel : ObservableObject
 
             questTreeItem.DisplayedItems.Add(fsmRoot);
 
-            string path = fileResult.Uri.LocalPath;
+            string path = uri.LocalPath;
             string? dirName = Path.GetDirectoryName(path);
             if (!string.IsNullOrEmpty(dirName))
             {
@@ -187,16 +238,16 @@ public partial class MainViewModel : ObservableObject
             {
 
                 parser = new FSMParser(_loggerFactory);
-                parser.Parse(File.ReadAllBytes(fileResult.Uri.LocalPath), fileResult.Uri.LocalPath.EndsWith(".msg"));
+                parser.Parse(File.ReadAllBytes(uri.LocalPath), uri.LocalPath.EndsWith(".msg"));
                 if (parser.HasErrors)
                 {
-                    var box = MessageBoxManager.GetMessageBoxStandard("Error", 
-                        $"FSM '{Path.GetFileNameWithoutExtension(fileResult.Uri.LocalPath)}' has loaded with errors, check the log window for more information.\n" +
+                    var box = MessageBoxManager.GetMessageBoxStandard("Error",
+                        $"FSM '{Path.GetFileNameWithoutExtension(uri.LocalPath)}' has loaded with errors, check the log window for more information.\n" +
                         "Do not use it for saving.", icon: MsBox.Avalonia.Enums.Icon.Error);
                     WeakReferenceMessenger.Default.Send(new ShowDialogRequest(box));
                 }
 
-                _logger?.LogInformation("FSM Parsed ({file}).", fileResult.Uri.LocalPath);
+                _logger?.LogInformation("FSM Parsed ({file}).", uri.LocalPath);
             }
             catch (Exception ex)
             {
@@ -205,7 +256,7 @@ public partial class MainViewModel : ObservableObject
                 return;
             }
 
-            string fsmName = Path.GetFileNameWithoutExtension(fileResult.Uri.LocalPath).Replace("_fsm_ingame", string.Empty);
+            string fsmName = Path.GetFileNameWithoutExtension(uri.LocalPath).Replace("_fsm_ingame", string.Empty);
             string fsmId = $"fsm_{fsmName}";
 
             FsmEditorViewModel? editorViewModel = AddNewFSMDocument(fsmId, fsmName, parser);

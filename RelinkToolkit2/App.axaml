@@ -104,6 +104,10 @@
 		
 		<StyleInclude Source="avares://Aldwych.LogView/BasicTheme.axaml"/>
 		<StyleInclude Source="avares://Aldwych.LogView/Styles/LogView.axaml"/>
+
+		<StyleInclude Source="avares://RelinkToolkit2/Controls/PropertyGrid/Views/Vector2View.axaml"/>
+		<StyleInclude Source="avares://RelinkToolkit2/Controls/PropertyGrid/Views/Vector3View.axaml"/>
+		<StyleInclude Source="avares://RelinkToolkit2/Controls/PropertyGrid/Views/Vector4View.axaml"/>
 		
 		<!-- Icons -->
 		<StyleInclude Source="avares://RelinkToolkit2/Assets/Icons/Bootstrap.xaml"/>
