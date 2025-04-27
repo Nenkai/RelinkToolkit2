@@ -19,54 +19,24 @@ using GBFRDataTools.FSM.Entities;
 using Nodify;
 
 using RelinkToolkit2.Messages.Fsm;
-using RelinkToolkit2.ViewModels.Fsm.TransitionComponents;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents;
 
-namespace RelinkToolkit2.ViewModels.Fsm;
+namespace RelinkToolkit2.ViewModels.Documents.GraphEditor;
 
 /// <summary>
 /// Represents a connection on the graph (which can be bi-directional).
 /// </summary>
-public partial class GraphConnectionViewModel : ObservableObject
+public partial class FsmConnectionViewModel : GraphConnectionViewModel
 {
     [ObservableProperty]
-    private Point _anchor;
-
-    [ObservableProperty]
-    private ArrowHeadEnds _arrowHeadEnds = ArrowHeadEnds.End;
-
-    [ObservableProperty]
-    private IBrush _arrowColor = GraphColors.NormalTransition;
-
-    [ObservableProperty]
-    private bool _isAnimating = false;
-
-    [ObservableProperty]
-    private int _directionalArrowCount = 0;
-
-    [ObservableProperty]
-    private string? _title;
-
-    [ObservableProperty]
-    private ConnectionDirection? _direction;
-
-    [ObservableProperty]
     public bool _isSelectable = true;
-
-    public required NodeViewModel Source { get; set; }
-    public required NodeViewModel Target { get; set; }
-
-
-    public bool IsLayerConnection => Source.LayerIndex != Target.LayerIndex;
-
-    [ObservableProperty]
-    private AvaloniaList<double>? _strokeDashArray;
 
     /// <summary>
     /// Transitions. May have up to 2 (source to target and, target to source, if applicable)
     /// </summary>
     public ObservableCollection<TransitionViewModel> Transitions { get; set; } = [];
 
-    public GraphConnectionViewModel()
+    public FsmConnectionViewModel()
     {
         Transitions.CollectionChanged += Transitions_CollectionChanged;
     }
@@ -104,7 +74,7 @@ public partial class GraphConnectionViewModel : ObservableObject
         UpdateConnection();
     }
 
-    public void UpdateConnection()
+    public override void UpdateConnection()
     {
         if (Source == Target)
         {

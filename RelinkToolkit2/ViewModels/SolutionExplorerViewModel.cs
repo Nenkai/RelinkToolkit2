@@ -9,6 +9,7 @@ using Dock.Model.Mvvm.Controls;
 using RelinkToolkit2.Messages;
 using RelinkToolkit2.Messages.Fsm;
 using RelinkToolkit2.ViewModels.Documents;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor;
 using RelinkToolkit2.ViewModels.TreeView;
 
 using System;

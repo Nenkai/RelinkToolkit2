@@ -13,14 +13,13 @@ using GBFRDataTools.FSM;
 using RelinkToolkit2.Messages;
 using RelinkToolkit2.Messages.Documents;
 using RelinkToolkit2.Messages.Fsm;
-using RelinkToolkit2.ViewModels.Documents;
-using RelinkToolkit2.ViewModels.Fsm;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 
 namespace RelinkToolkit2.ViewModels.TreeView;
 
 public partial class FSMLayerTreeViewItemViewModel : TreeViewItemViewModel
 {
-    public required GroupNodeViewModel LayerGroup { get; set; }
+    public required FsmGroupNodeViewModel LayerGroup { get; set; }
 
     public FSMLayerTreeViewItemViewModel()
     {

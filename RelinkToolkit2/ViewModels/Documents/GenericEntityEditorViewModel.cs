@@ -27,8 +27,8 @@ using RelinkToolkit2.Messages.Dialogs;
 using RelinkToolkit2.Messages.Fsm;
 using RelinkToolkit2.Services;
 using RelinkToolkit2.ViewModels.Documents.Interfaces;
-using RelinkToolkit2.ViewModels.Fsm;
-using RelinkToolkit2.ViewModels.Fsm.TransitionComponents;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents;
 using RelinkToolkit2.ViewModels.Menu;
 using RelinkToolkit2.ViewModels.TreeView;
 

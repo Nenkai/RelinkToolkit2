@@ -12,13 +12,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 
-using GBFRDataTools.FSM.Entities;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 
-using Nodify;
-
-using RelinkToolkit2.Messages.Fsm;
-
-namespace RelinkToolkit2.ViewModels.Fsm;
+namespace RelinkToolkit2.ViewModels.Documents.GraphEditor;
 
 /// <summary>
 /// Represents a connection on the graph (which can represent start & end connection).

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using RelinkToolkit2.ViewModels.Fsm;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 
 using CommunityToolkit.Mvvm.Messaging.Messages;
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using CommunityToolkit.Mvvm.Messaging.Messages;
 
-using RelinkToolkit2.ViewModels.Fsm;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor;
 
 namespace RelinkToolkit2.Messages.Fsm;
 
@@ -15,9 +15,9 @@ namespace RelinkToolkit2.Messages.Fsm;
 /// </summary>
 public class EditConnectionRequest : RequestMessage<bool>
 {
-    public GraphConnectionViewModel Connection { get; set; }
+    public FsmConnectionViewModel Connection { get; set; }
 
-    public EditConnectionRequest(GraphConnectionViewModel value)
+    public EditConnectionRequest(FsmConnectionViewModel value)
     {
         Connection = value;
     }

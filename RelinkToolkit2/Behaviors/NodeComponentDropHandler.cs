@@ -3,7 +3,8 @@ using Avalonia.Input;
 using Avalonia.VisualTree;
 using Avalonia.Xaml.Interactions.DragAndDrop;
 
-using RelinkToolkit2.ViewModels.Fsm;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 
 namespace RelinkToolkit2.Behaviors;
 

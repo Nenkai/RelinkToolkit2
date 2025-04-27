@@ -15,13 +15,13 @@ using RelinkToolkit2.ViewModels.Documents.GraphEditor;
 
 namespace RelinkToolkit2.ViewModels.TreeView;
 
-public partial class FSMTreeViewItemViewModel : TreeViewItemViewModel
+public partial class BTTreeViewItemViewModel : TreeViewItemViewModel
 {
-    public required FsmEditorViewModel FsmEditor { get; set; }
+    public required BTEditorViewModel FsmEditor { get; set; }
 
-    public FSMTreeViewItemViewModel()
+    public BTTreeViewItemViewModel()
     {
-        IconKind = "Material.ChartTimelineVariant";
+        IconKind = "Material.Graph";
         DoubleClickedCommand = new RelayCommand(OnDoubleClicked);
     }
 

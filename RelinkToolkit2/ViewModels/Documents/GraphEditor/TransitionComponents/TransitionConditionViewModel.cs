@@ -13,12 +13,9 @@ using CommunityToolkit.Mvvm.Messaging;
 
 using GBFRDataTools.FSM.Components;
 
-using Nodify;
-
 using RelinkToolkit2.Messages.Fsm;
-using RelinkToolkit2.ViewModels.Fsm.TransitionComponents;
 
-namespace RelinkToolkit2.ViewModels.Fsm.TransitionComponents;
+namespace RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents;
 
 /// <summary>
 /// Represents a transition between two nodes on the graph.

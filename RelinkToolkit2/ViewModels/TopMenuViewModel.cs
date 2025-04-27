@@ -106,13 +106,23 @@ public partial class TopMenuViewModel : ObservableObject
             Header = "New",
             Enabled = true,
             IconKind = "Material.File",
-            MenuItems = [new MenuItemViewModel()
-            {
-                Header = "Quest",
-                Command = new RelayCommand(OnNewQuestClicked),
-                IconKind = "Material.Script",
-                Enabled = true,
-            }]
+            MenuItems =
+            [
+                new MenuItemViewModel()
+                {
+                    Header = "FSM (Finite State Machine)",
+                    Command = new RelayCommand(OnNewFSMClicked),
+                    IconKind = "Material.ChartTimelineVariant",
+                    Enabled = true,
+                },
+                new MenuItemViewModel()
+                {
+                    Header = "Behavior Tree",
+                    Command = new RelayCommand(OnNewBTClicked),
+                    IconKind = "Material.Graph",
+                    Enabled = false,
+                }
+            ]
         });
 
         file.MenuItems.Add(new MenuItemViewModel()
@@ -284,9 +294,16 @@ public partial class TopMenuViewModel : ObservableObject
         }
     }
 
-    public void OnNewQuestClicked()
+    public void OnNewFSMClicked()
     {
+        var mainView = App.Current.Services.GetRequiredService<MainViewModel>();
+        mainView.NewFSMDocument();
+    }
 
+    public void OnNewBTClicked()
+    {
+        var mainView = App.Current.Services.GetRequiredService<MainViewModel>();
+        mainView.NewBTDocument();
     }
 
     public void OnThemeChanged(AppTheme parameter)

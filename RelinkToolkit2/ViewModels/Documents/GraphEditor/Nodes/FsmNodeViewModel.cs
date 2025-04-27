@@ -24,27 +24,18 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace RelinkToolkit2.ViewModels.Fsm;
+namespace RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 
 /// <summary>
-/// Represents a node on the graph.
+/// Represents a fsm node.
 /// </summary>
-public partial class NodeViewModel : NodeViewModelBase //, IDropTarget
+public partial class FsmNodeViewModel : FsmNodeViewModelBase //, IDropTarget
 {
     [ObservableProperty]
-    private Point _anchor;
-
-    [ObservableProperty]
-    private IBrush _borderBrush = GraphColors.DefaultNode;
-
-    [ObservableProperty]
-    private CornerRadius _cornerRadius = new(3);
-
-    [ObservableProperty]
-    private uint _guid;
-
-    [ObservableProperty]
     private string? _fsmSource;
+
+    [ObservableProperty]
+    private bool _isBranch;
 
     [ObservableProperty]
     private bool _hasSelfTransition;
@@ -53,21 +44,17 @@ public partial class NodeViewModel : NodeViewModelBase //, IDropTarget
     public string FsmName { get; set; }
     public uint NameHash { get; set; }
 
+
     /// <summary>
     /// Parent group/layer this node belongs to.
     /// </summary>
-    public GroupNodeViewModel ParentGroup { get; set; }
+    public FsmGroupNodeViewModel ParentGroup { get; set; }
 
     /// <summary>
     /// Transitions FROM this node.
     /// </summary>
     public ObservableCollection<TransitionViewModel> Transitions { get; set; } = [];
-
-    /// <summary>
-    /// Execution components.
-    /// </summary>
-    public ObservableCollection<NodeComponentViewModel> Components { get; set; } = [];
-
+    
     /// <summary>
     /// Whether this node is the root of the layer it belongs to.
     /// </summary>
@@ -75,7 +62,7 @@ public partial class NodeViewModel : NodeViewModelBase //, IDropTarget
 
     public bool IsEndNode { get; set; }
 
-    public NodeViewModel()
+    public FsmNodeViewModel()
     {
         if (Design.IsDesignMode)
         {
@@ -143,6 +130,28 @@ public partial class NodeViewModel : NodeViewModelBase //, IDropTarget
         }
     }
 
+    [RelayCommand]
+    public void OnComponentDelete(object param)
+    {
+        if (param is not NodeComponentViewModel nodeComponentVM)
+            return;
+
+        DeleteComponent(nodeComponentVM);
+    }
+
+    /// <summary>
+    /// Deletes a component from the node.
+    /// </summary>
+    /// <param name="component"></param>
+    public void DeleteComponent(NodeComponentViewModel component)
+    {
+        Components.Remove(component);
+
+        var editor = (FsmEditorViewModel)ParentEditor;
+        editor.UnregisterFsmElementGuid(component.Component.Guid);
+
+        ((FsmNodeViewModel)component.Parent).UpdateBorderColor();
+    }
 
     /*
     public void DragOver(IDropInfo dropInfo)
@@ -184,27 +193,5 @@ public partial class NodeViewModel : NodeViewModelBase //, IDropTarget
             AddComponentFromToolboxItem(componentTvi);
         }
         */
-    }
-
-
-    [RelayCommand]
-    public void OnComponentDelete(object param)
-    {
-        if (param is not NodeComponentViewModel nodeComponentVM)
-            return;
-
-        DeleteComponent(nodeComponentVM);
-    }
-
-    /// <summary>
-    /// Deletes a component from the node.
-    /// </summary>
-    /// <param name="component"></param>
-    public void DeleteComponent(NodeComponentViewModel component)
-    {
-        Components.Remove(component);
-        ParentEditor.UnregisterFsmElementGuid(component.Component.Guid);
-
-        component.Parent.UpdateBorderColor();
     }
 }

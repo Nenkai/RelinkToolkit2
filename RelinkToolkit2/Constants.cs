@@ -19,4 +19,8 @@ public class GraphColors
 
     public static IBrush ComponentBorderHighlight => Brushes.Orange;
     public static IBrush ComponentBorderNormal => Brushes.DarkGray;
+
+    public static IBrush BTDecorationNode => Brushes.Orange;
+    public static IBrush BTRootNode => Brushes.Green;
+    public static IBrush BTActionNode => Brushes.Blue;
 }

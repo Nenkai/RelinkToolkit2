@@ -9,30 +9,6 @@ using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 
-using GBFRDataTools.FSM.Components;
-
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Msagl.Core.Geometry.Curves;
-using Microsoft.Msagl.Core.Layout;
-using Microsoft.Msagl.Core.Routing;
-
-using Microsoft.Msagl.Layout.Layered;
-
-using MsBox.Avalonia;
-using MsBox.Avalonia.Enums;
-
-using Nodify;
-
-using RelinkToolkit2.Messages.Fsm;
-using RelinkToolkit2.Services;
-using RelinkToolkit2.ViewModels;
-using RelinkToolkit2.ViewModels.Documents;
-using RelinkToolkit2.ViewModels.Fsm;
-using RelinkToolkit2.ViewModels.Fsm.TransitionComponents;
-using RelinkToolkit2.ViewModels.Menu;
-using RelinkToolkit2.ViewModels.Search;
-using RelinkToolkit2.Views.Documents.Fsm;
-
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

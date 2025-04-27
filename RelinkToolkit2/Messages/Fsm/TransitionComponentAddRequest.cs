@@ -8,9 +8,7 @@ using CommunityToolkit.Mvvm.Messaging.Messages;
 
 using GBFRDataTools.FSM.Components;
 
-using RelinkToolkit2.ViewModels.Fsm;
-
-namespace RelinkToolkit2.Messages.Fsm;
+namespace RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents;
 
 /// <summary>
 /// Represents a message for when a selected connection has changed.

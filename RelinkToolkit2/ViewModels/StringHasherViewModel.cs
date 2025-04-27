@@ -19,7 +19,7 @@ using RelinkToolkit2.Messages.Dialogs;
 using RelinkToolkit2.Messages.Documents;
 using RelinkToolkit2.Messages.IO;
 using RelinkToolkit2.ViewModels.Documents;
-using RelinkToolkit2.ViewModels.Fsm;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor;
 using RelinkToolkit2.ViewModels.TreeView;
 
 using System;

@@ -3,16 +3,17 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:nodify="https://miroiu.github.io/nodify"
-             mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="200"
-			 xmlns:fsmVMs="using:RelinkToolkit2.ViewModels.Fsm"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="200"
+			 xmlns:graphVMs="using:RelinkToolkit2.ViewModels.Documents.GraphEditor"
+			 xmlns:nodeVMs="using:RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes"
 			 xmlns:search="using:RelinkToolkit2.Views"
 			 xmlns:b="using:RelinkToolkit2.Behaviors"
 			 xmlns:controls="using:RelinkToolkit2.Controls"
 			 xmlns:local="using:RelinkToolkit2"
 			 xmlns:converters="using:RelinkToolkit2.Converters"
-             x:Class="RelinkToolkit2.Views.Documents.Fsm.FsmNodeView"
+             x:Class="RelinkToolkit2.Views.Documents.GraphEditor.FsmNodeView"
 			 xmlns:sys="clr-namespace:System;assembly=netstandard"
-			 x:DataType="fsmVMs:NodeViewModel"
+			 x:DataType="nodeVMs:FsmNodeViewModel"
 			 DataContextChanged="UserControl_DataContextChanged">
 
 	<UserControl.Resources>
@@ -46,7 +47,7 @@
 	</UserControl.Styles>
 	
 	<Design.DataContext>
-		<fsmVMs:NodeViewModel/>
+		<nodeVMs:FsmNodeViewModel/>
 	</Design.DataContext>
 	
 	<nodify:StateNode x:Name="Node"
@@ -58,7 +59,7 @@
 			DragDrop.AllowDrop="True">
 		<!-- For execution components -->
 		<nodify:StateNode.ContentTemplate>
-			<DataTemplate DataType="fsmVMs:NodeViewModel">
+			<DataTemplate DataType="nodeVMs:FsmNodeViewModel">
 				<StackPanel Orientation="Vertical">
 					<Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto">
 						<!-- Make sure to not display edit cursor while hovering over the text block
@@ -81,14 +82,24 @@
 								</Animation>
 							</Label.Resources>
 						</Label>
-						
-						<Panel Grid.Column="4" Background="Transparent" IsVisible="{Binding HasSelfTransition}" Cursor="Hand" PointerPressed="Panel_PointerPressed">
-							<Image Width="18" Height="18" IsVisible="{Binding HasSelfTransition}">
-								<Image.Source>
-									<controls:VectorIconDrawingImage Brush="White" Drawing="{Binding Source='Material.Repeat', Converter={StaticResource vectorIconConverter}}"/>
-								</Image.Source>
-							</Image>
-						</Panel>
+
+						<StackPanel Orientation="Horizontal" Grid.Column="4">
+							<Panel IsVisible="{Binding IsBranch}" Background="Transparent" ToolTip.Tip="Purpose unknown.">
+								<Image Width="18" Height="18" IsVisible="{Binding IsBranch}">
+									<Image.Source>
+										<controls:VectorIconDrawingImage Brush="White" Drawing="{Binding Source='Material.SourceBranch', Converter={StaticResource vectorIconConverter}}"/>
+									</Image.Source>
+								</Image>
+							</Panel>
+							<Panel IsVisible="{Binding HasSelfTransition}" Background="Transparent" Cursor="Hand" PointerPressed="Panel_PointerPressed" ToolTip.Tip="Node transitions to itself (loop).">
+								<Image Width="18" Height="18" IsVisible="{Binding HasSelfTransition}">
+									<Image.Source>
+										<controls:VectorIconDrawingImage Brush="White" Drawing="{Binding Source='Material.Repeat', Converter={StaticResource vectorIconConverter}}"/>
+									</Image.Source>
+								</Image>
+							</Panel>
+						</StackPanel>
+
 					</Grid>
 
 					<TextBlock Text="{Binding Guid}" Foreground="DimGray" FontSize="10" Margin="4,-1,0,0"/>
@@ -102,7 +113,7 @@
 
 							<!-- Spacing between execution components -->
 							<ItemsControl.ItemTemplate>
-								<DataTemplate DataType="fsmVMs:NodeComponentViewModel">
+								<DataTemplate DataType="graphVMs:NodeComponentViewModel">
 									<Border Cursor="Hand" BorderBrush="{Binding BorderBrush}" BorderThickness="1" 
 											PointerEntered="Border_PointerEntered" 
 											PointerExited="Border_PointerExited" Margin="0 2 0 0" 

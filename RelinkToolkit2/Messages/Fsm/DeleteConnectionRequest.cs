@@ -9,7 +9,7 @@ using CommunityToolkit.Mvvm.Messaging.Messages;
 
 using GBFRDataTools.FSM;
 
-using RelinkToolkit2.ViewModels.Fsm;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor;
 
 namespace RelinkToolkit2.Messages.Fsm;
 

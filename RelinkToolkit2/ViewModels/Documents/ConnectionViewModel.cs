@@ -19,7 +19,7 @@ using GBFRDataTools.FSM.Entities;
 using Nodify;
 
 using RelinkToolkit2.Messages.Fsm;
-using RelinkToolkit2.ViewModels.Fsm.TransitionComponents;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents;
 
 namespace RelinkToolkit2.ViewModels.Documents;
 

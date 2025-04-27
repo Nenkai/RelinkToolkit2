@@ -14,24 +14,25 @@ using GBFRDataTools.FSM.Entities;
 
 using Nodify;
 
-using RelinkToolkit2.ViewModels.Fsm.TransitionComponents;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 
-namespace RelinkToolkit2.ViewModels.Fsm;
+namespace RelinkToolkit2.ViewModels.Documents.GraphEditor;
 
 /// <summary>
 /// Represents a transition between two nodes on the graph (one direction).
 /// </summary>
 public partial class TransitionViewModel : ObservableObject
 {
-    public GraphConnectionViewModel ParentConnection { get; set; }
+    public FsmConnectionViewModel ParentConnection { get; set; }
 
-    public required NodeViewModel Source { get; set; }
-    public required NodeViewModel Target { get; set; }
+    public required FsmNodeViewModel Source { get; set; }
+    public required FsmNodeViewModel Target { get; set; }
     public bool IsOverrideTransition { get; set; }
 
     public ObservableCollection<TransitionConditionBase> ConditionComponents { get; set; } = [];
 
-    public TransitionViewModel(GraphConnectionViewModel parentConnection)
+    public TransitionViewModel(FsmConnectionViewModel parentConnection)
     {
         ParentConnection = parentConnection;
     }

@@ -16,18 +16,18 @@ using Dock.Model.Mvvm.Controls;
 
 using GBFRDataTools.FSM.Components.Conditions.Quest;
 
-using RelinkToolkit2.Messages;
 using RelinkToolkit2.Messages.Fsm;
 using RelinkToolkit2.ViewModels.Documents;
-using RelinkToolkit2.ViewModels.Fsm;
-using RelinkToolkit2.ViewModels.Fsm.TransitionComponents;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents;
 
 namespace RelinkToolkit2.ViewModels;
 
 public partial class ConnectionEditorViewModel : Tool
 {
     [ObservableProperty]
-    private GraphConnectionViewModel? _connection;
+    private FsmConnectionViewModel? _connection;
 
     public ConnectionEditorViewModel() 
     {
@@ -37,10 +37,10 @@ public partial class ConnectionEditorViewModel : Tool
         if (Design.IsDesignMode)
         {
             var editor = new FsmEditorViewModel();
-            _connection = new GraphConnectionViewModel()
+            _connection = new FsmConnectionViewModel()
             {
-                Source = new NodeViewModel() { ParentEditor = editor, },
-                Target = new NodeViewModel() { ParentEditor = editor, },
+                Source = new FsmNodeViewModel() { ParentEditor = editor, },
+                Target = new FsmNodeViewModel() { ParentEditor = editor, },
             };
 
             for (int i = 0; i < 5; i++)

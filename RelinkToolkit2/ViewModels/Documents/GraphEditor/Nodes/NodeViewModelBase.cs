@@ -14,17 +14,17 @@ using CommunityToolkit.Mvvm.Messaging;
 using RelinkToolkit2.Messages.Fsm;
 using RelinkToolkit2.ViewModels.Documents;
 
-namespace RelinkToolkit2.ViewModels.Fsm;
+namespace RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 
 /// <summary>
-/// Base node on a graph. Can be a node or a group.
+/// Base node on a graph.
 /// </summary>
 public partial class NodeViewModelBase : ObservableObject
 {
     /// <summary>
     /// Editor to which this node belongs to.
     /// </summary>
-    public required FsmEditorViewModel ParentEditor { get; set; }
+    public required EditorDocumentBase ParentEditor { get; set; }
 
     /// <summary>
     /// Location of the node (top left). For center, refer to <see cref="Center"/>
@@ -37,12 +37,6 @@ public partial class NodeViewModelBase : ObservableObject
     /// </summary>
     [ObservableProperty]
     private Size _size;
-
-    /// <summary>
-    /// Layer for this node.
-    /// </summary>
-    [ObservableProperty]
-    private int _layerIndex;
 
     /// <summary>
     /// Title/Name.
@@ -64,12 +58,6 @@ public partial class NodeViewModelBase : ObservableObject
     public Rect BoundaryBox => new(Location, Size);
 
     public Rect CollisionBox => BoundaryBox.Deflate(new Thickness(Size.Width * 0.25, Size.Height * 0.25));
-
-    partial void OnLayerIndexChanged(int value)
-    {
-        if (this is NodeViewModel node)
-            WeakReferenceMessenger.Default.Send(new FsmNodeLayerChangedMessage(this), node.Guid);
-    }
 
     public static bool AreIntersected(Rect r1, Rect r2)
     {

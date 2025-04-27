@@ -14,26 +14,27 @@ using CommunityToolkit.Mvvm.Input;
 
 using GBFRDataTools.FSM.Entities;
 
-namespace RelinkToolkit2.ViewModels.Fsm;
+namespace RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 
 /// <summary>
-/// Represents a node on the graph.
+/// Represents a layer group on a FSM graph.
 /// </summary>
-public partial class GroupNodeViewModel : NodeViewModelBase //, IDropTarget
+public partial class FsmGroupNodeViewModel : FsmNodeViewModelBase //, IDropTarget
 {
     /// <summary>
     /// Guid for this group, mainly for tree view referencing.
     /// </summary>
     [ObservableProperty]
-    private Guid _id = Guid.CreateVersion7();
+    private Guid _id = System.Guid.CreateVersion7();
 
-    // Leave this here even though NodeViewModelBase has it.
-    // Causes an issue with uh, group sizing.
+    [ObservableProperty]
+    private int _layerIndex;
+
     [ObservableProperty]
     private Size _size;
 
     /// <summary>
     /// Nodes in this group/layer.
     /// </summary>
-    public ObservableCollection<NodeViewModel> Nodes { get; set; } = [];
+    public ObservableCollection<FsmNodeViewModel> Nodes { get; set; } = [];
 }

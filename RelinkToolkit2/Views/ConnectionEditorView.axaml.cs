@@ -9,10 +9,9 @@ using Nodify;
 
 using RelinkToolkit2.Messages.Fsm;
 using RelinkToolkit2.ViewModels.Documents;
-using RelinkToolkit2.ViewModels.Fsm;
-using RelinkToolkit2.ViewModels.Fsm.TransitionComponents;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents;
 using RelinkToolkit2.ViewModels.Search;
-using RelinkToolkit2.Views.Documents.Fsm;
 
 using System;
 using System.Collections.Generic;
@@ -43,7 +42,7 @@ public partial class ConnectionEditorView : UserControl
         if (dataContext is not TransitionViewModel transition || transition.Source == transition.Target)
             return;
 
-        GraphConnectionViewModel connection = transition.ParentConnection;
+        FsmConnectionViewModel connection = transition.ParentConnection;
         bool isBackwards = connection.Target == transition.Source;
         connection.SetAnimatingState(true, isBackwards);
     }
@@ -57,7 +56,7 @@ public partial class ConnectionEditorView : UserControl
         if (dataContext is not TransitionViewModel transition)
             return;
 
-        GraphConnectionViewModel connection = transition.ParentConnection;
+        FsmConnectionViewModel connection = transition.ParentConnection;
         connection.SetAnimatingState(false, false);
     }
 

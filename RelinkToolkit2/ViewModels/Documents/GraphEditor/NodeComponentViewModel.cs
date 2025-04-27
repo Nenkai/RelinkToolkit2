@@ -4,16 +4,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 using GBFRDataTools.FSM.Components;
-using GBFRDataTools.FSM.Components.Actions;
-using GBFRDataTools.FSM.Components.Actions.AI.PlayerAI;
-using GBFRDataTools.FSM.Components.Actions.Battle;
-using GBFRDataTools.FSM.Components.Actions.Behavior;
-using GBFRDataTools.FSM.Components.Actions.BlackBoard;
-using GBFRDataTools.FSM.Components.Actions.Quest;
-using GBFRDataTools.FSM.Components.Actions.UI.Dialog;
-using GBFRDataTools.FSM.Components.Actions.UI.Flow;
-using GBFRDataTools.FSM.Components.Actions.UI.Tutorial;
-using GBFRDataTools.FSM.Components.Actions.UI.View;
 
 using System;
 using System.Collections.Generic;
@@ -23,7 +13,9 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RelinkToolkit2.ViewModels.Fsm;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
+
+namespace RelinkToolkit2.ViewModels.Documents.GraphEditor;
 
 /// <summary>
 /// Execution component within a node.
@@ -51,7 +43,7 @@ public partial class NodeComponentViewModel : ObservableObject
         UpdateCaption(component);
     }
 
-    private void Component_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    private void Component_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         UpdateCaption(Component);
     }

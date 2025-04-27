@@ -10,12 +10,9 @@ using Avalonia.VisualTree;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 
-using GBFRDataTools.Entities.Scene.Objects;
-
-using Nodify;
-
 using RelinkToolkit2.Messages.Fsm;
-using RelinkToolkit2.ViewModels.Fsm;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -23,13 +20,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace RelinkToolkit2.Views.Documents.Fsm;
+namespace RelinkToolkit2.Views.Documents.GraphEditor;
 
-public partial class FsmNodeView : UserControl
+public partial class BTNodeView : UserControl
 {
     private Label _label;
 
-    public FsmNodeView()
+    public BTNodeView()
     {
         InitializeComponent();
 
@@ -108,7 +105,7 @@ public partial class FsmNodeView : UserControl
             }
             else if (properties.IsRightButtonPressed)
             {
-                var parentNodeView = control.FindLogicalAncestorOfType<FsmNodeView>()!;
+                var parentNodeView = control.FindLogicalAncestorOfType<BTNodeView>()!;
 
                 // We gotta pass this to the editor's view to make the context menu.
                 WeakReferenceMessenger.Default.Send(new FsmComponentContextMenuRequest(parentNodeView, componentViewModel));
@@ -138,29 +135,6 @@ public partial class FsmNodeView : UserControl
             return;
 
         componentViewModel.BorderBrush = GraphColors.ComponentBorderNormal;
-    }
-
-    private void Panel_PointerPressed(object? sender, PointerPressedEventArgs e)
-    {
-        // Running XAML animation on the Rect control. 
-        //animation.RunAsync(this);
-
-
-        if (e.Pointer.Type == PointerType.Mouse)
-        {
-            var properties = e.GetCurrentPoint(this).Properties;
-            if (!properties.IsLeftButtonPressed)
-                return;
-        }
-
-        if (sender is not Control control)
-            return;
-
-        if (control.DataContext is not NodeViewModel nvm)
-            return;
-
-        TransitionViewModel selfTrans = nvm.Transitions.First(e => e.Source == e.Target);
-        WeakReferenceMessenger.Default.Send(new EditConnectionRequest(selfTrans.ParentConnection));
     }
 
     private void Label_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)

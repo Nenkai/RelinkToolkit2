@@ -25,13 +25,13 @@ using Nodify;
 
 using RelinkToolkit2.Messages.Fsm;
 using RelinkToolkit2.Services;
-using RelinkToolkit2.ViewModels;
 using RelinkToolkit2.ViewModels.Documents;
-using RelinkToolkit2.ViewModels.Fsm;
-using RelinkToolkit2.ViewModels.Fsm.TransitionComponents;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents;
 using RelinkToolkit2.ViewModels.Menu;
 using RelinkToolkit2.ViewModels.Search;
-using RelinkToolkit2.Views.Documents.Fsm;
+using RelinkToolkit2.Views.Documents;
 
 using System;
 using System.Collections.Generic;
@@ -43,7 +43,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace RelinkToolkit2.Views.Documents;
+namespace RelinkToolkit2.Views.Documents.GraphEditor;
 
 public partial class FsmEditorView : UserControl
 {
@@ -84,7 +84,7 @@ public partial class FsmEditorView : UserControl
 
         WeakReferenceMessenger.Default.Register<FsmComponentContextMenuRequest>(this, (recipient, message) =>
         {
-            ObservableCollection<MenuItemViewModel> items = CreateNodeContextMenu(message.NodeView, message.Component.Parent, message.Component);
+            ObservableCollection<MenuItemViewModel> items = CreateNodeContextMenu((FsmNodeView)message.NodeView, (FsmNodeViewModel)message.Component.Parent, message.Component);
 
             var flyout = new MenuFlyout();
             flyout.ItemsSource = items;
@@ -136,8 +136,8 @@ public partial class FsmEditorView : UserControl
             // Each layer will go into a different graph.
             // All root nodes will be grouped aswell for display purposes. They just won't actually be inserted into a group.
             ItemCollection items = Editor.Items;
-            var groups = items.Where(e => e is NodeViewModel)
-                .Cast<NodeViewModel>()
+            var groups = items.Where(e => e is FsmNodeViewModel)
+                .Cast<FsmNodeViewModel>()
                 .GroupBy(e => e.LayerIndex);
 
             Dictionary<int /* layerIndex */, GeometryGraph> graphPerLayer = [];
@@ -148,12 +148,15 @@ public partial class FsmEditorView : UserControl
             }
 
             // Link nodes together. We won't link layers together yet as we need to compute how big they are.
-            foreach (GraphConnectionViewModel connection in Editor.Connections)
+            foreach (FsmConnectionViewModel connection in Editor.Connections)
             {
-                if (connection.Source.LayerIndex != connection.Target.LayerIndex)
+                FsmNodeViewModel srcFsmNode = (FsmNodeViewModel)connection.Source;
+                FsmNodeViewModel dstFsmNode = (FsmNodeViewModel)connection.Target;
+
+                if (srcFsmNode.LayerIndex != dstFsmNode.LayerIndex)
                     continue;
 
-                GeometryGraph layerGraph = graphPerLayer[connection.Source.LayerIndex];
+                GeometryGraph layerGraph = graphPerLayer[srcFsmNode.LayerIndex];
 
                 int width = (connection.Transitions.Any() && connection.Transitions[0].ConditionComponents.Any()) ? 150 : 50;
                 Edge edge = new(layerGraph.FindNodeByUserData(connection.Source), layerGraph.FindNodeByUserData(connection.Target), width, 30, 20);
@@ -178,7 +181,7 @@ public partial class FsmEditorView : UserControl
             var mainGraph = new GeometryGraph();
 
             // Add the root nodes.
-            Dictionary<int /* layerIndex*/, GroupNodeViewModel> layerToGroupNode = [];
+            Dictionary<int /* layerIndex*/, FsmGroupNodeViewModel> layerToGroupNode = [];
             const int GroupEdgePadding = 15;
             const int VerticalPadding = 40; // 30 (group header height more or less)
 
@@ -196,7 +199,7 @@ public partial class FsmEditorView : UserControl
                     double maxX = float.MinValue;
                     double maxY = float.MinValue;
 
-                    if (editorVm.LayerGroups.TryGetValue(layerGraph.Key, out GroupNodeViewModel groupVm))
+                    if (editorVm.LayerGroups.TryGetValue(layerGraph.Key, out FsmGroupNodeViewModel groupVm))
                     {
                         foreach (var node in layerGraph.Value.Nodes)
                         {
@@ -235,12 +238,14 @@ public partial class FsmEditorView : UserControl
 
             // Our main graph has all the root nodes as well as each layer now.
             // Connect everything.
-            foreach (GraphConnectionViewModel connection in Editor.Connections)
+            foreach (FsmConnectionViewModel connection in Editor.Connections)
             {
-                if (connection.Source.LayerIndex != connection.Target.LayerIndex) // Layer to layer connection.
+                FsmNodeViewModel srcFsmNode = (FsmNodeViewModel)connection.Source;
+                FsmNodeViewModel dstFsmNode = (FsmNodeViewModel)connection.Target;
+                if (srcFsmNode.LayerIndex != dstFsmNode.LayerIndex) // Layer to layer connection.
                 {
-                    var sourceNode = mainGraph.FindNodeByUserData(layerToGroupNode[connection.Source.LayerIndex]);
-                    var targetNode = mainGraph.FindNodeByUserData(layerToGroupNode[connection.Target.LayerIndex]);
+                    var sourceNode = mainGraph.FindNodeByUserData(layerToGroupNode[srcFsmNode.LayerIndex]);
+                    var targetNode = mainGraph.FindNodeByUserData(layerToGroupNode[dstFsmNode.LayerIndex]);
 
                     Edge edge = new(sourceNode, targetNode, 30, 30, 20);
                     mainGraph.Edges.Add(edge);
@@ -267,7 +272,7 @@ public partial class FsmEditorView : UserControl
                 nvm.Location = new Point(graphNode.BoundingBox.Left - mainGraph.BoundingBox.Center.X,
                                          graphNode.BoundingBox.Bottom - mainGraph.BoundingBox.Center.Y);
 
-                if (nvm is GroupNodeViewModel groupNode)
+                if (nvm is FsmGroupNodeViewModel groupNode)
                 {
                     // Layer Graph nodes -> Main Graph
                     GeometryGraph layerGraph = graphPerLayer[groupNode.LayerIndex];
@@ -322,7 +327,7 @@ public partial class FsmEditorView : UserControl
                 return;
 
             FsmNodeView nodeView = (FsmNodeView)sender!;
-            var nodeVM = (NodeViewModel)nodeView.DataContext!;
+            var nodeVM = (FsmNodeViewModel)nodeView.DataContext!;
 
             ObservableCollection<MenuItemViewModel> items = CreateNodeContextMenu(nodeView, nodeVM);
 
@@ -332,7 +337,7 @@ public partial class FsmEditorView : UserControl
         }
     }
 
-    private ObservableCollection<MenuItemViewModel> CreateNodeContextMenu(FsmNodeView nodeView, NodeViewModel nodeVM, NodeComponentViewModel? componentVM = null)
+    private ObservableCollection<MenuItemViewModel> CreateNodeContextMenu(FsmNodeView nodeView, FsmNodeViewModel nodeVM, NodeComponentViewModel? componentVM = null)
     {
         bool canAddComponent = !nodeVM.IsEndNode && // End nodes don't physically exist therefore they cannot have components
             (string.IsNullOrEmpty(nodeVM.FsmName) && string.IsNullOrEmpty(nodeVM.FsmFolderName)) && // Nodes that call fsm files don't seem to have components
@@ -369,7 +374,7 @@ public partial class FsmEditorView : UserControl
             Header = !nodeVM.HasSelfTransition ? "Create Self Transition" : $"Remove Self Transition",
             IconKind = "Material.ShapeCirclePlus",
             Enabled = (!nodeVM.HasSelfTransition && !nodeVM.IsEndNode) || nodeVM.HasSelfTransition,
-            Command = new RelayCommand<NodeViewModel>(NodeContextMenu_CreateSelfTransition!),
+            Command = new RelayCommand<FsmNodeViewModel>(NodeContextMenu_CreateSelfTransition!),
             Parameter = nodeVM,
         });
 
@@ -378,7 +383,7 @@ public partial class FsmEditorView : UserControl
             Header = $"Edit Name",
             IconKind = "Material.Pencil",
             Enabled = true,
-            Command = new RelayCommand<NodeViewModel>(NodeContextMenu_EditNodeName),
+            Command = new RelayCommand<FsmNodeViewModel>(NodeContextMenu_EditNodeName),
             Parameter = nodeVM,
         });
 
@@ -388,7 +393,7 @@ public partial class FsmEditorView : UserControl
             Header = !hasBaseFsm ? $"Link to Base FSM" : "Remove Base FSM Link",
             IconKind = !hasBaseFsm ? "Material.LinkVariantPlus" : "Material.LinkVariantRemove",
             Enabled = (!hasBaseFsm && !nodeVM.Components.Any() && !nodeVM.IsEndNode) || hasBaseFsm,
-            Command = new AsyncRelayCommand<NodeViewModel>(NodeContextMenu_LinkToBaseFSM!),
+            Command = new AsyncRelayCommand<FsmNodeViewModel>(NodeContextMenu_LinkToBaseFSM!),
             Parameter = nodeVM,
         });
 
@@ -397,7 +402,16 @@ public partial class FsmEditorView : UserControl
             Header =  !nodeVM.IsEndNode ? "Set as End Node" : "Unset as End Node",
             IconKind = "Material.Octagon",
             Enabled = (!nodeVM.IsEndNode && canBeEndNode) || nodeVM.IsEndNode,
-            Command = new RelayCommand<NodeViewModel>(NodeContextMenu_SetAsEndNode),
+            Command = new RelayCommand<FsmNodeViewModel>(NodeContextMenu_SetAsEndNode),
+            Parameter = nodeVM,
+        });
+
+        items.Add(new MenuItemViewModel()
+        {
+            Header = !nodeVM.IsBranch ? "Set As Branch" : $"Unset As Branch",
+            IconKind = !nodeVM.IsBranch ? "Material.SourceBranchPlus" : "Material.SourceBranchMinus",
+            Enabled = !nodeVM.IsEndNode,
+            Command = new RelayCommand<FsmNodeViewModel>(NodeContextMenu_SetBranch!),
             Parameter = nodeVM,
         });
 
@@ -435,7 +449,7 @@ public partial class FsmEditorView : UserControl
                                 Header = "Edit Connection...",
                                 IconKind = "Material.TransitConnectionHorizontal",
                                 Enabled = true,
-                                Command = new RelayCommand<GraphConnectionViewModel>(NodeContextMenu_ConnectionSelected!),
+                                Command = new RelayCommand<FsmConnectionViewModel>(NodeContextMenu_ConnectionSelected!),
                                 Parameter = linkedNode.ParentConnection,
                             },
                             new MenuItemViewModel()
@@ -443,7 +457,7 @@ public partial class FsmEditorView : UserControl
                                 Header = "Delete Connection",
                                 IconKind = "Material.Connection",
                                 Enabled = true,
-                                Command = new RelayCommand<GraphConnectionViewModel>(NodeContextMenu_DeleteConnection!),
+                                Command = new RelayCommand<FsmConnectionViewModel>(NodeContextMenu_DeleteConnection!),
                                 Parameter = linkedNode.ParentConnection,
                             },
                             new MenuItemViewModel()
@@ -481,7 +495,7 @@ public partial class FsmEditorView : UserControl
             Header = $"Delete Node",
             IconKind = "Material.Delete",
             Enabled = canDeleteNode,
-            Command = new RelayCommand<NodeViewModel>(NodeContextMenu_DeleteNode),
+            Command = new RelayCommand<FsmNodeViewModel>(NodeContextMenu_DeleteNode),
             Parameter = nodeVM,
         });
 
@@ -490,21 +504,21 @@ public partial class FsmEditorView : UserControl
 
     private void NodeContextMenu_DeleteComponent(NodeComponentViewModel? componentVM)
     {
-        componentVM!.Parent.DeleteComponent(componentVM);
+        ((FsmNodeViewModel)componentVM!.Parent).DeleteComponent(componentVM);
     }
 
-    private void NodeContextMenu_SetAsEndNode(NodeViewModel? nodeVM)
+    private void NodeContextMenu_SetAsEndNode(FsmNodeViewModel? nodeVM)
     {
         nodeVM!.IsEndNode = !nodeVM.IsEndNode;
         nodeVM.UpdateBorderColor();
     }
 
-    private void NodeContextMenu_EditNodeName(NodeViewModel? nodeVM)
+    private void NodeContextMenu_EditNodeName(FsmNodeViewModel? nodeVM)
     {
         nodeVM!.IsRenaming = true;
     }
 
-    private async Task NodeContextMenu_LinkToBaseFSM(NodeViewModel nodeViewModel)
+    private async Task NodeContextMenu_LinkToBaseFSM(FsmNodeViewModel nodeViewModel)
     {
         if (!string.IsNullOrEmpty(nodeViewModel.FsmName))
         {
@@ -552,12 +566,12 @@ public partial class FsmEditorView : UserControl
         nodeViewModel.SetBaseFsm(className, fsmName);
     }
 
-    private void NodeContextMenu_ConnectionSelected(GraphConnectionViewModel graphConnection)
+    private void NodeContextMenu_ConnectionSelected(FsmConnectionViewModel graphConnection)
     {
         WeakReferenceMessenger.Default.Send(new EditConnectionRequest(graphConnection));
     }
 
-    private void NodeContextMenu_DeleteConnection(GraphConnectionViewModel graphConnection)
+    private void NodeContextMenu_DeleteConnection(FsmConnectionViewModel graphConnection)
     {
         var editor = (FsmEditorViewModel)this.DataContext!;
         editor.RemoveConnection(graphConnection);
@@ -662,7 +676,7 @@ public partial class FsmEditorView : UserControl
         if (item.Data is not Type type)
             return;
 
-        if (searchVM.Context is not NodeViewModel nvm)
+        if (searchVM.Context is not FsmNodeViewModel nvm)
             return;
 
         var component = Activator.CreateInstance(type);
@@ -682,14 +696,21 @@ public partial class FsmEditorView : UserControl
         WeakReferenceMessenger.Default.Send(new FsmComponentSelectedMessage(btComponent));
     }
 
-    private void NodeContextMenu_CreateSelfTransition(NodeViewModel nodeViewModel)
+    private void NodeContextMenu_SetBranch(FsmNodeViewModel nodeViewModel)
+    {
+        nodeViewModel.IsBranch = !nodeViewModel.IsBranch;
+    }
+
+    private void NodeContextMenu_CreateSelfTransition(FsmNodeViewModel nodeViewModel)
     {
         if (nodeViewModel.HasSelfTransition)
         {
             nodeViewModel.HasSelfTransition = false;
 
             TransitionViewModel transition = nodeViewModel.Transitions.FirstOrDefault(e => e.Source == nodeViewModel && e.Target == nodeViewModel)!;
-            transition.ParentConnection.Transitions.Remove(transition);
+
+            FsmConnectionViewModel fsmParentConnection = (FsmConnectionViewModel)transition.ParentConnection;
+            fsmParentConnection.Transitions.Remove(transition);
             nodeViewModel.Transitions.Remove(transition);
 
             var editorVm = (FsmEditorViewModel)Editor.DataContext!;
@@ -703,7 +724,7 @@ public partial class FsmEditorView : UserControl
         {
             nodeViewModel!.HasSelfTransition = true;
 
-            var connection = new GraphConnectionViewModel() { Source = nodeViewModel, Target = nodeViewModel };
+            var connection = new FsmConnectionViewModel() { Source = nodeViewModel, Target = nodeViewModel };
             var transition = new TransitionViewModel(connection)
             {
                 Source = nodeViewModel,
@@ -716,7 +737,7 @@ public partial class FsmEditorView : UserControl
         }
     }
 
-    private void NodeContextMenu_DeleteNode(NodeViewModel? node)
+    private void NodeContextMenu_DeleteNode(FsmNodeViewModel? node)
     {
         var editorVm = (FsmEditorViewModel)Editor.DataContext!;
         editorVm.RemoveNode(node!);
@@ -769,7 +790,7 @@ public partial class FsmEditorView : UserControl
                 return;
 
             var groupingNode = (GroupingNode)sender!;
-            var groupVM = (GroupNodeViewModel)groupingNode.DataContext!;
+            var groupVM = (FsmGroupNodeViewModel)groupingNode.DataContext!;
 
             var editorVm = (FsmEditorViewModel)this.DataContext!;
 
@@ -797,7 +818,7 @@ public partial class FsmEditorView : UserControl
                 Header = $"Edit Layer Name",
                 IconKind = "Material.Pencil",
                 Enabled = true,
-                Command = new RelayCommand<GroupNodeViewModel>(GroupContextMenu_EditGroupName!),
+                Command = new RelayCommand<FsmGroupNodeViewModel>(GroupContextMenu_EditGroupName!),
                 Parameter = groupVM,
             });
             items.Add(MenuItemViewModel.Separator);
@@ -806,7 +827,7 @@ public partial class FsmEditorView : UserControl
                 Header = "Delete Layer",
                 IconKind = "Material.LayersMinus",
                 Enabled = true,
-                Command = new RelayCommand<GroupNodeViewModel>(GroupContextMenu_DeleteLayer!),
+                Command = new RelayCommand<FsmGroupNodeViewModel>(GroupContextMenu_DeleteLayer!),
                 Parameter = groupVM
             });
 
@@ -818,12 +839,12 @@ public partial class FsmEditorView : UserControl
         }
     }
 
-    private void GroupContextMenu_EditGroupName(GroupNodeViewModel groupVm)
+    private void GroupContextMenu_EditGroupName(FsmGroupNodeViewModel groupVm)
     {
         groupVm.IsRenaming = true;
     }
 
-    private async void GroupContextMenu_DeleteLayer(GroupNodeViewModel groupVm)
+    private async void GroupContextMenu_DeleteLayer(FsmGroupNodeViewModel groupVm)
     {
         if (groupVm.Nodes.Count > 0)
         {
@@ -862,8 +883,8 @@ public partial class FsmEditorView : UserControl
             // Each layer will go into a different graph.
             // All root nodes will be grouped aswell for display purposes. They just won't actually be inserted into a group.
             ItemCollection items = Editor.Items;
-            var groups = items.Where(e => e is NodeViewModel)
-                .Cast<NodeViewModel>()
+            var groups = items.Where(e => e is FsmNodeViewModel)
+                .Cast<FsmNodeViewModel>()
                 .GroupBy(e => e.LayerIndex);
 
             Dictionary<int /* layerIndex */, Cluster> graphPerLayer = [];
@@ -898,12 +919,15 @@ public partial class FsmEditorView : UserControl
                 graphPerLayer.Add(layer.Key, cluster);
             }
 
-            foreach (GraphConnectionViewModel connection in Editor.Connections)
+            foreach (FsmConnectionViewModel connection in Editor.Connections)
             {
-                if (connection.Source.LayerIndex != connection.Target.LayerIndex)
+                FsmNodeViewModel srcFsmNode = (FsmNodeViewModel)connection.Source;
+                FsmNodeViewModel dstFsmNode = (FsmNodeViewModel)connection.Target;
+
+                if (srcFsmNode.LayerIndex != dstFsmNode.LayerIndex)
                     continue;
 
-                Cluster layerCluster = graphPerLayer[connection.Source.LayerIndex];
+                Cluster layerCluster = graphPerLayer[srcFsmNode.LayerIndex];
 
                 int width = (connection.Transitions.Any() && connection.Transitions[0].ConditionComponents.Any()) ? 150 : 50;
                 Edge edge = new(layerCluster.Nodes.FirstOrDefault(e => e.UserData == connection.Source), layerCluster.Nodes.FirstOrDefault(e => e.UserData == connection.Target), width, 30, 20);
@@ -912,26 +936,29 @@ public partial class FsmEditorView : UserControl
 
 
             // Add the root nodes.
-            Dictionary<int /* layerIndex*/, GroupNodeViewModel> layerToGroupNode = [];
+            Dictionary<int /* layerIndex*/, FsmGroupNodeViewModel> layerToGroupNode = [];
             const int GroupEdgePadding = 15;
             const int VerticalPadding = 40; // 30 (group header height more or less)
 
             // Our main graph has all the root nodes as well as each layer now.
             // Connect everything.
-            foreach (GraphConnectionViewModel connection in Editor.Connections)
+            foreach (FsmConnectionViewModel connection in Editor.Connections)
             {
-                if (connection.Source.LayerIndex != connection.Target.LayerIndex) // Layer to layer connection.
+                FsmNodeViewModel srcFsmNode = (FsmNodeViewModel)connection.Source;
+                FsmNodeViewModel dstFsmNode = (FsmNodeViewModel)connection.Target;
+
+                if (srcFsmNode.LayerIndex != dstFsmNode.LayerIndex) // Layer to layer connection.
                 {
-                    var sourceNode = graphPerLayer[connection.Source.LayerIndex].Nodes.FirstOrDefault(e => e.UserData == connection.Source);
-                    var targetNode = graphPerLayer[connection.Target.LayerIndex].Nodes.FirstOrDefault(e => e.UserData == connection.Target);
+                    var sourceNode = graphPerLayer[srcFsmNode.LayerIndex].Nodes.FirstOrDefault(e => e.UserData == connection.Source);
+                    var targetNode = graphPerLayer[srcFsmNode.LayerIndex].Nodes.FirstOrDefault(e => e.UserData == connection.Target);
 
                     Edge edge = new(sourceNode, targetNode, 30, 30, 20);
                     mainGraph.Edges.Add(edge);
 
-                    graphPerLayer[connection.Source.LayerIndex].AddOutEdge(new Edge(graphPerLayer[connection.Source.LayerIndex],
-                        graphPerLayer[connection.Target.LayerIndex]));
-                    graphPerLayer[connection.Target.LayerIndex].AddInEdge(new Edge(graphPerLayer[connection.Target.LayerIndex],
-                        graphPerLayer[connection.Source.LayerIndex]));
+                    graphPerLayer[srcFsmNode.LayerIndex].AddOutEdge(new Edge(graphPerLayer[srcFsmNode.LayerIndex],
+                        graphPerLayer[dstFsmNode.LayerIndex]));
+                    graphPerLayer[dstFsmNode.LayerIndex].AddInEdge(new Edge(graphPerLayer[dstFsmNode.LayerIndex],
+                        graphPerLayer[srcFsmNode.LayerIndex]));
                 }
                 // else {} - We don't care for regular transitions happening in sub-layers.
             }

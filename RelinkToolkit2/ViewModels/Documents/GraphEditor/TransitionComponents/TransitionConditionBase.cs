@@ -15,7 +15,7 @@ using GBFRDataTools.FSM.Entities;
 
 using RelinkToolkit2.Messages.Fsm;
 
-namespace RelinkToolkit2.ViewModels.Fsm.TransitionComponents;
+namespace RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents;
 
 public partial class TransitionConditionBase : ObservableObject
 {

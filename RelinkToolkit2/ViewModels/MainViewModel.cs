@@ -25,7 +25,8 @@ using RelinkToolkit2.Messages.Dialogs;
 using RelinkToolkit2.Messages.Documents;
 using RelinkToolkit2.Messages.IO;
 using RelinkToolkit2.ViewModels.Documents;
-using RelinkToolkit2.ViewModels.Fsm;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 using RelinkToolkit2.ViewModels.TreeView;
 
 using System;
@@ -109,6 +110,10 @@ public partial class MainViewModel : ObservableObject
         {
             ProcessFSM(fileResult);
         }
+        else if (fileName.Contains("behavior_tree_ingame"))
+        {
+            ProcessBT(fileResult);
+        }
         else
         {
             string path = fileResult.LocalPath;
@@ -129,14 +134,13 @@ public partial class MainViewModel : ObservableObject
                     */
 
                     var entity = GenericEntitySerializer.Parse(File.ReadAllBytes(path), path.EndsWith(".msg"));
-
                     GenericEntityEditorViewModel editorViewModel = new()
                     {
                         Id = Path.GetFileNameWithoutExtension(path),
                         Title = Path.GetFileNameWithoutExtension(path),
                         Documents = DocumentsViewModel,
                     };
-                editorViewModel.SetObjects(entity);
+                    editorViewModel.SetObjects(entity);
                 //}
 
                 DocumentsViewModel.AddDocument(editorViewModel);
@@ -272,7 +276,7 @@ public partial class MainViewModel : ObservableObject
             editorViewModel.SolutionTreeViewItem = fsmTreeItem;
             SolutionExplorerViewModel.AddItem(fsmTreeItem);
 
-            foreach (GroupNodeViewModel layerGroup in editorViewModel.LayerGroups.Values)
+            foreach (FsmGroupNodeViewModel layerGroup in editorViewModel.LayerGroups.Values)
             {
                 if (layerGroup.LayerIndex == 0)
                     continue;
@@ -290,6 +294,86 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
+    private void ProcessBT(Uri uri)
+    {
+        byte[] buffer = File.ReadAllBytes(uri.LocalPath);
+
+        string fileName = Path.GetFileNameWithoutExtension(uri.OriginalString);
+
+        BTParser parser;
+        try
+        {
+
+            parser = new BTParser(_loggerFactory);
+            parser.Parse(File.ReadAllBytes(uri.LocalPath), uri.LocalPath.EndsWith(".msg"));
+            if (parser.HasErrors)
+            {
+                var box = MessageBoxManager.GetMessageBoxStandard("Error",
+                    $"FSM '{Path.GetFileNameWithoutExtension(uri.LocalPath)}' has loaded with errors, check the log window for more information.\n" +
+                    "Do not use it for saving.", icon: MsBox.Avalonia.Enums.Icon.Error);
+                WeakReferenceMessenger.Default.Send(new ShowDialogRequest(box));
+            }
+
+            _logger?.LogInformation("FSM Parsed ({file}).", uri.LocalPath);
+        }
+        catch (Exception ex)
+        {
+            var box = MessageBoxManager.GetMessageBoxStandard("Error", $"Failed to load FSM file.\n{ex.Message}", icon: MsBox.Avalonia.Enums.Icon.Error);
+            WeakReferenceMessenger.Default.Send(new ShowDialogRequest(box));
+            return;
+        }
+
+        string fsmName = Path.GetFileNameWithoutExtension(uri.LocalPath).Replace("_fsm_ingame", string.Empty);
+        string fsmId = $"fsm_{fsmName}";
+
+        BTEditorViewModel? editorViewModel = AddNewBTDocument(fsmId, fsmName, parser);
+        if (editorViewModel is null)
+            return;
+
+        var fsmTreeItem = new BTTreeViewItemViewModel()
+        {
+            TreeViewName = fsmName,
+            FsmEditor = editorViewModel,
+            IsExpanded = true,
+        };
+        editorViewModel.SolutionTreeViewItem = fsmTreeItem;
+        SolutionExplorerViewModel.AddItem(fsmTreeItem);
+    }
+
+    public void NewBTDocument()
+    {
+        string btName = "new_bt";
+        BTEditorViewModel? editorViewModel = AddNewBTDocument(btName, btName);
+        if (editorViewModel is null)
+            return;
+
+        var btTreeItem = new BTTreeViewItemViewModel()
+        {
+            TreeViewName = btName,
+            FsmEditor = editorViewModel,
+            IsExpanded = true,
+        };
+        editorViewModel.SolutionTreeViewItem = btTreeItem;
+        SolutionExplorerViewModel.AddItem(btTreeItem);
+    }
+
+    public void NewFSMDocument()
+    {
+        string fsmName = "new_fsm";
+        FsmEditorViewModel? editorViewModel = AddNewFSMDocument(fsmName, fsmName);
+        if (editorViewModel is null)
+            return;
+
+        var fsmTreeItem = new FSMTreeViewItemViewModel()
+        {
+            TreeViewName = fsmName,
+            FsmEditor = editorViewModel,
+            IsExpanded = true,
+        };
+        editorViewModel.SolutionTreeViewItem = fsmTreeItem;
+        SolutionExplorerViewModel.AddItem(fsmTreeItem);
+    }
+
     /// <summary>
     /// Adds a new fsm document and initializes it (won't add it if it already exists).
     /// </summary>
@@ -297,7 +381,7 @@ public partial class MainViewModel : ObservableObject
     /// <param name="name"></param>
     /// <param name="fsmParser"></param>
     /// <returns>Editor view model. <see cref="null"/> if it wasn't loaded.</returns>
-    private FsmEditorViewModel? AddNewFSMDocument(string identifier, string name, FSMParser fsmParser)
+    private FsmEditorViewModel? AddNewFSMDocument(string identifier, string name, FSMParser? fsmParser = null)
     {
         FsmEditorViewModel fsmEditorViewModel = new()
         {
@@ -311,6 +395,29 @@ public partial class MainViewModel : ObservableObject
 
         DocumentsViewModel.AddDocument(fsmEditorViewModel);
         return fsmEditorViewModel;
+    }
+
+    /// <summary>
+    /// Adds a new bt document and initializes it (won't add it if it already exists).
+    /// </summary>
+    /// <param name="identifier"></param>
+    /// <param name="name"></param>
+    /// <param name="fsmParser"></param>
+    /// <returns>Editor view model. <see cref="null"/> if it wasn't loaded.</returns>
+    private BTEditorViewModel? AddNewBTDocument(string identifier, string name, BTParser? btParser = null)
+    {
+        BTEditorViewModel btEditorViewModel = new()
+        {
+            Id = identifier,
+            Title = name,
+            Documents = DocumentsViewModel,
+        };
+
+        if (!btEditorViewModel.InitGraph(name, btParser))
+            return null;
+
+        DocumentsViewModel.AddDocument(btEditorViewModel);
+        return btEditorViewModel;
     }
 
     /// <summary>

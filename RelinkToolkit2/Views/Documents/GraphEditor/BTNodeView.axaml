@@ -1,0 +1,103 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:nodify="https://miroiu.github.io/nodify"
+             mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="200"
+			 xmlns:graphVMs="using:RelinkToolkit2.ViewModels.Documents.GraphEditor"
+			 xmlns:nodeVMs="using:RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes"
+			 xmlns:search="using:RelinkToolkit2.Views"
+			 xmlns:b="using:RelinkToolkit2.Behaviors"
+			 xmlns:controls="using:RelinkToolkit2.Controls"
+			 xmlns:local="using:RelinkToolkit2"
+			 xmlns:converters="using:RelinkToolkit2.Converters"
+             x:Class="RelinkToolkit2.Views.Documents.GraphEditor.BTNodeView"
+			 xmlns:sys="clr-namespace:System;assembly=netstandard"
+			 x:DataType="nodeVMs:BTNodeViewModel"
+			 DataContextChanged="UserControl_DataContextChanged">
+
+	<UserControl.Resources>
+		<converters:VectorIconConverter x:Key="vectorIconConverter"/>
+	</UserControl.Resources>
+	
+	<UserControl.Styles>
+		<Style Selector="ItemsControl.ItemsDragAndDrop">
+			<Style.Resources>
+				<b:NodeComponentDropHandler x:Key="NodeComponentDropHandler" />
+			</Style.Resources>
+			<Setter Property="(Interaction.Behaviors)">
+				<BehaviorCollectionTemplate>
+					<BehaviorCollection>
+						<ContextDropBehavior Handler="{StaticResource NodeComponentDropHandler}" />
+					</BehaviorCollection>
+				</BehaviorCollectionTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="ItemsControl.ItemsDragAndDrop ContentPresenter">
+			<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+			<Setter Property="(Interaction.Behaviors)">
+				<BehaviorCollectionTemplate>
+					<BehaviorCollection>
+						<ContextDragBehavior HorizontalDragThreshold="3" VerticalDragThreshold="3" />
+					</BehaviorCollection>
+				</BehaviorCollectionTemplate>
+			</Setter>
+		</Style>
+	</UserControl.Styles>
+	
+	<Design.DataContext>
+		<nodeVMs:BTNodeViewModel/>
+	</Design.DataContext>
+	
+	<nodify:StateNode x:Name="Node"
+			IsConnected="True"
+			BorderBrush="{Binding BorderBrush}"
+			Content="{Binding}"
+			CornerRadius="{Binding CornerRadius}"
+			Anchor="{Binding Anchor, Mode=OneWayToSource}"
+			DragDrop.AllowDrop="True">
+		<!-- For execution components -->
+		<nodify:StateNode.ContentTemplate>
+			<DataTemplate DataType="nodeVMs:BTNodeViewModel">
+				<StackPanel Orientation="Vertical">
+					<!-- Make sure to not display edit cursor while hovering over the text block
+							 We don't want the cursor types to change too much while moving around nodes.
+							 You can double click to edit the label. -->
+					<controls:EditableTextBlock IsEditing="{Binding IsRenaming}" Grid.Column="0" Cursor="SizeAll" Text="{Binding Title}" FontWeight="Bold" Margin="4,0,0,0"/>
+
+					<TextBlock Text="{Binding Guid}" Foreground="DimGray" FontSize="10" Margin="4,-1,0,0"/>
+
+					<StackPanel Orientation="Vertical">
+						<TextBlock Text="{Binding Description}" Foreground="White" FontSize="12" Margin="4,0,0,0" IsVisible="{Binding Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+						
+						<ItemsControl ItemsSource="{Binding Components}" Classes="ItemsDragAndDrop">
+
+							<!-- Spacing between execution components -->
+							<ItemsControl.ItemTemplate>
+								<DataTemplate DataType="graphVMs:NodeComponentViewModel">
+									<Border Cursor="Hand" BorderBrush="{Binding BorderBrush}" BorderThickness="1" 
+											PointerEntered="Border_PointerEntered" 
+											PointerExited="Border_PointerExited" Margin="0 2 0 0" 
+											PointerPressed="Border_PointerPressed">
+
+										<!-- Setting to transparent is needed for the hit test to work everywhere (otherwise doesn't work on the gap) -->
+										<Grid ColumnDefinitions="*,*,10" Background="Transparent">
+											<StackPanel Orientation="Vertical">
+												<StackPanel Grid.Column="0" Orientation="Horizontal" IsHitTestVisible="False">
+													<Label Width="26" FontWeight="Bold" Content=">>"/>
+													<Label Content="{Binding Name}"/>
+												</StackPanel>
+												<TextBlock Margin="29,-4,0,2" Text="{Binding Caption}" FontSize="8" FontWeight="Bold" Foreground="DimGray" IsVisible="{Binding Caption, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+											</StackPanel>
+										</Grid>
+									</Border>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+					</StackPanel>
+				</StackPanel>
+			</DataTemplate>
+		</nodify:StateNode.ContentTemplate>
+	</nodify:StateNode>
+</UserControl>

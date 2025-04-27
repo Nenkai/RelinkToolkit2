@@ -57,6 +57,12 @@
     <Compile Update="Views\ComponentSearchView.axaml.cs">
       <DependentUpon>ComponentSearchView.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\Documents\GraphEditor\BTEditorView.axaml.cs">
+      <DependentUpon>BTEditorView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Documents\GraphEditor\BTNodeView.axaml.cs">
+      <DependentUpon>BTNodeView.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\Documents\GenericEntityEditorView.axaml.cs">
       <DependentUpon>GenericEntityEditorView.axaml</DependentUpon>
     </Compile>

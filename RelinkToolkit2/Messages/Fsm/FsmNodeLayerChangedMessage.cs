@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using RelinkToolkit2.ViewModels.Fsm;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 
 using CommunityToolkit.Mvvm.Messaging.Messages;
 using Avalonia.Controls;
-using RelinkToolkit2.Views.Documents.Fsm;
 
 namespace RelinkToolkit2.Messages.Fsm;
 
