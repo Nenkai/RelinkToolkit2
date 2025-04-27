@@ -30,6 +30,10 @@ public partial class FsmGroupNodeViewModel : FsmNodeViewModelBase //, IDropTarge
     [ObservableProperty]
     private int _layerIndex;
 
+    // Yes this is VERY bad considering NodeViewModel already has one.
+    // That essentially means there's two size properties now, why?
+    // Because sizing doesn't seem to work otherwise for some very strange reason
+    // Binding related issue, i don't know
     [ObservableProperty]
     private Size _size;
 

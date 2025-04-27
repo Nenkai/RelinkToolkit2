@@ -100,6 +100,7 @@
 				 SelectedConnection="{Binding SelectedConnection}"
 			     PendingConnection="{Binding PendingConnection}"
 				 PendingConnectionTemplate="{StaticResource PendingConnectionTemplate}"
+				 ItemsDragCompletedCommand="{Binding ItemsDragCompletedCommand}"
 			     Loaded="NodifyEditor_Loaded"
 				 Unloaded="NodifyEditor_Unloaded_1"
 			     MouseLocation="{Binding MouseLocation, Mode=OneWayToSource}"
