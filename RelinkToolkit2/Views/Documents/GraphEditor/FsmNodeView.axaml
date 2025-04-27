@@ -84,7 +84,7 @@
 						</Label>
 
 						<StackPanel Orientation="Horizontal" Grid.Column="4">
-							<Panel IsVisible="{Binding IsBranch}" Background="Transparent" ToolTip.Tip="Purpose unknown.">
+							<Panel IsVisible="{Binding IsBranch}" Background="Transparent" ToolTip.Tip="Purpose unknown. May not be needed.">
 								<Image Width="18" Height="18" IsVisible="{Binding IsBranch}">
 									<Image.Source>
 										<controls:VectorIconDrawingImage Brush="White" Drawing="{Binding Source='Material.SourceBranch', Converter={StaticResource vectorIconConverter}}"/>
@@ -126,7 +126,7 @@
 													<Label Width="26" FontWeight="Bold" Content=">>"/>
 													<Label Content="{Binding Name}"/>
 												</StackPanel>
-												<TextBlock Margin="29,-4,0,2" Text="{Binding Caption}" FontSize="8" Foreground="DimGray" IsVisible="{Binding Caption, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+												<TextBlock Margin="29,-4,0,2" Text="{Binding Caption}" FontSize="8" FontWeight="Bold" Foreground="DimGray" IsVisible="{Binding Caption, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
 											</StackPanel>
 										</Grid>
 									</Border>

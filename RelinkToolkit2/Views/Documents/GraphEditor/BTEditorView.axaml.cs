@@ -267,7 +267,7 @@ public partial class BTEditorView : UserControl
         {
             Header = $"Delete Node",
             IconKind = "Material.Delete",
-            Enabled = canDeleteNode,
+            Enabled = false /*canDeleteNode*/,
             Command = new RelayCommand<BTNodeViewModel>(NodeContextMenu_DeleteNode),
             Parameter = nodeVM,
         });

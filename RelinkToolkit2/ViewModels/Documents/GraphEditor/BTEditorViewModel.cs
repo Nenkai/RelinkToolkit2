@@ -177,7 +177,7 @@ public partial class BTEditorViewModel : EditorDocumentBase, /* ISaveableDocumen
         {
             Header = "Add Node",
             IconKind = "Material.PlusBox",
-            Enabled = true,
+            Enabled = false,
             Command = new RelayCommand(AddNewNode),
         });
     }
@@ -412,7 +412,7 @@ public partial class BTEditorViewModel : EditorDocumentBase, /* ISaveableDocumen
 
             case ReferenceTreeNode referenceTreeNode:
                 nodeViewModel.BorderBrush = GraphColors.DefaultNodeWithComponents;
-                nodeViewModel.Description = $"{referenceTreeNode.Param.ReferenceTreeFolderName}/{referenceTreeNode.Param.ReferenceTreeName}\nAssetPattern:{referenceTreeNode.Param.AssetPattern}";
+                nodeViewModel.Description = $"{referenceTreeNode.Param.ReferenceTreeFolderName}/{referenceTreeNode.Param.ReferenceTreeName}\nAssetPattern: {referenceTreeNode.Param.AssetPattern}";
                 break;
 
             case SelectorNode:
@@ -423,7 +423,7 @@ public partial class BTEditorViewModel : EditorDocumentBase, /* ISaveableDocumen
                 nodeViewModel.BorderBrush = Brushes.White;
                 nodeViewModel.Description = $"{fsmNodeForBt.Param.FsmFolderName}/{fsmNodeForBt.Param.FsmName}";
                 if (fsmNodeForBt.Param.ObjIdList.Count > 0)
-                    nodeViewModel.Description += $"- Obj Ids:\n{string.Join('\n', fsmNodeForBt.Param.ObjIdList.Select(e => (eObjIdType)(e & 0xFFFF0000) + $"{e & 0xFFFF:X4}"))}";
+                    nodeViewModel.Description += $" - obj ids:\n{string.Join("\n- ", fsmNodeForBt.Param.ObjIdList.Select(e => (eObjIdType)(e & 0xFFFF0000) + $"{e & 0xFFFF:X4}"))}";
                 break;
 
             case RandomSelectorNode randomSelector:

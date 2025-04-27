@@ -7,7 +7,7 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="RelinkToolkit2.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
-        Title="RelinkToolkit2"
+        Title="RelinkToolkit2 (v0.2.0)"
 		TransparencyLevelHint="AcrylicBlur"
 	    ExtendClientAreaChromeHints="PreferSystemChrome"
 		WindowState="Maximized"
