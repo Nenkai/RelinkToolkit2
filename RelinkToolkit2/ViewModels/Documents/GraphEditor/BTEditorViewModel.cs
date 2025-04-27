@@ -423,7 +423,7 @@ public partial class BTEditorViewModel : EditorDocumentBase, /* ISaveableDocumen
                 nodeViewModel.BorderBrush = Brushes.White;
                 nodeViewModel.Description = $"{fsmNodeForBt.Param.FsmFolderName}/{fsmNodeForBt.Param.FsmName}";
                 if (fsmNodeForBt.Param.ObjIdList.Count > 0)
-                    nodeViewModel.Description += $" - obj ids:\n{string.Join("\n- ", fsmNodeForBt.Param.ObjIdList.Select(e => (eObjIdType)(e & 0xFFFF0000) + $"{e & 0xFFFF:X4}"))}";
+                    nodeViewModel.Description += $" - obj ids:\n{string.Join("\n", fsmNodeForBt.Param.ObjIdList.Select(e => (eObjIdType)(e & 0xFFFF0000) + $"{e & 0xFFFF:X4}"))}";
                 break;
 
             case RandomSelectorNode randomSelector:
