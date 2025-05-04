@@ -1,4 +1,13 @@
-﻿
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Numerics;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
+
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -8,43 +17,19 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 
-using DynamicData;
-
 using GBFRDataTools.Entities;
 using GBFRDataTools.FSM;
 using GBFRDataTools.FSM.BehaviorTree;
 using GBFRDataTools.FSM.Components;
-using GBFRDataTools.FSM.Entities;
-using GBFRDataTools.Hashing;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualBasic;
 
-using MsBox.Avalonia;
-
-using Nodify;
-using Nodify.Compatibility;
-
-using RelinkToolkit2.Messages.Dialogs;
 using RelinkToolkit2.Messages.Fsm;
 using RelinkToolkit2.Services;
-using RelinkToolkit2.ViewModels.Documents.GraphEditor;
 using RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 using RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents;
-using RelinkToolkit2.ViewModels.Documents.Interfaces;
 using RelinkToolkit2.ViewModels.Menu;
-using RelinkToolkit2.ViewModels.TreeView;
-
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Numerics;
-using System.Security.Cryptography;
-using System.Threading.Tasks;
 
 namespace RelinkToolkit2.ViewModels.Documents.GraphEditor;
 

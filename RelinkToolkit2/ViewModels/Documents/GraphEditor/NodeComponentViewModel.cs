@@ -50,7 +50,16 @@ public partial class NodeComponentViewModel : ObservableObject
 
     private void UpdateCaption(BehaviorTreeComponent btComponent)
     {
-        Caption = btComponent.GetCaption();
+        string caption = btComponent.GetCaption();
+        if (btComponent is ConditionComponent conditionComponent)
+        {
+            if (!string.IsNullOrEmpty(caption))
+                caption += " ";
+
+            caption += $"is {!conditionComponent.IsReverseSuccess}";
+        }
+
+        Caption = caption;
     }
 
     public static string GetEnumDescription1(Enum value)
