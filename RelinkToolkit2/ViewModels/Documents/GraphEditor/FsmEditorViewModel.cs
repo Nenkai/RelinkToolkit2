@@ -119,6 +119,11 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
     public ObservableCollection<MenuItemViewModel> EditorContextMenuItems { get; set; } = [];
     public MenuItemViewModel AddLayerMenuItem { get; set; }
 
+    /// <summary>
+    /// Quest context. Used for Quest FSMs.
+    /// </summary>
+    private QuestContext? _questContext;
+
     public FsmEditorViewModel()
     {
         _logger = App.Current.Services.GetService<ILogger<FsmEditorViewModel>>();
@@ -316,8 +321,14 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
         string? outputPath = LastFile;
         if (isSaveAs || string.IsNullOrEmpty(outputPath))
         {
+            string defaultSaveFileName;
+            if (_questContext is not null)
+                defaultSaveFileName = $"quest_{_questContext.GetQuestId():x}_{_questContext.ProgressIndex:x}_fsm_ingame.json";
+            else
+                defaultSaveFileName = $"{Title}_fsm_ingame.json";
+
             var file = await filesService.SaveFileAsync("Save FSM file", null,
-                                  $"{Title}_fsm_ingame.json");
+                                      defaultSaveFileName);
             if (file is null)
                 return null;
 
@@ -621,9 +632,11 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
         bool canConnect = connection is null && !sourceNode.IsEndNode && isSameLayer;
         bool canOverrideTransition = canConnect && sourceNode.IsLayerRootNode && isSameLayer; // Override transitions are only allowed in layer starts
 
-        // for layer connections - connections to root only, make sure nothing else connects, one node can only transition to one layer
-        bool canLayerConnection = targetNode.IsLayerRootNode && !isSameLayer && !Connections.Any(e => e.Target == targetNode) &&
-            !sourceNode.Transitions.Any(e => e.Source.LayerIndex != e.Target.LayerIndex); 
+        // for layer connections - connections to root only, make sure nothing else connects
+        // Previously it was assumed that a layer can only be connected from one node - but this is not true (issue #1)
+        bool canLayerConnection = targetNode.IsLayerRootNode && !isSameLayer 
+            // && !Connections.Any(e => e.Target == targetNode) 
+            && !sourceNode.Transitions.Any(e => e.Source.LayerIndex != e.Target.LayerIndex); 
 
         ObservableCollection<MenuItemViewModel> items =
         [
@@ -1026,6 +1039,26 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
 
         _rootNode ??= node;
     }
+
+    /// <summary>
+    /// Marks the fsm as having quest context
+    /// </summary>
+    public void SetQuestContext(uint questId, uint progressIndex, ulong progressHash)
+    {
+        _questContext = new QuestContext(questId >> 20, questId >> 12 & 0xFF, questId & 0xFFF, progressIndex, progressHash);
+    }
+
+    /// <summary>
+    /// Marks the fsm as having quest context
+    /// </summary>
+    public void SetQuestContext(uint category, uint subCategory, uint index, uint progressIndex, ulong progressHash)
+    {
+        _questContext = new QuestContext(category, subCategory, index, progressIndex, progressHash);
+    }
+
+    public QuestContext? GetQuestContext() => _questContext;
+
+    public bool HasQuestContext() => _questContext is not null;
 
     /// <summary>
     /// Generates a new guid.

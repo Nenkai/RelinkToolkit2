@@ -341,7 +341,7 @@ public partial class BTEditorViewModel : EditorDocumentBase, /* ISaveableDocumen
     /// <param name="x"></param>
     /// <param name="y"></param>
     /// <returns></returns>
-    private BTNodeViewModel GetNodeViewModel(TreeNode node, int x, int y, bool loadEditorParameters = false)
+    private BTNodeViewModel GetNewNodeViewModel(TreeNode node, int x, int y, bool loadEditorParameters = false)
     {
         if (_guidToNodeVm.TryGetValue(node.Guid, out BTNodeViewModel? nodeViewModel))
             return nodeViewModel;
@@ -478,10 +478,7 @@ public partial class BTEditorViewModel : EditorDocumentBase, /* ISaveableDocumen
         var sourceNode = (BTNodeViewModel)PendingConnection.Source;
         var targetNode = (BTNodeViewModel)PendingConnection.Target;
 
-
         bool canConnect = true;
-        bool canOverrideTransition = canConnect && sourceNode.IsLayerRootNode; // Override transitions are only allowed in layer starts
-        bool canLayerConnection = targetNode.IsLayerRootNode && !Connections.Any(e => e.Target == targetNode); // connections to root only, make sure nothing else connects
 
         ObservableCollection<MenuItemViewModel> items =
         [
@@ -547,7 +544,7 @@ public partial class BTEditorViewModel : EditorDocumentBase, /* ISaveableDocumen
 
         _processedNodes.Add(node.Guid);
 
-        BTNodeViewModel thisNodeVm = GetNodeViewModel(node, 0, 0, true);
+        BTNodeViewModel thisNodeVm = GetNewNodeViewModel(node, 0, 0, true);
         AddNode(thisNodeVm);
 
         if (node is CompositeNode compositeNode)

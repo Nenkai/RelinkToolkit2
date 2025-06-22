@@ -60,7 +60,7 @@ public partial class BTNodeViewModel : NodeViewModel //, IDropTarget
         {
             Name = btComponent.ComponentName,
         });
-        
+        UpdateBorderColor();
     }
 
     public void UpdateBorderColor()

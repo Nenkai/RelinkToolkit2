@@ -676,7 +676,7 @@ public partial class FsmEditorView : UserControl
         if (item.Data is not Type type)
             return;
 
-        if (searchVM.Context is not FsmNodeViewModel nvm)
+        if (searchVM.Context is not FsmNodeViewModel nodeViewModel)
             return;
 
         var component = Activator.CreateInstance(type);
@@ -684,13 +684,35 @@ public partial class FsmEditorView : UserControl
             return;
 
         var editor = (FsmEditorViewModel)this.DataContext!;
-        btComponent.ParentGuid = nvm.Guid;
+        btComponent.ParentGuid = nodeViewModel.Guid;
         btComponent.Guid = editor.GetNewGuid();
-        editor.RegisterFsmElementGuid(btComponent.Guid, btComponent);
+        if (btComponent is QuestActionComponent questActionComponent)
+        {
+            if (editor.HasQuestContext())
+            {
+                QuestContext questContext = editor.GetQuestContext()!;
+                questActionComponent.Category = questContext.Category;
+                questActionComponent.Subcategory = questContext.SubCategory;
+                questActionComponent.Index = questContext.Index;
+                questActionComponent.ProgressIndex = questContext.ProgressIndex;
+                questActionComponent.ProgressHash = questContext.ProgressHash;
+            }
+        }
+        else if (btComponent is QuestConditionComponent questConditionComponent)
+        {
+            if (editor.HasQuestContext())
+            {
+                QuestContext questContext = editor.GetQuestContext()!;
+                questConditionComponent.Category = questContext.Category;
+                questConditionComponent.Subcategory = questContext.SubCategory;
+                questConditionComponent.Index = questContext.Index;
+                questConditionComponent.ProgressIndex = questContext.ProgressIndex;
+                questConditionComponent.ProgressHash = questContext.ProgressHash;
+            }
+        }
 
-        var componentVM = new NodeComponentViewModel(nvm, btComponent) { Name = type.Name };
-        nvm.Components.Add(componentVM);
-        nvm.UpdateBorderColor();
+        editor.RegisterFsmElementGuid(btComponent.Guid, btComponent);
+        nodeViewModel.AddComponent(btComponent);
 
         // Make sure to select it.
         WeakReferenceMessenger.Default.Send(new FsmComponentSelectedMessage(btComponent));

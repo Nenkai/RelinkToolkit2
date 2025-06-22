@@ -83,7 +83,7 @@ public partial class FsmNodeViewModel : FsmNodeViewModelBase //, IDropTarget
         {
             Name = btComponent.ComponentName,
         });
-        
+        UpdateBorderColor();
     }
 
     public void ClearBaseFsm()

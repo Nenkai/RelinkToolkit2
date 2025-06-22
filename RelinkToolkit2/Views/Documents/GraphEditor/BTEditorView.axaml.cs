@@ -391,7 +391,7 @@ public partial class BTEditorView : UserControl
         if (item.Data is not Type type)
             return;
 
-        if (searchVM.Context is not BTNodeViewModel nvm)
+        if (searchVM.Context is not BTNodeViewModel nodeViewModel)
             return;
 
         var component = Activator.CreateInstance(type);
@@ -399,13 +399,12 @@ public partial class BTEditorView : UserControl
             return;
 
         var editor = (BTEditorViewModel)DataContext!;
-        btComponent.ParentGuid = nvm.Guid;
+        btComponent.ParentGuid = nodeViewModel.Guid;
         btComponent.Guid = editor.GetNewGuid();
+
         editor.RegisterBtElementGuid(btComponent.Guid, btComponent);
 
-        var componentVM = new NodeComponentViewModel(nvm, btComponent) { Name = type.Name };
-        nvm.Components.Add(componentVM);
-        nvm.UpdateBorderColor();
+        nodeViewModel.AddComponent(btComponent);
 
         // Make sure to select it.
         WeakReferenceMessenger.Default.Send(new FsmComponentSelectedMessage(btComponent));
