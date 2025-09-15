@@ -278,11 +278,13 @@ public partial class TopMenuViewModel : ObservableObject
             return;
 
         var filesService = (App.Current?.Services?.GetService<IFilesService>()) ?? throw new Exception("Could not fetch IFilesService");
-        string? outputFile = await saveableDocument.SaveDocument(filesService, isSaveAs);
-        if (!string.IsNullOrEmpty(outputFile))
+        Uri? outputFile = await saveableDocument.SaveDocument(filesService, isSaveAs);
+        if (outputFile is not null)
         {
             _logger?.LogInformation("Saved file as {outputFile}", outputFile);
             WeakReferenceMessenger.Default.Send(new SetStatusBarTextRequest($"{DateTime.Now} - Saved file as {outputFile}."));
+
+            saveableDocument.LastFile = outputFile;
         }
     }
 

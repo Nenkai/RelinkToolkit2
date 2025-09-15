@@ -50,13 +50,17 @@ public partial class GenericEntityEditorViewModel : EditorDocumentBase, ISaveabl
     /// <summary>
     /// Last name this file was saved as.
     /// </summary>
-    public string? LastFile { get; set; }
+    public Uri? LastFile { get; set; }
+
+    public bool ShouldPromptAsFirstSave { get; set; } = true;
 
     [ObservableProperty]
     private int _selectedIndex;
 
     [ObservableProperty]
     private object? _selectedObject;
+
+    public PropertyGridViewModel PropertyGridViewModel { get; set; } = new();
 
     public ObservableCollection<GenericEntityEntryViewModel> Objects { get; set; } = [];
 
@@ -91,7 +95,7 @@ public partial class GenericEntityEditorViewModel : EditorDocumentBase, ISaveabl
         if (Objects.Count > 0)
         {
             SelectedIndex = 0;
-            SelectedObject = Objects[0].Object;
+            PropertyGridViewModel.SelectedObject = Objects[0].Object;
         }
     }
 
@@ -105,26 +109,29 @@ public partial class GenericEntityEditorViewModel : EditorDocumentBase, ISaveabl
         WeakReferenceMessenger.Default.UnregisterAll(this);
     }
 
-    public async Task<string?> SaveDocument(IFilesService filesService, bool isSaveAs = false)
+    public async Task<Uri?> SaveDocument(IFilesService filesService, bool isSaveAs = false)
     {
-        string? outputPath = LastFile;
-        if (isSaveAs || string.IsNullOrEmpty(outputPath))
+        Uri? outputUri = LastFile;
+        string? localPath = null;
+        if (isSaveAs || outputUri is null || ShouldPromptAsFirstSave)
         {
             var file = await filesService.SaveFileAsync("Save file", null,
-                                  $"{Title}.json");
+                                  $"{Title}.json", LastFile);
             if (file is null)
                 return null;
 
-            outputPath = file.TryGetLocalPath();
+            localPath = file.TryGetLocalPath();
+            outputUri = file.Path;
         }
 
-        if (string.IsNullOrEmpty(outputPath))
+        if (string.IsNullOrEmpty(localPath))
             return null;
 
         var flattened = Objects.Select(e => e.Object);
 
-        using var fs = File.Create(outputPath);
+        using var fs = File.Create(localPath);
         GenericEntitySerializer.Serialize(fs, flattened);
-        return outputPath;
+        ShouldPromptAsFirstSave = false;
+        return outputUri;
     }
 }

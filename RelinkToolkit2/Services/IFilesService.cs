@@ -1,5 +1,6 @@
 ﻿using Avalonia.Platform.Storage;
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -9,5 +10,5 @@ public interface IFilesService
 {
     public void SetStorageProvider(IStorageProvider storageProvider);
     public Task<IStorageFile?> OpenFileAsync(string title, IReadOnlyList<FilePickerFileType>? filters = null);
-    public Task<IStorageFile?> SaveFileAsync(string title, IReadOnlyList<FilePickerFileType>? filters = null, string? suggestedFileName = null);
+    public Task<IStorageFile?> SaveFileAsync(string title, IReadOnlyList<FilePickerFileType>? filters = null, string? suggestedFileName = null, Uri? suggestedStartLocation = null);
 }

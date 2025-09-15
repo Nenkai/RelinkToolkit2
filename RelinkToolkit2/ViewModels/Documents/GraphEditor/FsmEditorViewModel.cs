@@ -111,7 +111,9 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
     /// <summary>
     /// Last name this file was saved as.
     /// </summary>
-    public string? LastFile { get; set; }
+    public Uri? LastFile { get; set; }
+
+    public bool ShouldPromptAsFirstSave { get; set; } = true;
 
     /// <summary>
     /// Menu items for the main context menu (add nodes, etc).
@@ -309,7 +311,7 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
     /// Saves the graph as a FSM file.
     /// </summary>
     /// <param name="fileName"></param>
-    public async Task<string?> SaveDocument(IFilesService filesService, bool isSaveAs = false)
+    public async Task<Uri?> SaveDocument(IFilesService filesService, bool isSaveAs = false)
     {
         if (_rootNode is null)
         {
@@ -318,17 +320,18 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
             return null;
         }
 
-        string? outputPath = LastFile;
-        if (isSaveAs || string.IsNullOrEmpty(outputPath))
+        Uri? outputUri = LastFile;
+        string? outputPath = null;
+        if (isSaveAs || outputUri is null || ShouldPromptAsFirstSave)
         {
             string defaultSaveFileName;
-            if (_questContext is not null)
-                defaultSaveFileName = $"quest_{_questContext.GetQuestId():x}_{_questContext.ProgressIndex:x}_fsm_ingame.json";
+            if (LastFile is not null)
+                defaultSaveFileName = Path.GetFileName(LastFile.LocalPath);
             else
                 defaultSaveFileName = $"{Title}_fsm_ingame.json";
 
             var file = await filesService.SaveFileAsync("Save FSM file", null,
-                                      defaultSaveFileName);
+                                      defaultSaveFileName, LastFile);
             if (file is null)
                 return null;
 
@@ -343,7 +346,7 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
         var builder = new FSMSerializer(buildState);
         builder.WriteJson(stream);
 
-        this.LastFile = outputPath;
+        this.LastFile = outputUri;
 
         string newTitle = Path.GetFileNameWithoutExtension(outputPath);
         if (newTitle.EndsWith("_fsm_ingame"))
@@ -359,7 +362,8 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
             WeakReferenceMessenger.Default.Send(new ShowDialogRequest(box));
         }
 
-        return outputPath;
+        ShouldPromptAsFirstSave = false;
+        return outputUri;
     }
 
     /// <summary>

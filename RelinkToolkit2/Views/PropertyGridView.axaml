@@ -14,7 +14,8 @@
              d:DesignHeight="450" d:DesignWidth="350"
 			 x:DataType="VMs:PropertyGridViewModel"
 			 xmlns:avalonia_propertygrid_controls="using:Avalonia.PropertyGrid.Controls"
-			 xmlns:avalonia_controls="using:Avalonia.Controls">
+			 xmlns:avalonia_controls="using:Avalonia.Controls"
+			 Name="MainPropertyGrid">
     <Design.DataContext>
 		<VMs:PropertyGridViewModel/>
     </Design.DataContext>
@@ -23,14 +24,47 @@
 		<converters:VectorIconConverter x:Key="vectorIconConverter"/>
 	</UserControl.Resources>
 
-	<ScrollViewer>
-		<pgc:PropertyGrid
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*"></RowDefinition>
+			<RowDefinition Height="4"></RowDefinition>
+			<RowDefinition MinHeight="70" Height="70"></RowDefinition>
+		</Grid.RowDefinitions>
+		<pgc:PropertyGrid Grid.Row="0"
 			x:Name="propertyGrid_Basic"
 			Margin="4"
-			AllowFilter="False"
+			IsQuickFilterVisible="False"
+			IsTitleVisible="False"
+			IsAutoNameWidth="True"
 			DataContext="{Binding SelectedObject}"
-			PropertyCategoryStyle="InheritingOrder"
-			AllowQuickFilter="False">
+			PropertyCategorizingStyle="CategorizeByObjectInheritingOrder"
+			CustomNameBlock="PropertyGrid_CustomNameBlock"
+		    >
+			<pgc:PropertyGrid.Styles>
+				<Style>
+					<Setter Property="(Interaction.Behaviors)">
+							<BehaviorCollectionTemplate>
+								<BehaviorCollection>
+									<EventTriggerBehavior EventName="PropertyGotFocus">
+										<InvokeCommandAction Command="{Binding #MainPropertyGrid.((VMs:PropertyGridViewModel)DataContext).PropertyGotFocusCommand}" PassEventArgsToCommand="True"/>
+									</EventTriggerBehavior>
+									<EventTriggerBehavior EventName="PropertyLostFocus">
+										<InvokeCommandAction Command="{Binding #MainPropertyGrid.((VMs:PropertyGridViewModel)DataContext).PropertyLostFocusCommand}" PassEventArgsToCommand="True"/>
+									</EventTriggerBehavior>
+								</BehaviorCollection>
+							</BehaviorCollectionTemplate>
+						</Setter>
+					</Style>
+			</pgc:PropertyGrid.Styles>
 		</pgc:PropertyGrid>
-	</ScrollViewer>
+		<!-- TODO: Use PropertyGrid.BottomContent -->
+		<GridSplitter Grid.Row="1"/>
+		<Grid Grid.Row="2">
+			<StackPanel>
+				<Label Margin="4,0,0,0" FontSize="13" FontWeight="Bold" Content="{Binding Title}"/>
+				<TextBlock Margin="7,0,0,0" Text="{Binding Description}" TextWrapping="Wrap"/>
+			</StackPanel>
+		</Grid>
+	</Grid>
+
 </UserControl>

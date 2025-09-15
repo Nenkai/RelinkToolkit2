@@ -15,6 +15,12 @@ namespace RelinkToolkit2.ViewModels.Documents.Interfaces;
 /// </summary>
 public interface ISaveableDocument
 {
-    public string? LastFile { get; set; }
-    public Task<string?> SaveDocument(IFilesService filesService, bool isSaveAs = false);
+    public Uri? LastFile { get; set; }
+    
+    /// <summary>
+    /// Whether we should prompt for where to save (first time)
+    /// </summary>
+    public bool ShouldPromptAsFirstSave { get; set; }
+
+    public Task<Uri?> SaveDocument(IFilesService filesService, bool isSaveAs = false);
 }

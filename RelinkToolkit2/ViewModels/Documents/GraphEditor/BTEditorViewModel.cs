@@ -96,7 +96,7 @@ public partial class BTEditorViewModel : EditorDocumentBase, /* ISaveableDocumen
     /// <summary>
     /// Last name this file was saved as.
     /// </summary>
-    public string? LastFile { get; set; }
+    public Uri? LastFile { get; set; }
 
     /// <summary>
     /// Menu items for the main context menu (add nodes, etc).
@@ -239,13 +239,14 @@ public partial class BTEditorViewModel : EditorDocumentBase, /* ISaveableDocumen
     /// Saves the graph as a FSM file.
     /// </summary>
     /// <param name="fileName"></param>
-    public async Task<string?> SaveDocument(IFilesService filesService, bool isSaveAs = false)
+    public async Task<Uri?> SaveDocument(IFilesService filesService, bool isSaveAs = false)
     {
-        string? outputPath = LastFile;
-        if (isSaveAs || string.IsNullOrEmpty(outputPath))
+        Uri? outputUri = LastFile;
+        string? outputPath = null;
+        if (isSaveAs || outputUri is null)
         {
             var file = await filesService.SaveFileAsync("Save Behavior Tree file", null,
-                                  $"{Title}_behavior_tree_ingame.json");
+                                  $"{Title}_behavior_tree_ingame.json", LastFile);
             if (file is null)
                 return null;
 
@@ -262,7 +263,7 @@ public partial class BTEditorViewModel : EditorDocumentBase, /* ISaveableDocumen
         builder.WriteJson(stream);
         */
 
-        this.LastFile = outputPath;
+        this.LastFile = outputUri;
 
         string newTitle = Path.GetFileNameWithoutExtension(outputPath);
         if (newTitle.EndsWith("_behavior_tree_ingame"))
@@ -272,7 +273,7 @@ public partial class BTEditorViewModel : EditorDocumentBase, /* ISaveableDocumen
         this.Title = _currentBtName;
         SolutionTreeViewItem.TreeViewName = _currentBtName;
 
-        return outputPath;
+        return outputUri;
     }
 
     /// <summary>

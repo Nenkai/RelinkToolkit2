@@ -159,11 +159,12 @@
 															<ScrollViewer Margin="0 0 25 0">
 																<pgc:PropertyGrid
 																	x:Name="propertyGrid_Basic"
-																	AllowFilter="False"
-																	AllowQuickFilter="False"
-																	AllowToggleView="False"
-																	ShowTitle="False"
-																	ShowStyle="Tiled"
+																	IsQuickFilterVisible="False"
+																	IsHeaderVisible="False"
+																	IsTitleVisible="False"
+																    IsCategoryVisible="False"
+																	IsAutoNameWidth="True"
+																    LayoutStyle="Inline"
 																	DataContext="{Binding ConditionComponent}"/>
 															</ScrollViewer>
 														</Expander>

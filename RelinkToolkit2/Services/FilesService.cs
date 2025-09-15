@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 using Avalonia.Controls;
@@ -41,15 +42,23 @@ public class FilesService : IFilesService
         return files.Count >= 1 ? files[0] : null;
     }
 
-    public async Task<IStorageFile?> SaveFileAsync(string title, IReadOnlyList<FilePickerFileType>? filters = null, string? suggestedFileName = null)
+    public async Task<IStorageFile?> SaveFileAsync(string title, IReadOnlyList<FilePickerFileType>? filters = null, string? suggestedFileName = null, Uri? suggestedStartLocation = null)
     {
         if (_storageProvider is null)
             throw new ArgumentNullException("Storage provider is null. It was not initialized.");
+
+        IStorageFolder? startLocation = null;
+        if (suggestedStartLocation is not null)
+        {
+            startLocation = await _storageProvider.TryGetFolderFromPathAsync(suggestedStartLocation);
+            startLocation ??= await _storageProvider.TryGetFolderFromPathAsync(new Uri(suggestedStartLocation, ".")); // Try parent
+        }
 
         return await _storageProvider.SaveFilePickerAsync(new FilePickerSaveOptions()
         {
             Title = title,
             SuggestedFileName = suggestedFileName,
+            SuggestedStartLocation = startLocation,
         });
     }
 }

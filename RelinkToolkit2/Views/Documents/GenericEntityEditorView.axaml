@@ -34,16 +34,6 @@
 			</ComboBox.ItemTemplate>
 		</ComboBox>
 		<Separator Margin="-20,4,0,0"/>
-		<ScrollViewer>
-			<StackPanel Orientation="Vertical">
-				<pgc:PropertyGrid
-					x:Name="propertyGrid_Basic"
-					Margin="4"
-					DataContext="{Binding SelectedObject}"
-					PropertyCategoryStyle="InheritingOrder"
-					AllowQuickFilter="False">
-				</pgc:PropertyGrid>
-			</StackPanel>
-		</ScrollViewer>
+		<views:PropertyGridView DataContext="{Binding PropertyGridViewModel}"/>
 	</DockPanel>
 </UserControl>

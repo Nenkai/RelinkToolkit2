@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
@@ -102,6 +103,7 @@ public partial class FsmNodeView : UserControl
             if (properties.IsLeftButtonPressed)
             {
                 WeakReferenceMessenger.Default.Send(new FsmComponentSelectedMessage(componentViewModel.Component));
+                e.Handled = true;
             }
             else if (properties.IsRightButtonPressed)
             {
@@ -109,10 +111,28 @@ public partial class FsmNodeView : UserControl
 
                 // We gotta pass this to the editor's view to make the context menu.
                 WeakReferenceMessenger.Default.Send(new FsmComponentContextMenuRequest(parentNodeView, componentViewModel));
+                
             }
 
             e.Handled = true;
         }
+    }
+
+    // HACK: So Notify seems to handle Left click specifically, once a node is clicked, and a component is clicked, it doesn't let
+    // other components be pressed so PointerPressed never fires (except for non left clicks).
+    // We hook tapped (kind of a hack) for left clicks, seems to work.
+    //
+    // Ideal solution would probably be to split components into their own view, and then:
+    // AddHandler(PointerPressedEvent, Border_Tapped, RoutingStrategies.Tunnel);
+    private void Border_Tapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (sender is not Control control)
+            return;
+
+        if (control.DataContext is not NodeComponentViewModel componentViewModel)
+            return;
+
+        WeakReferenceMessenger.Default.Send(new FsmComponentSelectedMessage(componentViewModel.Component));
     }
 
     private void Border_PointerEntered(object? sender, PointerEventArgs e)

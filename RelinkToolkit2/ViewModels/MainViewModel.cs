@@ -140,6 +140,7 @@ public partial class MainViewModel : ObservableObject
                 //}
 
                 DocumentsViewModel.AddDocument(editorViewModel);
+                editorViewModel.LastFile = fileResult;
             }
             catch (Exception ex)
             {
@@ -202,6 +203,7 @@ public partial class MainViewModel : ObservableObject
         FsmEditorViewModel? editorViewModel = AddNewFSMDocument(editorIdentifier, fsmName, parser);
         if (editorViewModel is null)
             return;
+        editorViewModel.LastFile = uri;
 
         if (fsmName.StartsWith("quest_"))
         {
@@ -375,6 +377,7 @@ public partial class MainViewModel : ObservableObject
         BTEditorViewModel? editorViewModel = AddNewBTDocument(fsmId, fsmName, parser);
         if (editorViewModel is null)
             return;
+        editorViewModel.LastFile = uri;
 
         var fsmTreeItem = new BTTreeViewItemViewModel()
         {
