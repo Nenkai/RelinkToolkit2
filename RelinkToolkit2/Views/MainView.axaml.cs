@@ -26,12 +26,16 @@ public partial class MainView : UserControl
 
         IStorageProvider? storageProvider = topLevel.StorageProvider;
         if (storageProvider is not null)
-            App.Current.Services.GetRequiredService<IFilesService>().SetStorageProvider(storageProvider);
+        {
+            IFilesService? filesService = App.Current.Services.GetService<IFilesService>();
+            if (filesService is not null)
+                filesService.SetStorageProvider(storageProvider);
+        }
     }
 
     private void Drop(object? sender, DragEventArgs e)
     {
-        IEnumerable<IStorageItem>? files = e.Data.GetFiles();
+        IEnumerable<IStorageItem>? files = e.DataTransfer.TryGetFiles();
         if (files is null)
             return;
 

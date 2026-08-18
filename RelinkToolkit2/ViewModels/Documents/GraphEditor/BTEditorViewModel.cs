@@ -33,14 +33,13 @@ using RelinkToolkit2.ViewModels.Menu;
 
 namespace RelinkToolkit2.ViewModels.Documents.GraphEditor;
 
-public partial class BTEditorViewModel : EditorDocumentBase, /* ISaveableDocument,*/ IGraphEditor
+public partial class BTEditorViewModel : NodeEditorViewModelBase, /* ISaveableDocument,*/ IGraphEditor,
+    IRecipient<NodeGraphSelectionChangeRequest>,
+    IRecipient<DeleteNodeConnectionRequest>,
+    IRecipient<TransitionComponentAddRequest>
+
 {
     private ILogger? _logger;
-
-    /// <summary>
-    /// Lookup table for all elements with a guid (nodes, or components).
-    /// </summary>
-    private readonly Dictionary<uint, object> _guidToBtElement = [];
 
     /// <summary>
     /// All displayed nodes in the graph (including groups, except layer 0).
@@ -62,41 +61,21 @@ public partial class BTEditorViewModel : EditorDocumentBase, /* ISaveableDocumen
     private BTNodeViewModel? _selectedNode;
 
     /// <summary>
-    /// Currently selected nodes.
-    /// </summary>
-    [ObservableProperty]
-    private ObservableCollection<BTNodeViewModel> _selectedNodes = [];
-
-    /// <summary>
     /// Currently selected connection.
     /// </summary>
     [ObservableProperty]
     private FsmConnectionViewModel? _selectedConnection;
 
+    /// <summary>
+    /// Currently selected nodes.
+    /// </summary>
     [ObservableProperty]
-    private Point _viewportLocation;
-
-    [ObservableProperty]
-    private Size _viewportSize;
-
-    [ObservableProperty]
-    private double _viewportZoom = 1.0f;
-
-    [ObservableProperty]
-    private Point _contextMenuLocation;
-
-    public Point MouseLocation { get; set; }
+    private ObservableCollection<BTNodeViewModel> _selectedNodes = [];
 
     private string? _currentBtName;
 
     private BTNodeViewModel _rootNode;
 
-    public bool IsLayouted { get; set; } = false;
-
-    /// <summary>
-    /// Last name this file was saved as.
-    /// </summary>
-    public Uri? LastFile { get; set; }
 
     /// <summary>
     /// Menu items for the main context menu (add nodes, etc).
@@ -167,45 +146,46 @@ public partial class BTEditorViewModel : EditorDocumentBase, /* ISaveableDocumen
         });
     }
 
-    public override void RegisterMessageListeners()
+    /// <summary>
+    /// Fired when selecting a node manually
+    /// </summary>
+    /// <param name="message"></param>
+    public void Receive(NodeGraphSelectionChangeRequest message)
     {
-        // Fired when selecting a node manually
-        WeakReferenceMessenger.Default.Register<NodeGraphSelectionChangeRequest>(this, (recipient, message) =>
-        {
-            SelectedNode = (BTNodeViewModel)message.Node;
-            message.Reply(true);
-        });
-
-        // Fired when deleting a node
-        WeakReferenceMessenger.Default.Register<DeleteNodeConnectionRequest>(this, (recipient, message) =>
-        {
-            GraphConnectionViewModel connection = message.Connection;
-
-            bool result = Connections.Remove(connection);
-            message.Reply(result);
-        });
-
-        // Fired when a component selection was complete
-        WeakReferenceMessenger.Default.Register<TransitionComponentAddRequest>(this, (recipient, message) =>
-        {
-            ConditionComponent component = message.Component;
-            TransitionViewModel transition = message.Transition;
-
-            component.Guid = GetNewGuid();
-            RegisterBtElementGuid(component.Guid, component);
-
-            if (transition.ConditionComponents.Count != 0)
-                transition.ConditionComponents.Add(new TransitionConditionOpViewModel());
-
-            transition.ConditionComponents.Add(new TransitionConditionViewModel(component) { Title = component.ComponentName });
-            transition.ParentConnection.UpdateConnection();
-            message.Reply(true);
-        });
+        SelectedNode = (BTNodeViewModel)message.Node;
+        message.Reply(true);
     }
 
-    public override void UnregisterMessageListeners()
+    /// <summary>
+    /// Fired when deleting a node
+    /// </summary>
+    /// <param name="message"></param>
+    public void Receive(DeleteNodeConnectionRequest message)
     {
-        WeakReferenceMessenger.Default.UnregisterAll(this);
+        GraphConnectionViewModel connection = message.Connection;
+
+        bool result = Connections.Remove(connection);
+        message.Reply(result);
+    }
+
+    /// <summary>
+    /// Fired when a component selection was complete
+    /// </summary>
+    /// <param name="message"></param>
+    public void Receive(TransitionComponentAddRequest message)
+    {
+        ConditionComponent component = message.Component;
+        TransitionViewModel transition = message.Transition;
+
+        component.Guid = GetNewGuid();
+        RegisterBtElementGuid(component.Guid, component);
+
+        if (transition.ConditionComponents.Count != 0)
+            transition.ConditionComponents.Add(new TransitionConditionOpViewModel());
+
+        transition.ConditionComponents.Add(new TransitionConditionViewModel(component) { Title = component.ComponentName });
+        transition.ParentConnection.UpdateConnection();
+        message.Reply(true);
     }
 
     /// <summary>
@@ -214,7 +194,7 @@ public partial class BTEditorViewModel : EditorDocumentBase, /* ISaveableDocumen
     private void ResetGraph()
     {
         _processedNodes.Clear();
-        _guidToBtElement.Clear();
+        _guidToElement.Clear();
 
         Nodes.Clear();
         Connections.Clear();
@@ -579,20 +559,7 @@ public partial class BTEditorViewModel : EditorDocumentBase, /* ISaveableDocumen
         }
     }
 
-    /// <summary>
-    /// Generates a new guid.
-    /// </summary>
-    /// <returns></returns>
-    public uint GetNewGuid()
-    {
-        uint guid;
-        do
-        {
-            guid = (uint)Random.Shared.Next();
-        } while (_guidToBtElement.ContainsKey(guid));
 
-        return guid;
-    }
 
     /// <summary>
     /// Registers a graph component (node, bt component) to the guid mapping.
@@ -601,7 +568,7 @@ public partial class BTEditorViewModel : EditorDocumentBase, /* ISaveableDocumen
     /// <param name="elem"></param>
     public void RegisterBtElementGuid(uint guid, object elem)
     {
-        _guidToBtElement.TryAdd(guid, elem);
+        _guidToElement.TryAdd(guid, elem);
     }
 
     /// <summary>
@@ -610,7 +577,7 @@ public partial class BTEditorViewModel : EditorDocumentBase, /* ISaveableDocumen
     /// <param name="guid"></param>
     public void UnregisterBtElementGuid(uint guid)
     {
-        _guidToBtElement.Remove(guid);
+        _guidToElement.Remove(guid);
     }
 
     private readonly Dictionary<uint, BTNodeViewModel> _guidToNodeVm = [];

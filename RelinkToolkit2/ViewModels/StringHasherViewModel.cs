@@ -1,31 +1,13 @@
-﻿using Avalonia.Media;
-
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
-
-using Dock.Model.Controls;
-using Dock.Model.Core;
-
-using GBFRDataTools.Entities.Quest;
-using GBFRDataTools.FSM;
-using GBFRDataTools.FSM.Components.Actions.Quest;
-using GBFRDataTools.FSM.Entities;
-using GBFRDataTools.Hashing;
-
-using MsBox.Avalonia;
-
-using RelinkToolkit2.Messages.Dialogs;
-using RelinkToolkit2.Messages.Documents;
-using RelinkToolkit2.Messages.IO;
-using RelinkToolkit2.ViewModels.Documents;
-using RelinkToolkit2.ViewModels.Documents.GraphEditor;
-using RelinkToolkit2.ViewModels.TreeView;
-
-using System;
+﻿using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
+
+using Avalonia.Media;
+
+using CommunityToolkit.Mvvm.ComponentModel;
+
+using GBFRDataTools.Hashing;
 
 namespace RelinkToolkit2.ViewModels;
 

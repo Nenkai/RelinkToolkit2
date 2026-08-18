@@ -26,6 +26,9 @@ public partial class ComponentSearchItemViewModel : ObservableObject
     [ObservableProperty]
     private object? _data;
 
+    [ObservableProperty]
+    public string? _tag;
+
     public Action<ComponentSearchViewModel, ComponentSearchItemViewModel>? OnSelected { get; set; }
 
     public bool IsFolder => Data is ComponentSearchPageViewModel;

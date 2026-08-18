@@ -102,8 +102,8 @@
 		<DockSimpleTheme />
 		<StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Simple.xaml"/>
 		
-		<StyleInclude Source="avares://Aldwych.LogView/BasicTheme.axaml"/>
-		<StyleInclude Source="avares://Aldwych.LogView/Styles/LogView.axaml"/>
+		<StyleInclude Source="avares://RelinkToolkit2/Controls/Logging/Styles/BasicTheme.axaml"/>
+		<StyleInclude Source="avares://RelinkToolkit2/Controls/Logging/Styles/LogView.axaml"/>
 
 		<StyleInclude Source="avares://RelinkToolkit2/Controls/PropertyGrid/Views/Vector2View.axaml"/>
 		<StyleInclude Source="avares://RelinkToolkit2/Controls/PropertyGrid/Views/Vector3View.axaml"/>

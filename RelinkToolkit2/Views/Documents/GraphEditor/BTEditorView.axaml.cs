@@ -11,6 +11,7 @@ using CommunityToolkit.Mvvm.Messaging;
 
 using DynamicData;
 
+using GBFRDataTools.Entities;
 using GBFRDataTools.FSM.Components;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -19,9 +20,6 @@ using Microsoft.Msagl.Core.Layout;
 using Microsoft.Msagl.Core.Routing;
 
 using Microsoft.Msagl.Layout.Layered;
-
-using MsBox.Avalonia;
-using MsBox.Avalonia.Enums;
 
 using Nodify;
 
@@ -45,7 +43,11 @@ using System.Xml.Linq;
 
 namespace RelinkToolkit2.Views.Documents.GraphEditor;
 
-public partial class BTEditorView : UserControl
+public partial class BTEditorView : UserControl,
+    IRecipient<BringNodeIntoViewRequest>,
+    IRecipient<GetNodeControlRequest>,
+    IRecipient<DismissSearchComponentMenuRequest>,
+    IRecipient<FsmComponentContextMenuRequest>
 {
     public BTEditorView()
     {
@@ -54,44 +56,51 @@ public partial class BTEditorView : UserControl
 
     private void RegisterMessages()
     {
-        WeakReferenceMessenger.Default.Register<BringFsmNodeIntoViewRequest>(this, (recipient, message) =>
-        {
-            if (DataContext is not BTEditorViewModel editorVm)
-                return;
+        WeakReferenceMessenger.Default.RegisterAll(this);
+    }
 
-            if (!editorVm.Nodes.Contains(message.Node))
-                return;
+    private void UnregisterMessages()
+    {
+        WeakReferenceMessenger.Default.UnregisterAll(this);
+    }
 
-            Editor.BringIntoView(message.Node.Center, animated: message.Animated);
-            Editor.ZoomAtPosition(1.0f, message.Node.Center);
-            message.Reply(true);
-        });
+    public void Receive(BringNodeIntoViewRequest message)
+    {
+        if (DataContext is not BTEditorViewModel editorVm)
+            return;
 
-        WeakReferenceMessenger.Default.Register<GetNodeControlRequest>(this, (recipient, message) =>
-        {
-            Control? control = Editor.ContainerFromItem(message.Node);
-            if (control is null)
-                return;
+        if (!editorVm.Nodes.Contains(message.Node))
+            return;
 
-            message.Reply(control);
-        });
+        Editor.BringIntoView(message.Node.Center, animated: message.Animated);
+        Editor.ZoomAtPosition(1.0f, message.Node.Center);
+        message.Reply(true);
+    }
 
-        WeakReferenceMessenger.Default.Register<DismissSearchComponentMenuRequest>(this, (recipient, message) =>
-        {
-            _searchFlyout?.Hide();
-            message.Reply(true);
-        });
+    public void Receive(GetNodeControlRequest message)
+    {
+        Control? control = Editor.ContainerFromItem(message.Node);
+        if (control is null)
+            return;
 
-        WeakReferenceMessenger.Default.Register<FsmComponentContextMenuRequest>(this, (recipient, message) =>
-        {
-            ObservableCollection<MenuItemViewModel> items = CreateNodeContextMenu((BTNodeView)message.NodeView, (BTNodeViewModel)message.Component.Parent, message.Component);
+        message.Reply(control);
+    }
 
-            var flyout = new MenuFlyout();
-            flyout.ItemsSource = items;
-            flyout.ShowAt(message.NodeView, showAtPointer: true);
+    public void Receive(DismissSearchComponentMenuRequest message)
+    {
+        _searchFlyout?.Hide();
+        message.Reply(true);
+    }
 
-            message.Reply(true);
-        });
+    public void Receive(FsmComponentContextMenuRequest message)
+    {
+        ObservableCollection<MenuItemViewModel> items = CreateNodeContextMenu((BTNodeView)message.NodeView, (BTNodeViewModel)message.Component.Parent, message.Component);
+
+        var flyout = new MenuFlyout();
+        flyout.ItemsSource = items;
+        flyout.ShowAt(message.NodeView, showAtPointer: true);
+
+        message.Reply(true);
     }
 
     private void NodifyEditor_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -113,11 +122,6 @@ public partial class BTEditorView : UserControl
     private void NodifyEditor_Unloaded_1(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         UnregisterMessages();
-    }
-
-    private void UnregisterMessages()
-    {
-        WeakReferenceMessenger.Default.UnregisterAll(this);
     }
 
     /// <summary>
@@ -294,96 +298,22 @@ public partial class BTEditorView : UserControl
 
     private void NodeContextMenu_BringNodeIntoView(NodeViewModel? nodeVM)
     {
-        WeakReferenceMessenger.Default.Send(new BringFsmNodeIntoViewRequest(nodeVM!));
+        WeakReferenceMessenger.Default.Send(new BringNodeIntoViewRequest(nodeVM!));
     }
 
     private Flyout? _searchFlyout;
     private void NodeContextMenu_AddComponent(BTNodeView? nodeView)
     {
         _searchFlyout?.Hide();
+        _searchFlyout ??= new Flyout { ShowMode = FlyoutShowMode.Transient, VerticalOffset = 4, OverlayDismissEventPassThrough = true };
 
-        if (_searchFlyout is null)
-        {
-            _searchFlyout ??= new Flyout() { ShowMode = FlyoutShowMode.Transient };
-            _searchFlyout.VerticalOffset = 4;
-            _searchFlyout.OverlayDismissEventPassThrough = true;
-        }
+        ComponentSearchService componentSearchService = App.Current?.Services!.GetRequiredService<ComponentSearchService>()!;
+        ComponentSearchViewModel searchVM = componentSearchService.BuildSearchViewModel((NodeViewModel)nodeView!.DataContext!,
+            ComponentSearchCategoryType.Action, onSelected: OnAddComponent);
 
-        BuildActionSearchMenu(nodeView!); // TODO: Cache?
-        _searchFlyout.ShowAt(nodeView!, showAtPointer: false);
-    }
-
-    private static IEnumerable<Type> _actionComponentTypes = Assembly.GetAssembly(typeof(BehaviorTreeComponent))!.GetTypes()
-            .Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(typeof(ActionComponent)));
-
-    private void BuildActionSearchMenu(BTNodeView nodeView)
-    {
-        var content = new ComponentSearchView();
-        _searchFlyout!.Content = content;
-
-        var searchVM = new ComponentSearchViewModel();
-        content.DataContext = searchVM;
-        searchVM.Context = nodeView.DataContext as NodeViewModel;
-        
-        string baseNamespace = typeof(ActionComponent).Namespace!;
-        ComponentSearchPageViewModel mainPage = new ComponentSearchPageViewModel();
-        foreach (Type compType in _actionComponentTypes)
-        {
-            if (compType.Namespace is null)
-                continue;
-
-            if (compType.Namespace.StartsWith("GBFRDataTools.FSM.Components.Actions"))
-            {
-                string desc = compType.GetCustomAttribute<DescriptionAttribute>()?.Description ?? string.Empty;
-
-                if (compType.Namespace == "GBFRDataTools.FSM.Components.Actions")
-                {
-                    mainPage.AddComponent(compType.Name, compType, desc, OnAddComponent);
-                }
-                else
-                {
-                    string subNamespace = compType.Namespace["GBFRDataTools.FSM.Components.Actions".Length..];
-                    if (!string.IsNullOrEmpty(subNamespace))
-                    {
-                        string[] subSplit = subNamespace.Substring(1).Split('.');
-                        var currentPage = mainPage;
-
-                        string pageName = "";
-                        for (int i = 0; i < subSplit.Length; i++)
-                        {
-                            string? folder = subSplit[i];
-                            pageName += folder;
-
-                            if (!currentPage.TryGetByName(folder, out ComponentSearchItemViewModel component))
-                            {
-                                component = new ComponentSearchItemViewModel() { Name = folder };
-                                currentPage.AddComponent(component);
-
-                                ComponentSearchPageViewModel subPage = new()
-                                {
-                                    Title = pageName,
-                                };
-
-                                component.SetPage(subPage);
-                                currentPage = subPage;
-                            }
-                            else
-                            {
-                                currentPage = (ComponentSearchPageViewModel)component.Data!;
-                            }
-
-                            if (i == subSplit.Length - 1)
-                                currentPage.AddComponent(compType.Name, compType, desc, OnAddComponent);
-                            else
-                                pageName += " > ";
-                        }
-                    }
-                }
-            }
-        }
-
-        searchVM.AddPage(mainPage);
-        searchVM.SortAndBuildSearch();
+        var content = new ComponentSearchView { DataContext = searchVM };
+        _searchFlyout.Content = content;
+        _searchFlyout.ShowAt(nodeView, showAtPointer: false);
     }
 
     private void OnAddComponent(ComponentSearchViewModel searchVM, ComponentSearchItemViewModel item)
@@ -426,9 +356,9 @@ public partial class BTEditorView : UserControl
         {
             var nodeVM = (NodeViewModel)nodeView.DataContext!;
 
-            var dataObject = new DataObject();
-            dataObject.Set(DataFormats.Text, nodeVM.Guid.ToString());
-            await clipboard.SetDataObjectAsync(dataObject);
+            var dataObject = new DataTransfer();
+            dataObject.Add(DataTransferItem.CreateText(nodeVM.Guid.ToString()));
+            await clipboard.SetDataAsync(dataObject);
         }
     }
 }

@@ -15,6 +15,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using Dock.Model.Mvvm.Controls;
 
 using GBFRDataTools.FSM.Components.Conditions.Quest;
+using GBFRDataTools.FSM.Components.Conditions.UI;
 
 using RelinkToolkit2.Messages.Fsm;
 using RelinkToolkit2.ViewModels.Documents;
@@ -83,6 +84,6 @@ public partial class ConnectionEditorViewModel : Tool
     public void OnNodeClicked(NodeViewModel node)
     {
         WeakReferenceMessenger.Default.Send(new NodeGraphSelectionChangeRequest(node));
-        WeakReferenceMessenger.Default.Send(new BringFsmNodeIntoViewRequest(node)); // Highlight it on the graph
+        WeakReferenceMessenger.Default.Send(new BringNodeIntoViewRequest(node)); // Highlight it on the graph
     }
 }

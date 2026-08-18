@@ -40,8 +40,8 @@ public partial class FsmNodeViewModel : FsmNodeViewModelBase //, IDropTarget
     [ObservableProperty]
     private bool _hasSelfTransition;
 
-    public string FsmFolderName { get; set; }
-    public string FsmName { get; set; }
+    public string? FsmFolderName { get; set; }
+    public string? FsmName { get; set; }
     public uint NameHash { get; set; }
 
 

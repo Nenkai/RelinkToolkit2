@@ -2,17 +2,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="350" d:DesignHeight="300"
+             mc:Ignorable="d" d:DesignWidth="350" d:DesignHeight="350"
 			 xmlns:searchVMs="using:RelinkToolkit2.ViewModels.Search"
 			 xmlns:b="using:RelinkToolkit2.Behaviors"
 			 xmlns:controls="using:RelinkToolkit2.Controls"
-			 xmlns:local="using:RelinkToolkit2"
 			 xmlns:converters="using:RelinkToolkit2.Converters"
-			 xmlns:sys="clr-namespace:System;assembly=netstandard"
              x:Class="RelinkToolkit2.Views.ComponentSearchView"
 			 x:DataType="searchVMs:ComponentSearchViewModel"
-			 xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
-             xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
 			 Width="350"
 			 Height="350"
 			 CornerRadius="3,3,3,3">
@@ -25,7 +21,7 @@
 	</Design.DataContext>
 
 	<StackPanel Name="SearchPanel" Orientation="Vertical">
-		<TextBox Watermark="Search Components..." Text="{Binding SearchText}" CornerRadius="2,2,2,2" FontSize="10" Margin="3,3,3,3"
+		<TextBox PlaceholderText="Search Components..." Text="{Binding SearchText}" CornerRadius="2,2,2,2" FontSize="10" Margin="3,3,3,3"
 				 AttachedToVisualTree="TextBox_AttachedToVisualTree">
 			<TextBox.InnerLeftContent>
 				<Image Width="8" Height="8" Margin="0,0,4,0">
@@ -73,7 +69,7 @@
 									 SelectionChanged="Grid_PointerPressed_1">
 								<ListBox.ItemTemplate>
 									<DataTemplate>
-										<Grid ColumnDefinitions="Auto,*,Auto" x:DataType="searchVMs:ComponentSearchItemViewModel">
+										<Grid ColumnDefinitions="Auto,*,Auto,Auto" x:DataType="searchVMs:ComponentSearchItemViewModel">
 											<Image Grid.Column="0" Width="14" Height="14" Margin="0,0,2,0">
 												<Image.Source>
 													<controls:VectorIconDrawingImage Drawing="{Binding Icon, Converter={StaticResource vectorIconConverter}}"/>
@@ -81,6 +77,15 @@
 											</Image>
 											<TextBlock Text="{Binding Name}" Grid.Column="1"/>
 											<Panel Grid.Column="2" Background="Transparent" ToolTip.ShowDelay="0" 
+												   IsVisible="{Binding Tag, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+												   ToolTip.ServiceEnabled="{Binding HelpCaption, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+
+												<Border Margin="0,0,2,0" Padding="4,0,4,0" Background="DarkGray" BorderThickness="1" CornerRadius="20">
+													<TextBlock FontWeight="Bold" TextAlignment="Center" Text="{Binding Tag}" Foreground="#DDDDDD" FontSize="10"/>
+												</Border>
+											</Panel>
+											<Panel Grid.Column="3" Background="Transparent" ToolTip.ShowDelay="0" 
+												   IsVisible="{Binding HelpCaption, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
 												   ToolTip.ServiceEnabled="{Binding HelpCaption, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
 												<ToolTip.Tip>
 													<TextBlock Text="{Binding HelpCaption}"/>

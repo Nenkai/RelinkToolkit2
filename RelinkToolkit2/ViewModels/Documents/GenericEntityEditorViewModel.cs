@@ -1,38 +1,4 @@
-﻿
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Media;
-using Avalonia.Platform.Storage;
-
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
-
-using GBFRDataTools.Entities;
-using GBFRDataTools.Entities.Player;
-using GBFRDataTools.FSM;
-using GBFRDataTools.FSM.Components;
-using GBFRDataTools.FSM.Entities;
-using GBFRDataTools.Hashing;
-
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-
-using MsBox.Avalonia;
-
-using Nodify;
-using Nodify.Compatibility;
-
-using RelinkToolkit2.Messages.Dialogs;
-using RelinkToolkit2.Messages.Fsm;
-using RelinkToolkit2.Services;
-using RelinkToolkit2.ViewModels.Documents.Interfaces;
-using RelinkToolkit2.ViewModels.Documents.GraphEditor;
-using RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents;
-using RelinkToolkit2.ViewModels.Menu;
-using RelinkToolkit2.ViewModels.TreeView;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -40,6 +6,21 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+
+using Avalonia.Platform.Storage;
+
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
+using GBFRDataTools.Entities;
+using GBFRDataTools.Entities.Player;
+
+using RelinkToolkit2.Services;
+using RelinkToolkit2.ViewModels.Documents.Interfaces;
 
 namespace RelinkToolkit2.ViewModels.Documents;
 
@@ -60,12 +41,14 @@ public partial class GenericEntityEditorViewModel : EditorDocumentBase, ISaveabl
     [ObservableProperty]
     private object? _selectedObject;
 
-    public PropertyGridViewModel PropertyGridViewModel { get; set; } = new();
+    public PropertyGridViewModel PropertyGridViewModel { get; set; }
 
     public ObservableCollection<GenericEntityEntryViewModel> Objects { get; set; } = [];
 
     public GenericEntityEditorViewModel()
     {
+        PropertyGridViewModel = new(App.Current?.Services.GetService<ComponentDocumentationService>());
+
         _logger = App.Current?.Services?.GetService<ILogger<GenericEntityEditorViewModel>>();
     }
 
@@ -101,7 +84,7 @@ public partial class GenericEntityEditorViewModel : EditorDocumentBase, ISaveabl
 
     public override void RegisterMessageListeners()
     {
-        
+        WeakReferenceMessenger.Default.RegisterAll(this);
     }
 
     public override void UnregisterMessageListeners()

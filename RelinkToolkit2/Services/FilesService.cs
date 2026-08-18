@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
-using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 
 namespace RelinkToolkit2.Services;
@@ -60,5 +59,27 @@ public class FilesService : IFilesService
             SuggestedFileName = suggestedFileName,
             SuggestedStartLocation = startLocation,
         });
+    }
+
+    public async Task<IStorageFolder?> OpenFolderAsync(string title, string? suggestedFileName = null, Uri? suggestedStartLocation = null)
+    {
+        if (_storageProvider is null)
+            throw new ArgumentNullException("Storage provider is null. It was not initialized.");
+
+        IStorageFolder? startLocation = null;
+        if (suggestedStartLocation is not null)
+        {
+            startLocation = await _storageProvider.TryGetFolderFromPathAsync(suggestedStartLocation);
+            startLocation ??= await _storageProvider.TryGetFolderFromPathAsync(new Uri(suggestedStartLocation, ".")); // Try parent
+        }
+
+        var folder = await _storageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions()
+        {
+            Title = title,
+            SuggestedFileName = suggestedFileName,
+            SuggestedStartLocation = startLocation,
+        });
+
+        return folder.Count >= 1 ? folder[0] : null;
     }
 }

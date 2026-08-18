@@ -7,12 +7,14 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Styling;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform.Storage;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -21,22 +23,20 @@ using CommunityToolkit.Mvvm.Messaging;
 using RelinkToolkit2.Messages;
 using RelinkToolkit2.Messages.IO;
 using RelinkToolkit2.Services;
-
 using RelinkToolkit2.ViewModels.Documents;
 using RelinkToolkit2.ViewModels.Menu;
-using RelinkToolkit2.Messages.Fsm;
-using System.Diagnostics.CodeAnalysis;
 using RelinkToolkit2.Messages.Documents;
-using RelinkToolkit2.Messages.Dialogs;
 using RelinkToolkit2.Messages.StatusBar;
 using RelinkToolkit2.ViewModels.Documents.Interfaces;
 using RelinkToolkit2.Views.Tools;
-using Microsoft.Extensions.Logging;
-using Avalonia.Platform.Storage;
+using System.IO;
+using GBFRDataTools.FSM;
+
 
 namespace RelinkToolkit2.ViewModels;
 
-public partial class TopMenuViewModel : ObservableObject
+public partial class TopMenuViewModel : ObservableObject,
+    IRecipient<ActiveDocumentChangedMessage>
 {
     private ILogger? _logger;
 
@@ -52,18 +52,20 @@ public partial class TopMenuViewModel : ObservableObject
 
         BuildMenu();
 
-        WeakReferenceMessenger.Default.Register<ActiveDocumentChangedMessage>(this, (recipient, message) =>
-        {
-            EditorDocumentBase? doc = message.Value;
-            bool isSaveable = doc is ISaveableDocument;
-            _saveMenuItem!.Enabled = isSaveable;
-            _saveAsMenuItem!.Enabled = isSaveable;
+        WeakReferenceMessenger.Default.RegisterAll(this);
+    }
 
-            if (isSaveable)
-                _saveAsMenuItem!.Header = $"Save {doc!.Title} As...";
-            else
-                _saveAsMenuItem!.Header = $"Save As...";
-        });
+    public void Receive(ActiveDocumentChangedMessage message)
+    {
+        EditorDocumentBase? doc = message.Value;
+        bool isSaveable = doc is ISaveableDocument;
+        _saveMenuItem!.Enabled = isSaveable;
+        _saveAsMenuItem!.Enabled = isSaveable;
+
+        if (isSaveable)
+            _saveAsMenuItem!.Header = $"Save {doc!.Title} As...";
+        else
+            _saveAsMenuItem!.Header = $"Save As...";
     }
 
     public void BuildMenu()
@@ -94,6 +96,7 @@ public partial class TopMenuViewModel : ObservableObject
         MenuItems.Add(windowMenuItem);
     }
 
+
     private MenuItemViewModel CreateFileMenu()
     {
         var file = new MenuItemViewModel()
@@ -111,7 +114,7 @@ public partial class TopMenuViewModel : ObservableObject
                 new MenuItemViewModel()
                 {
                     Header = "FSM (Finite State Machine)",
-                    Command = new RelayCommand(OnNewFSMClicked),
+                    Command = new AsyncRelayCommand(OnNewFSMClicked),
                     IconKind = "Material.ChartTimelineVariant",
                     Enabled = true,
                 },
@@ -209,6 +212,38 @@ public partial class TopMenuViewModel : ObservableObject
         toolsMenuItem.MenuItems.Add(stringHasherMenuItem);
         toolsMenuItem.MenuItems.Add(MenuItemViewModel.Separator);
 
+        var database = new MenuItemViewModel()
+        {
+            Header = "Database",
+            Enabled = true,
+            IconKind = "Material.Settings",
+        };
+
+        database.MenuItems.Add(new MenuItemViewModel()
+        {
+            Header = $"Reload FSM Component documentation ({ComponentDocumentationService.DOC_FILE_NAME})",
+            Enabled = true,
+            IconKind = "Material.FSM",
+            Command = new RelayCommand(ReloadFSMDocumentation),
+        });
+        toolsMenuItem.MenuItems.Add(database);
+
+        var scripts = new MenuItemViewModel()
+        {
+            Header = "Tests",
+            Enabled = true,
+            IconKind = "Material.Settings",
+        };
+
+        scripts.MenuItems.Add(new MenuItemViewModel()
+        {
+            Header = "Verify all FSMs in folder",
+            Enabled = true,
+            IconKind = "Material.Settings",
+            Command = new AsyncRelayCommand(VerifyAllFSMs),
+        });
+        toolsMenuItem.MenuItems.Add(scripts);
+
         var themesMenuItem = new MenuItemViewModel()
         {
             Header = "Themes",
@@ -237,6 +272,64 @@ public partial class TopMenuViewModel : ObservableObject
             _themeMenuItems.Add(themeMenuItem);
         }
         return toolsMenuItem;
+    }
+
+    public void ReloadFSMDocumentation()
+    {
+        try
+        {
+            App.Current.Services.GetService<ComponentDocumentationService>()?.LoadDocumentFile();
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Failed to reload FSM documentation");
+        }
+    }
+
+    public async Task VerifyAllFSMs()
+    {
+        var filesService = App.Current?.Services?.GetService<IFilesService>();
+        if (filesService is null)
+            return;
+
+        var folder = await filesService.OpenFolderAsync("Select extracted system/fsm folder...");
+        if (folder is null)
+            return;
+
+        string? folderPath = folder.TryGetLocalPath();
+        if (folderPath is null)
+            return;
+
+        foreach (var file in Directory.GetFiles(folderPath, "*.msg", SearchOption.AllDirectories))
+        {
+            _logger?.LogInformation(file);
+
+            var parser = new FSMParser(App.Current.Services.GetRequiredService<ILoggerFactory>());
+            await parser.Parse(File.ReadAllBytes(file), file.EndsWith(".msg"), OnLocateFSMFile);
+            if (parser.HasErrors)
+            {
+                _logger?.LogWarning("FSM Parsed ({file}) with errors.", file);
+            }
+            else
+                _logger?.LogInformation("FSM Parsed ({file}).", file);
+        }
+    }
+
+    public async Task<string?> OnLocateFSMFile(string file)
+    {
+        var filesService = App.Current?.Services?.GetService<IFilesService>();
+        if (filesService is null)
+            return null;
+
+        var localFile = await filesService.OpenFileAsync($"Locate template FSM {file}", filters:
+        [
+            new FilePickerFileType("FSM File")
+            {
+                Patterns = ["*_fsm_ingame.msg", "*_fsm_ingame.json"]
+            },
+            FilePickerFileTypes.All,
+        ]);
+        return localFile.Path.LocalPath;
     }
 
     public void StringHasherClicked()
@@ -296,10 +389,10 @@ public partial class TopMenuViewModel : ObservableObject
         }
     }
 
-    public void OnNewFSMClicked()
+    public async Task OnNewFSMClicked()
     {
         var mainView = App.Current.Services.GetRequiredService<MainViewModel>();
-        mainView.NewFSMDocument();
+        await mainView.NewFSMDocument();
     }
 
     public void OnNewBTClicked()
@@ -333,4 +426,5 @@ public partial class TopMenuViewModel : ObservableObject
     {
         WeakReferenceMessenger.Default.Send(new DockLayoutResetRequest());
     }
+
 }

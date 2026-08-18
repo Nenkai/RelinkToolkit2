@@ -1,13 +1,11 @@
-﻿using Aldwych.Logging;
-
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml.Templates;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
+using Avalonia.Controls;
+using Avalonia.Markup.Xaml.Templates;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;

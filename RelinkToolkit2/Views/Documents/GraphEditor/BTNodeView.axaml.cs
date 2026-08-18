@@ -6,6 +6,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.VisualTree;
+using Avalonia.Xaml.Interactions.DragAndDrop;
 
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -63,7 +64,8 @@ public partial class BTNodeView : UserControl
     {
         if (e.Source is Control c && c.DataContext is NodeViewModel targetViewModel)
         {
-            if (e.Data.Get("Context") is not NodeComponentViewModel component)
+            var component = e.DataTransfer.TryGetManagedValue<NodeComponentViewModel>("Context");
+            if (component is null)
                 return;
 
             if (targetViewModel == component.Parent)

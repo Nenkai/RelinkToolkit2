@@ -7,6 +7,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.VisualTree;
+using Avalonia.Xaml.Interactions.DragAndDrop;
 
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -23,9 +24,11 @@ using System.Threading.Tasks;
 
 namespace RelinkToolkit2.Views.Documents.GraphEditor;
 
-public partial class FsmNodeView : UserControl
+public partial class FsmNodeView : UserControl, 
+    IRecipient<FsmNodeLayerChangedMessage>
 {
     private Label _label;
+    private CancellationTokenSource? _layerLabelAnimCt = new();
 
     public FsmNodeView()
     {
@@ -35,7 +38,6 @@ public partial class FsmNodeView : UserControl
         AddHandler(DragDrop.DragOverEvent, DragOver);
     }
 
-    private CancellationTokenSource? _layerLabelAnimCt = new CancellationTokenSource();
     private void UserControl_DataContextChanged(object? sender, System.EventArgs e)
     {
         WeakReferenceMessenger.Default.UnregisterAll(this);
@@ -43,11 +45,17 @@ public partial class FsmNodeView : UserControl
         if (DataContext is not null)
         {
             NodeViewModel nvm = (NodeViewModel)DataContext!;
-            WeakReferenceMessenger.Default.Register<FsmNodeLayerChangedMessage, uint>(this, nvm.Guid, async (recipient, message) =>
-            {
-                await AnimateLayerChange();
-            });
+            WeakReferenceMessenger.Default.Register<FsmNodeLayerChangedMessage, uint>(this, nvm.Guid);
         }
+    }
+
+    /// <summary>
+    /// Fired when the node's layer has changed, where we start an animation.
+    /// </summary>
+    /// <param name="message"></param>
+    public async void Receive(FsmNodeLayerChangedMessage message)
+    {
+        await AnimateLayerChange();
     }
 
     private async Task AnimateLayerChange()
@@ -64,7 +72,8 @@ public partial class FsmNodeView : UserControl
     {
         if (e.Source is Control c && c.DataContext is NodeViewModel targetViewModel)
         {
-            if (e.Data.Get("Context") is not NodeComponentViewModel component)
+            var component = e.DataTransfer.TryGetManagedValue<NodeComponentViewModel>("Context");
+            if (component is null)
                 return;
 
             if (targetViewModel == component.Parent)
@@ -111,10 +120,8 @@ public partial class FsmNodeView : UserControl
 
                 // We gotta pass this to the editor's view to make the context menu.
                 WeakReferenceMessenger.Default.Send(new FsmComponentContextMenuRequest(parentNodeView, componentViewModel));
-                
+                e.Handled = true;
             }
-
-            e.Handled = true;
         }
     }
 
@@ -180,8 +187,39 @@ public partial class FsmNodeView : UserControl
         WeakReferenceMessenger.Default.Send(new EditConnectionRequest(selfTrans.ParentConnection));
     }
 
-    private void Label_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    private void Label_Loaded(object? sender, RoutedEventArgs e)
     {
         _label = (Label)sender!;
+    }
+
+    private void Component_DeleteClicked(object? sender, PointerPressedEventArgs e)
+    {
+        if (e.Pointer.Type == PointerType.Mouse)
+        {
+            var properties = e.GetCurrentPoint(this).Properties;
+            if (!properties.IsLeftButtonPressed)
+                return;
+        }
+
+        if (sender is not Control control)
+            return;
+
+        if (control.DataContext is not NodeComponentViewModel nvm)
+            return;
+
+        nvm.Parent.Components.Remove(nvm);
+        e.Handled = true;
+    }
+
+    private void Component_Tapped(object? sender, TappedEventArgs e)
+    {
+        if (sender is not Control control)
+            return;
+
+        if (control.DataContext is not NodeComponentViewModel nvm)
+            return;
+
+        nvm.Parent.Components.Remove(nvm);
+        e.Handled = true;
     }
 }

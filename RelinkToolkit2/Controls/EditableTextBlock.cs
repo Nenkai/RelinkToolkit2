@@ -130,6 +130,7 @@ internal class EditableTextBlock : WpfControl
 
         if (TextBox != null)
         {
+            TextBox.ContextFlyout = null;
             TextBox.LostFocus += OnLostFocus;
             TextBox.GetObservable(IsVisibleProperty)
                 .Subscribe(new AnonymousObserver<bool>(OnTextBoxVisiblityChanged));

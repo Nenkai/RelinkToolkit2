@@ -4,15 +4,14 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:RelinkToolkit2.ViewModels"
 			 xmlns:views="using:RelinkToolkit2.Views"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="1600" d:DesignHeight="900"
              x:Class="RelinkToolkit2.Views.MainView"
              x:DataType="vm:MainViewModel" x:CompileBindings="True"
+			 xmlns:design="clr-namespace:RelinkToolkit2"
 			 DragDrop.AllowDrop="True"
 			 Loaded="UserControl_Loaded">
 	<Design.DataContext>
-		<!-- This only sets the DataContext for the previewer in an IDE,
-         to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-		<vm:MainViewModel />
+		 <x:Static Member="design:DesignData.MainViewModel" />
 	</Design.DataContext>
 
 	<UserControl.Resources>

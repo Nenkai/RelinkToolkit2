@@ -1,4 +1,13 @@
-﻿
+﻿using System;
+using System.Collections.Frozen;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Numerics;
+using System.Threading.Tasks;
+
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -21,7 +30,6 @@ using MsBox.Avalonia;
 using Nodify;
 using Nodify.Compatibility;
 
-using RelinkToolkit2.Messages.Dialogs;
 using RelinkToolkit2.Messages.Fsm;
 using RelinkToolkit2.Services;
 using RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
@@ -30,26 +38,12 @@ using RelinkToolkit2.ViewModels.Documents.Interfaces;
 using RelinkToolkit2.ViewModels.Menu;
 using RelinkToolkit2.ViewModels.TreeView;
 
-using System;
-using System.Collections.Frozen;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Numerics;
-using System.Threading.Tasks;
-
 namespace RelinkToolkit2.ViewModels.Documents.GraphEditor;
 
-public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument, IGraphEditor
+public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocument, IGraphEditor
 {
-    private ILogger? _logger;
-
-    /// <summary>
-    /// Lookup table for all elements with a guid (nodes, or components).
-    /// </summary>
-    private readonly Dictionary<uint, object> _guidToFsmElement = [];
+    private readonly ILogger? _logger;
+    private readonly DialogService _dialogService;
 
     /// <summary>
     /// All displayed nodes in the graph (including groups, except layer 0).
@@ -77,41 +71,22 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
     private FsmNodeViewModel? _selectedNode;
 
     /// <summary>
-    /// Currently selected nodes.
-    /// </summary>
-    [ObservableProperty]
-    private ObservableCollection<FsmNodeViewModelBase> _selectedNodes = [];
-
-    /// <summary>
     /// Currently selected connection.
     /// </summary>
     [ObservableProperty]
     private FsmConnectionViewModel? _selectedConnection;
 
+    /// <summary>
+    /// Currently selected nodes.
+    /// </summary>
     [ObservableProperty]
-    private Point _viewportLocation;
-
-    [ObservableProperty]
-    private Size _viewportSize;
-
-    [ObservableProperty]
-    private double _viewportZoom = 1.0f;
-
-    [ObservableProperty]
-    private Point _contextMenuLocation;
-
-    public Point MouseLocation { get; set; }
+    private ObservableCollection<FsmNodeViewModelBase> _selectedNodes = [];
 
     private string? _currentFsmName;
 
     private FsmNodeViewModel? _rootNode;
 
-    public bool IsLayouted { get; set; } = false;
 
-    /// <summary>
-    /// Last name this file was saved as.
-    /// </summary>
-    public Uri? LastFile { get; set; }
 
     public bool ShouldPromptAsFirstSave { get; set; } = true;
 
@@ -129,6 +104,7 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
     public FsmEditorViewModel()
     {
         _logger = App.Current.Services.GetService<ILogger<FsmEditorViewModel>>();
+        _dialogService = App.Current.Services.GetService<DialogService>();
 
         // We are essentially swapping out gestures here.
         // We want group layer click to select the whole layer. not just the group.
@@ -223,38 +199,7 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
 
     public override void RegisterMessageListeners()
     {
-        // Fired when selecting a node manually
-        WeakReferenceMessenger.Default.Register<NodeGraphSelectionChangeRequest>(this, (recipient, message) =>
-        {
-            SelectedNode = (FsmNodeViewModel)message.Node;
-            message.Reply(true);
-        });
-
-        // Fired when deleting a node
-        WeakReferenceMessenger.Default.Register<DeleteNodeConnectionRequest>(this, (recipient, message) =>
-        {
-            GraphConnectionViewModel connection = message.Connection;
-
-            bool result = Connections.Remove((FsmConnectionViewModel)connection);
-            message.Reply(result);
-        });
-
-        // Fired when a component selection was complete
-        WeakReferenceMessenger.Default.Register<TransitionComponentAddRequest>(this, (recipient, message) =>
-        {
-            ConditionComponent component = message.Component;
-            TransitionViewModel transition = message.Transition;
-
-            component.Guid = GetNewGuid();
-            RegisterFsmElementGuid(component.Guid, component);
-
-            if (transition.ConditionComponents.Count != 0)
-                transition.ConditionComponents.Add(new TransitionConditionOpViewModel());
-
-            transition.ConditionComponents.Add(new TransitionConditionViewModel(component) { Title = component.ComponentName });
-            transition.ParentConnection.UpdateConnection();
-            message.Reply(true);
-        });
+        WeakReferenceMessenger.Default.RegisterAll(this);
     }
 
     public override void UnregisterMessageListeners()
@@ -263,19 +208,62 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
     }
 
     /// <summary>
+    /// Fired when selecting a node manually
+    /// </summary>
+    /// <param name="message"></param>
+    public void Receive(NodeGraphSelectionChangeRequest message)
+    {
+        SelectedNode = (FsmNodeViewModel)message.Node;
+        message.Reply(true);
+    }
+
+    /// <summary>
+    /// Fired when deleting a node
+    /// </summary>
+    /// <param name="message"></param>
+    public void Receive(DeleteNodeConnectionRequest message)
+    {
+        GraphConnectionViewModel connection = message.Connection;
+
+        bool result = Connections.Remove((FsmConnectionViewModel)connection);
+        message.Reply(result);
+    }
+
+    /// <summary>
+    /// Fired when a component selection was complete
+    /// </summary>
+    /// <param name="message"></param>
+    public void Receive(TransitionComponentAddRequest message)
+    {
+        ConditionComponent component = message.Component;
+        TransitionViewModel transition = message.Transition;
+
+        component.Guid = GetNewGuid();
+        RegisterFsmElementGuid(component.Guid, component);
+
+        if (transition.ConditionComponents.Count != 0)
+            transition.ConditionComponents.Add(new TransitionConditionOpViewModel());
+
+        transition.ConditionComponents.Add(new TransitionConditionViewModel(component) { Title = component.ComponentName });
+        transition.ParentConnection.UpdateConnection();
+        message.Reply(true);
+    }
+
+    /// <summary>
     /// Resets graph state.
     /// </summary>
     private void ResetGraph()
     {
         _processedNodes.Clear();
-        _guidToFsmElement.Clear();
+        _guidToElement.Clear();
 
         Nodes.Clear();
         Connections.Clear();
-        LayerGroups.Clear();
 
         SelectedNode = null;
         SelectedNodes.Clear();
+
+        LayerGroups.Clear();
 
         var rootLayer = new FsmGroupNodeViewModel() { ParentEditor = this, LayerIndex = 0 };
         LayerGroups.Add(0, rootLayer);
@@ -316,7 +304,7 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
         if (_rootNode is null)
         {
             var box = MessageBoxManager.GetMessageBoxStandard("Error", $"There is no root node in this FSM.", icon: MsBox.Avalonia.Enums.Icon.Error);
-            WeakReferenceMessenger.Default.Send(new ShowDialogRequest(box));
+            await _dialogService.ShowMessageBoxDialogAsync(box);
             return null;
         }
 
@@ -359,7 +347,7 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
         if (buildState.HasOrphanNodes)
         {
             var box = MessageBoxManager.GetMessageBoxStandard("Warning", $"File has been saved but has orphan/disconnected nodes, check log window.", icon: MsBox.Avalonia.Enums.Icon.Warning);
-            WeakReferenceMessenger.Default.Send(new ShowDialogRequest(box));
+            await _dialogService.ShowMessageBoxDialogAsync(box);
         }
 
         ShouldPromptAsFirstSave = false;
@@ -369,7 +357,7 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
     /// <summary>
     /// Inits the graph from the specified parser.
     /// </summary>
-    public bool InitGraph(string fsmName, FSMParser? fsmParser = null)
+    public async Task<bool> InitGraph(string fsmName, FSMParser? fsmParser = null)
     {
         _currentFsmName = fsmName;
         ResetGraph();
@@ -380,19 +368,19 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
             {
                 if (fsmParser.RootNode is null)
                 {
-                    foreach (var group in fsmParser.NonEmptyLayersToNodes)
+                    foreach (var group in fsmParser.LayersToNodes)
                     {
                         if (group.Count == 0)
                             continue;
 
                         int depth = 0;
-                        CreateViewModelFromFSMNode(group[0], fsmParser.AllNodes, ref depth, fsmParser.EditorSettings is not null);
+                        TryGetOrCreateGraphNode(group[0], fsmParser.LayersToNodes, ref depth, fsmParser.EditorSettings is not null, out _);
                     }
                 }
                 else
                 {
                     int depth = 0;
-                    FsmNodeViewModel? root = CreateViewModelFromFSMNode(fsmParser.RootNode, fsmParser.AllNodes, ref depth, fsmParser.EditorSettings is not null);
+                    bool rootWasCreated = TryGetOrCreateGraphNode(fsmParser.RootNode, fsmParser.LayersToNodes, ref depth, fsmParser.EditorSettings is not null, out FsmNodeViewModel rootNode);
 
                     // Reference nodes for each layer
                     foreach (FsmNodeViewModelBase node in Nodes)
@@ -405,17 +393,17 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
                         }
                     }
 
-                    if (root is not null)
+                    if (rootWasCreated)
                     {
-                        root.SetRootNodeState(true);
-                        _rootNode = root;
+                        rootNode.SetRootNodeState(true);
+                        _rootNode = rootNode;
                     }
                 }
             }
             catch (Exception ex)
             {
                 var box = MessageBoxManager.GetMessageBoxStandard("Error", $"Failed to setup the graph for the FSM.\n{ex.Message}", icon: MsBox.Avalonia.Enums.Icon.Error);
-                WeakReferenceMessenger.Default.Send(new ShowDialogRequest(box));
+                await _dialogService.ShowMessageBoxDialogAsync(box); 
                 return false;
             }
 
@@ -559,14 +547,16 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
     /// <param name="x"></param>
     /// <param name="y"></param>
     /// <returns></returns>
-    private FsmNodeViewModel GetNodeViewModel(FSMNode node, int x, int y, bool loadEditorParameters = false)
+    private FsmNodeViewModel CreateNodeViewModel(FSMNode node, int x, int y, bool loadEditorParameters = false)
     {
         if (_guidToNodeVm.TryGetValue(node.Guid, out FsmNodeViewModel? nodeViewModel))
             return nodeViewModel;
 
         string title;
-        if (loadEditorParameters && !string.IsNullOrEmpty(node.Name))
+        if (loadEditorParameters && !string.IsNullOrWhiteSpace(node.Name))
+        {
             title = node.Name;
+        }
         else
         {
             title = NodeNameStore.TryGetNameForNode(_currentFsmName, node.Guid, node.NameHash);
@@ -953,82 +943,99 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
     }
 
     /// <summary>
-    /// Creates a node view model for the specified fsm node.
+    /// Gets or create a new graph node on the graph.
     /// </summary>
     /// <param name="node">FSM file source node</param>
-    /// <param name="nodeList">List of all nodes</param>
+    /// <param name="layersToNodes">List of all nodes</param>
     /// <param name="depth">Current depth</param>
-    /// <returns></returns>
-    private FsmNodeViewModel? CreateViewModelFromFSMNode(FSMNode node, List<FSMNode> nodeList, ref int depth, bool loadEditorParameters)
+    /// <param name="loadEditorParameters">Whether to load any custom editor parameters.</param>
+    /// <param name="nodeViewModel">Returned node view model.</param>
+    /// <returns>Whether the node was created, otherwise if false, it was already created.</returns>
+    private bool TryGetOrCreateGraphNode(FSMNode node, List<List<FSMNode>> layersToNodes, ref int depth, bool loadEditorParameters, out FsmNodeViewModel nodeViewModel)
     {
         if (_processedNodes.Contains(node.Guid))
-            return null;
+        {
+            nodeViewModel = _guidToNodeVm[node.Guid];
+            return false;
+        }
 
         _processedNodes.Add(node.Guid);
 
-        FsmNodeViewModel graphNode = GetNodeViewModel(node, depth * 400, 0, loadEditorParameters);
+        FsmNodeViewModel graphNode = CreateNodeViewModel(node, depth * 400, 0, loadEditorParameters);
         AddNode(graphNode);
 
         if (node.ChildLayerId != -1) // New layer
         {
             int depth_ = depth + 1;
-            FsmNodeViewModel? subLayerNode = CreateViewModelFromFSMNode(node.Children[0], nodeList, ref depth_, loadEditorParameters);
-            if (subLayerNode is not null)
+            TryGetOrCreateGraphNode(node.Children[0], layersToNodes, ref depth_, loadEditorParameters, out FsmNodeViewModel subLayerNode);
+
+            FsmConnectionViewModel connection = new()
             {
-                FsmConnectionViewModel connection = new()
+                Source = graphNode,
+                Target = subLayerNode,
+            };
+            connection.SetAsLayerConnection();
+
+            if (!loadEditorParameters)
+                graphNode.Title += $" (to Layer{node.ChildLayerId})";
+
+            graphNode.Transitions.Add(new TransitionViewModel(connection)
+            {
+                Source = graphNode,
+                Target = subLayerNode,
+            });
+            Connections.Add(connection);
+
+            if (!LayerGroups.TryGetValue(node.ChildLayerId, out FsmGroupNodeViewModel? groupNode))
+            {
+                groupNode = new FsmGroupNodeViewModel()
                 {
-                    Source = graphNode,
-                    Target = subLayerNode,
+                    ParentEditor = this,
+                    LayerIndex = node.ChildLayerId,
+                    Title = !string.IsNullOrEmpty(node.ChildLayerName) ? node.ChildLayerName : $"Layer {node.ChildLayerId}",
                 };
-                connection.SetAsLayerConnection();
 
-                if (!loadEditorParameters)
-                    graphNode.Title += $" (to Layer{node.ChildLayerId})";
-
-                graphNode.Transitions.Add(new TransitionViewModel(connection)
+                if (loadEditorParameters)
                 {
-                    Source = graphNode,
-                    Target = subLayerNode,
-                });
-                Connections.Add(connection);
-
-                if (!LayerGroups.TryGetValue(node.ChildLayerId, out FsmGroupNodeViewModel groupNode)!)
-                {
-                    groupNode = new FsmGroupNodeViewModel()
-                    {
-                        ParentEditor = this,
-                        LayerIndex = node.ChildLayerId,
-                        Title = !string.IsNullOrEmpty(node.ChildLayerName) ? node.ChildLayerName : $"Layer {node.ChildLayerId}",
-                    };
-
-                    if (loadEditorParameters)
-                    {
-                        groupNode.Location = new Point(node.ChildLayerBoundaryBox.X, node.ChildLayerBoundaryBox.Y);
-                        groupNode.Size = new Size(node.ChildLayerBoundaryBox.Z, node.ChildLayerBoundaryBox.W);
-                    }
-
-                    if (groupNode.LayerIndex != 0)
-                        Nodes.Add(groupNode);
-
-                    LayerGroups.Add(node.ChildLayerId, groupNode);
-                    subLayerNode.SetRootNodeState(true);
+                    groupNode.Location = new Point(node.ChildLayerBoundaryBox.X, node.ChildLayerBoundaryBox.Y);
+                    groupNode.Size = new Size(node.ChildLayerBoundaryBox.Z, node.ChildLayerBoundaryBox.W);
                 }
+
+                if (groupNode.LayerIndex != 0)
+                    Nodes.Add(groupNode);
+
+                LayerGroups.Add(node.ChildLayerId, groupNode);
+                subLayerNode.SetRootNodeState(true);
             }
+        }
+
+
+        for (int i = 0; i < node.EndTransitions.Count; i++)
+        {
+            Transition trans = node.EndTransitions[i];
+            AddTransition(trans, node, layersToNodes, depth, graphNode, i, loadEditorParameters: loadEditorParameters);
+        }
+
+        for (int i = 0; i < node.FailedTransitions.Count; i++)
+        {
+            Transition trans = node.FailedTransitions[i];
+            AddTransition(trans, node, layersToNodes, depth, graphNode, i, loadEditorParameters: loadEditorParameters);
         }
 
         for (int i = 0; i < node.RegularTransitions.Count; i++)
         {
             Transition trans = node.RegularTransitions[i];
-            AddTransition(trans, node, nodeList, depth, graphNode, i, loadEditorParameters: loadEditorParameters);
+            AddTransition(trans, node, layersToNodes, depth, graphNode, i, loadEditorParameters: loadEditorParameters);
         }
 
         for (int i = 0; i < node.OverrideTransitions.Count; i++)
         {
             Transition trans = node.OverrideTransitions[i];
-            AddTransition(trans, node, nodeList, depth, graphNode, i, true, loadEditorParameters: loadEditorParameters);
+            AddTransition(trans, node, layersToNodes, depth, graphNode, i, true, loadEditorParameters: loadEditorParameters);
         }
 
-        return graphNode;
+        nodeViewModel = graphNode;
+        return true;
     }
 
     private void AddNode(FsmNodeViewModel node)
@@ -1065,28 +1072,13 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
     public bool HasQuestContext() => _questContext is not null;
 
     /// <summary>
-    /// Generates a new guid.
-    /// </summary>
-    /// <returns></returns>
-    public uint GetNewGuid()
-    {
-        uint guid;
-        do
-        {
-            guid = (uint)Random.Shared.Next();
-        } while (_guidToFsmElement.ContainsKey(guid));
-
-        return guid;
-    }
-
-    /// <summary>
     /// Registers a graph component (node, bt component) to the guid mapping.
     /// </summary>
     /// <param name="guid"></param>
     /// <param name="elem"></param>
     public void RegisterFsmElementGuid(uint guid, object elem)
     {
-        _guidToFsmElement.TryAdd(guid, elem);
+        _guidToElement.TryAdd(guid, elem);
     }
 
     /// <summary>
@@ -1095,7 +1087,7 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
     /// <param name="guid"></param>
     public void UnregisterFsmElementGuid(uint guid)
     {
-        _guidToFsmElement.Remove(guid);
+        _guidToElement.Remove(guid);
     }
 
     /// <summary>
@@ -1109,13 +1101,23 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
     /// <param name="i">Index (for location placement, before auto-layouting).</param>
     /// <param name="isOverrideTransition">Whether this is an override transition.</param>
     /// <param name="loadEditorParameters">Whether to load editor parameters such as node names and node locations.</param>
-    private void AddTransition(Transition trans, FSMNode sourceNode, List<FSMNode> allNodesList, int depth, FsmNodeViewModel sourceNodeVm, int i, 
+    private void AddTransition(Transition trans, FSMNode sourceNode, List<List<FSMNode>> layersToNodes, int depth, FsmNodeViewModel sourceNodeVm, int i, 
         bool isOverrideTransition = false, bool loadEditorParameters = false)
     {
         FSMNode? toFsmNode = sourceNode.Children.FirstOrDefault(e => e.Guid == trans.FromNodeGuid);
 
         // This is kinda weird, we're gonna use the full node list here, but this shouldn't ever be needed - at best the parent node is used
-        toFsmNode ??= allNodesList.FirstOrDefault(e => e.Guid == trans.FromNodeGuid);
+        foreach (List<FSMNode> layer in layersToNodes)
+        {
+            foreach (FSMNode node in layer)
+            {
+                if (node.Guid == trans.FromNodeGuid)
+                {
+                    toFsmNode ??= node;
+                    break;
+                }
+            }
+        }
 
         FsmNodeViewModel toNode;
         if (toFsmNode is null)
@@ -1142,7 +1144,7 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
         }
 
         // regular node.
-        toNode = GetNodeViewModel(toFsmNode, (depth + 1) * 400, i * 200, loadEditorParameters: loadEditorParameters);
+        toNode = CreateNodeViewModel(toFsmNode, (depth + 1) * 400, i * 200, loadEditorParameters: loadEditorParameters);
         if (trans.IsEndTransition)
         {
             toNode.Title = "END";
@@ -1153,7 +1155,7 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
         if (!_processedNodes.Contains(toFsmNode.Guid))
         {
             int depth_ = depth + 1;
-            CreateViewModelFromFSMNode(toFsmNode, allNodesList, ref depth_, loadEditorParameters: loadEditorParameters);
+            TryGetOrCreateGraphNode(toFsmNode, layersToNodes, ref depth_, loadEditorParameters: loadEditorParameters, out _);
         }
 
         FsmConnectionViewModel? connection;
@@ -1203,7 +1205,7 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
                     int paramsIndex = j - 1;
                     Transition.TransitionParam param = trans.TransitionParams[paramsIndex];
 
-                    var opVm = new TransitionConditionOpViewModel() // Do not simplify. OnOperandChanged must be called for Operand
+                    var opVm = new TransitionConditionOpViewModel() // DO NOT SIMPLIFY. OnOperandChanged must be called for Operand
                     {
                         Priority = param.Priority,
                     };
@@ -1231,9 +1233,9 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
         { 
             EditorSettings =
             {
-                ViewportLocation = new Vector2((float)this.ViewportLocation.X, (float)this.ViewportLocation.Y),
-                ViewportSize = new Vector2((float)this.ViewportSize.Width, (float)this.ViewportSize.Height),
-                ViewportZoom = (float)this.ViewportZoom,
+                ViewportLocation = new Vector2((float)ViewportLocation.X, (float)ViewportLocation.Y),
+                ViewportSize = new Vector2((float)ViewportSize.Width, (float)ViewportSize.Height),
+                ViewportZoom = (float)ViewportZoom,
             }
         };
 
@@ -1276,8 +1278,8 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
 
         foreach (var transition in nodeVM.Transitions)
         {
-            FsmNodeViewModel sourceNvm = (FsmNodeViewModel)_guidToFsmElement[transition.Source.Guid];
-            FsmNodeViewModel targetNvm = (FsmNodeViewModel)_guidToFsmElement[transition.Target.Guid];
+            FsmNodeViewModel sourceNvm = (FsmNodeViewModel)_guidToElement[transition.Source.Guid];
+            FsmNodeViewModel targetNvm = (FsmNodeViewModel)_guidToElement[transition.Target.Guid];
 
             // Layer to layer transitions don't emit transition nodes, so only do same layer.
             if (transition.Source.LayerIndex == transition.Target.LayerIndex)
@@ -1286,11 +1288,11 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
                 if (transition.IsOverrideTransition)
                 {
                     trans.ToNodeGuid = 0;
-                    fsmNode.OverrideTransitions.Add(trans);
+                    fsmNode.AddOverrideTransition(trans);
                 }
                 else
                 {
-                    fsmNode.RegularTransitions.Add(trans);
+                    fsmNode.AddTransition(trans);
                 }
 
                 if (targetNvm.IsEndNode)
@@ -1314,32 +1316,38 @@ public partial class FsmEditorViewModel : EditorDocumentBase, ISaveableDocument,
             }
 
             // Process target, and layer transitions if needed.
+            bool shouldProcessTarget = false;
             if (!processedNodes.TryGetValue(transition.Target.Guid, out FSMNode? targetFsmNode))
             {
                 targetFsmNode = CreateFSMNodeFromViewModel(transition.Target);
                 processedNodes.Add(targetFsmNode.Guid, targetFsmNode);
+                shouldProcessTarget = true;
+            }
 
-                // Create or fetch new layer.
-                if (!fsmState.Layers.TryGetValue(transition.Target.LayerIndex, out List<FSMNode>? nodesForLayer))
-                {
-                    nodesForLayer = [];
-                    fsmState.Layers.Add(transition.Target.LayerIndex, nodesForLayer);
-                }
+            // Create or fetch new layer if needed.
+            if (!fsmState.Layers.TryGetValue(transition.Target.LayerIndex, out List<FSMNode>? nodesForLayer))
+            {
+                nodesForLayer = [];
+                fsmState.Layers.Add(transition.Target.LayerIndex, nodesForLayer);
+            }
 
-                if (transition.Source.LayerIndex != transition.Target.LayerIndex)
-                {
-                    FsmGroupNodeViewModel layerGroupVm = this.LayerGroups[transition.Target.LayerIndex];
-                    sourceFsmNode.ChildLayerId = transition.Target.LayerIndex;
-                    sourceFsmNode.ChildLayerName = layerGroupVm.Title;
+            // Ensure to link up layer transitions as child nodes
+            if (transition.Source.LayerIndex != transition.Target.LayerIndex)
+            {
+                FsmGroupNodeViewModel layerGroupVm = LayerGroups[transition.Target.LayerIndex];
+                sourceFsmNode.ChildLayerId = transition.Target.LayerIndex;
+                sourceFsmNode.ChildLayerName = layerGroupVm.Title;
 
-                    var rect = layerGroupVm.BoundaryBox;
-                    sourceFsmNode.ChildLayerBoundaryBox = new Vector4((float)rect.X, (float)rect.Y, (float)rect.Width, (float)rect.Height);
+                var rect = layerGroupVm.BoundaryBox;
+                sourceFsmNode.ChildLayerBoundaryBox = new Vector4((float)rect.X, (float)rect.Y, (float)rect.Width, (float)rect.Height);
 
-                    // Counts as one child.
-                    sourceFsmNode.Children.Add(targetFsmNode);
-                }
+                // Counts as one child.
+                sourceFsmNode.Children.Add(targetFsmNode);
+            }
 
-                // Reminder, end nodes aren't actually emitted as a node on the fsm file.
+            // Reminder, end nodes aren't actually emitted as a node on the fsm file.
+            if (shouldProcessTarget)
+            {
                 if (!targetNvm.IsEndNode)
                     fsmState.Layers[transition.Target.LayerIndex].Add(targetFsmNode);
 

@@ -1,17 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.10.35122.118
+# Visual Studio Version 18
+VisualStudioVersion = 18.7.11925.98
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RelinkToolkit2", "RelinkToolkit2\RelinkToolkit2.csproj", "{AFDA6108-85A2-495D-99DA-D25997F90D05}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RelinkToolkit2.Desktop", "RelinkToolkit2.Desktop\RelinkToolkit2.Desktop.csproj", "{1B032C76-2FB9-4C17-9418-DA9E65B2178D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RelinkToolkit2.Browser", "RelinkToolkit2.Browser\RelinkToolkit2.Browser.csproj", "{E703F78A-F2EA-4CF5-8639-F6E97C3EB316}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GBFRDataTools.FSM", "..\GRBFDataTools\GBFRDataTools.FSM\GBFRDataTools.FSM.csproj", "{CED501DD-9993-4A52-940E-CDB6706C1E9B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GBFRDataTools.Entities", "..\GRBFDataTools\GBFRDataTools.Entities\GBFRDataTools.Entities.csproj", "{F9CF76B5-E88C-45B7-947C-56D9B7C10FF2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FB868470-12F6-4461-902A-65BC3DC249AF}"
 	ProjectSection(SolutionItems) = preProject
@@ -20,13 +16,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrieNet", "trienet\TrieNet\TrieNet.csproj", "{BA94A161-8E3C-5E3E-670B-1E5420D4A9BC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GBFRDataTools.Hashing", "..\GRBFDataTools\GBFRDataTools.Hashing\GBFRDataTools.Hashing.csproj", "{9A778B8E-B49C-18F7-FDF5-4AD464ED7686}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nodify", "nodify-avalonia\Nodify\Nodify.csproj", "{287877FF-2611-6633-1BE1-66390E0A326A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.PropertyGrid", "Avalonia.PropertyGrid\Sources\Avalonia.PropertyGrid\Avalonia.PropertyGrid.csproj", "{44A4E076-FBBD-84E7-63F0-03546CD72F73}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aldwych.LogView", "Aldwych.LogView\src\LogView\Aldwych.LogView.csproj", "{C282FCC8-A87F-54C1-2072-F32B17F4896E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GBFRDataTools.FSM", "..\..\source\repos\GRBFDataTools\GBFRDataTools.FSM\GBFRDataTools.FSM.csproj", "{FCB16BC9-D7D5-F2C5-596A-6BEE961CA481}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GBFRDataTools.Entities", "..\..\source\repos\GRBFDataTools\GBFRDataTools.Entities\GBFRDataTools.Entities.csproj", "{AB0B3746-E769-2494-FFC8-9A3B1ED6312F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GBFRDataTools.Hashing", "..\..\source\repos\GRBFDataTools\GBFRDataTools.Hashing\GBFRDataTools.Hashing.csproj", "{71ED9B4D-C3BF-F50C-29D8-D9F4C174FCC9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -46,22 +44,10 @@ Global
 		{E703F78A-F2EA-4CF5-8639-F6E97C3EB316}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E703F78A-F2EA-4CF5-8639-F6E97C3EB316}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E703F78A-F2EA-4CF5-8639-F6E97C3EB316}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CED501DD-9993-4A52-940E-CDB6706C1E9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CED501DD-9993-4A52-940E-CDB6706C1E9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CED501DD-9993-4A52-940E-CDB6706C1E9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CED501DD-9993-4A52-940E-CDB6706C1E9B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F9CF76B5-E88C-45B7-947C-56D9B7C10FF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F9CF76B5-E88C-45B7-947C-56D9B7C10FF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F9CF76B5-E88C-45B7-947C-56D9B7C10FF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F9CF76B5-E88C-45B7-947C-56D9B7C10FF2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BA94A161-8E3C-5E3E-670B-1E5420D4A9BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BA94A161-8E3C-5E3E-670B-1E5420D4A9BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BA94A161-8E3C-5E3E-670B-1E5420D4A9BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BA94A161-8E3C-5E3E-670B-1E5420D4A9BC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9A778B8E-B49C-18F7-FDF5-4AD464ED7686}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9A778B8E-B49C-18F7-FDF5-4AD464ED7686}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9A778B8E-B49C-18F7-FDF5-4AD464ED7686}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9A778B8E-B49C-18F7-FDF5-4AD464ED7686}.Release|Any CPU.Build.0 = Release|Any CPU
 		{287877FF-2611-6633-1BE1-66390E0A326A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{287877FF-2611-6633-1BE1-66390E0A326A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{287877FF-2611-6633-1BE1-66390E0A326A}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -70,10 +56,18 @@ Global
 		{44A4E076-FBBD-84E7-63F0-03546CD72F73}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{44A4E076-FBBD-84E7-63F0-03546CD72F73}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{44A4E076-FBBD-84E7-63F0-03546CD72F73}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C282FCC8-A87F-54C1-2072-F32B17F4896E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C282FCC8-A87F-54C1-2072-F32B17F4896E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C282FCC8-A87F-54C1-2072-F32B17F4896E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C282FCC8-A87F-54C1-2072-F32B17F4896E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FCB16BC9-D7D5-F2C5-596A-6BEE961CA481}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCB16BC9-D7D5-F2C5-596A-6BEE961CA481}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCB16BC9-D7D5-F2C5-596A-6BEE961CA481}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCB16BC9-D7D5-F2C5-596A-6BEE961CA481}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB0B3746-E769-2494-FFC8-9A3B1ED6312F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB0B3746-E769-2494-FFC8-9A3B1ED6312F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB0B3746-E769-2494-FFC8-9A3B1ED6312F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB0B3746-E769-2494-FFC8-9A3B1ED6312F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71ED9B4D-C3BF-F50C-29D8-D9F4C174FCC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71ED9B4D-C3BF-F50C-29D8-D9F4C174FCC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71ED9B4D-C3BF-F50C-29D8-D9F4C174FCC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71ED9B4D-C3BF-F50C-29D8-D9F4C174FCC9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

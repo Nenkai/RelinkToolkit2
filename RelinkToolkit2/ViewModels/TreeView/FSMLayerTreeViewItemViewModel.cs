@@ -30,6 +30,6 @@ public partial class FSMLayerTreeViewItemViewModel : TreeViewItemViewModel
     public void OnDoubleClicked()
     {
         WeakReferenceMessenger.Default.Send(new OpenDocumentRequest(LayerGroup.ParentEditor));
-        WeakReferenceMessenger.Default.Send(new BringFsmNodeIntoViewRequest(LayerGroup, animated: false));
+        WeakReferenceMessenger.Default.Send(new BringNodeIntoViewRequest(LayerGroup, animated: false));
     }
 }

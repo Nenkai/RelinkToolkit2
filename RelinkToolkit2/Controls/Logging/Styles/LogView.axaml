@@ -1,0 +1,118 @@
+﻿<Styles xmlns="https://github.com/avaloniaui" 
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:RelinkToolkit2.Controls.Logging;assembly=RelinkToolkit2"
+        xmlns:c="clr-namespace:RelinkToolkit2.Converters;assembly=RelinkToolkit2"
+        xmlns:local="clr-namespace:RelinkToolkit2.Logging;assembly=RelinkToolkit2"
+        xmlns:VMs="using:RelinkToolkit2.ViewModels.Logging">
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <StackPanel Spacing="20">
+        <controls:LogView />
+      </StackPanel>
+    </Border>
+  </Design.PreviewWith>
+  
+  
+  <Styles.Resources>
+    <Thickness x:Key="ButtonPadding">8,5,8,6</Thickness>
+    <c:DateTimeToTimeConverter x:Key="TimeConverter"/>
+    <c:ObjectToStyleConverter x:Key="ObjectToStyleConverter"/>
+
+  </Styles.Resources>
+
+  <Style Selector="DataGridCell.logLevelDot">
+    <Setter Property="Template">
+      <ControlTemplate>
+
+        <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}"
+                          Margin="{TemplateBinding Padding}"
+                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                          x:DataType="VMs:LogItemViewModel">
+          <ContentPresenter.Content>
+            <Ellipse Fill="{Binding Foreground}" Width="12" Height="12" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+          </ContentPresenter.Content>
+        </ContentPresenter>
+
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+
+  <Style Selector="DataGridCell.logLevelText" x:DataType="VMs:LogItemViewModel">
+    <Setter Property="Foreground" Value="{Binding Foreground}"/>
+  </Style>
+
+
+  <Style Selector="DataGridCell.timestamp">
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="DataGridCell" x:DataType="VMs:LogItemViewModel">
+          <TextBlock Text="{Binding Created, Converter={StaticResource TimeConverter}}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style Selector="DataGridColumnHeader">
+    <Setter Property="Background" Value="{DynamicResource SystemChromeLowColor}" />
+  </Style>
+
+  <Style Selector="DataGridRow">
+    <!--<Setter Property="Foreground" Value="{DynamicResource HighlightTextColor}"/>-->
+  </Style>
+
+  
+  <Style Selector="controls|LogView[LogLevelCellType=DisplayAsDot]">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <DataGrid x:Name="PART_DataGrid"
+                  ItemsSource="{TemplateBinding LogItems}"
+                  AutoGenerateColumns="False"
+                  CanUserResizeColumns="True"
+                  GridLinesVisibility="All"
+                  VerticalScrollBarVisibility="Auto"
+                  SelectedItem="{TemplateBinding  SelectedItem}"
+                  IsReadOnly="True"
+                  x:DataType="VMs:LogItemViewModel">
+
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Type"  Binding="{Binding LogLevel}" Width="0.2*" CellStyleClasses="logLevelDot" />
+            <DataGridTextColumn Header="Time"  Binding="{Binding Created}" Width="0.3*" CellStyleClasses="timestamp"/>
+            <DataGridTextColumn Header="Area"  Binding="{Binding Area}" Width="0.3*" />
+            <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="2*"/>
+          </DataGrid.Columns>
+
+          
+        </DataGrid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+
+  <Style Selector="controls|LogView[LogLevelCellType=DisplayAsText]">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <DataGrid x:Name="PART_DataGrid"
+                  ItemsSource="{TemplateBinding LogItems}"
+                  AutoGenerateColumns="False"
+                  CanUserResizeColumns="True"
+                  GridLinesVisibility="All"
+                  VerticalScrollBarVisibility="Auto"
+                  SelectedItem="{TemplateBinding  SelectedItem}"
+                  IsReadOnly="True"
+                  x:DataType="VMs:LogItemViewModel">
+
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Type"  Binding="{Binding LogLevel}" Width="80" CellStyleClasses="logLevelText" />
+            <DataGridTextColumn Header="Time"  Binding="{Binding Created}" Width="80" CellStyleClasses="timestamp"/>
+            <DataGridTextColumn Header="Area"  Binding="{Binding Area}" Width="200" />
+            <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*"/>
+          </DataGrid.Columns>
+          
+        </DataGrid>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+  
+</Styles>

@@ -15,10 +15,11 @@
 			 x:DataType="VMs:PropertyGridViewModel"
 			 xmlns:avalonia_propertygrid_controls="using:Avalonia.PropertyGrid.Controls"
 			 xmlns:avalonia_controls="using:Avalonia.Controls"
+			 xmlns:design="clr-namespace:RelinkToolkit2"
 			 Name="MainPropertyGrid">
-    <Design.DataContext>
-		<VMs:PropertyGridViewModel/>
-    </Design.DataContext>
+   	<Design.DataContext>
+		 <x:Static Member="design:DesignData.PropertyGridViewModel" />
+	</Design.DataContext>
 
 	<UserControl.Resources>
 		<converters:VectorIconConverter x:Key="vectorIconConverter"/>
@@ -38,8 +39,7 @@
 			IsAutoNameWidth="True"
 			DataContext="{Binding SelectedObject}"
 			PropertyCategorizingStyle="CategorizeByObjectInheritingOrder"
-			CustomNameBlock="PropertyGrid_CustomNameBlock"
-		    >
+			CustomNameBlock="PropertyGrid_CustomNameBlock">
 			<pgc:PropertyGrid.Styles>
 				<Style>
 					<Setter Property="(Interaction.Behaviors)">
@@ -61,7 +61,7 @@
 		<GridSplitter Grid.Row="1"/>
 		<Grid Grid.Row="2">
 			<StackPanel>
-				<Label Margin="4,0,0,0" FontSize="13" FontWeight="Bold" Content="{Binding Title}"/>
+				<Label Margin="4,0,0,0" FontSize="13" FontWeight="Bold" Content="{Binding ObjectName}"/>
 				<TextBlock Margin="7,0,0,0" Text="{Binding Description}" TextWrapping="Wrap"/>
 			</StackPanel>
 		</Grid>

@@ -58,6 +58,9 @@
 			Anchor="{Binding Anchor, Mode=OneWayToSource}"
 			DragDrop.AllowDrop="True">
 		<!-- For execution components -->
+		<Interaction.Behaviors>
+			<ContextDropBehavior Handler="{StaticResource NodeComponentDropHandler}" />
+		</Interaction.Behaviors>
 		<nodify:StateNode.ContentTemplate>
 			<DataTemplate DataType="nodeVMs:FsmNodeViewModel">
 				<StackPanel Orientation="Vertical">
@@ -114,20 +117,30 @@
 							<!-- Spacing between execution components -->
 							<ItemsControl.ItemTemplate>
 								<DataTemplate DataType="graphVMs:NodeComponentViewModel">
-									<Border Cursor="Hand" BorderBrush="{Binding BorderBrush}" BorderThickness="1" 
+									<Border Name="ComponentBorder" Cursor="Hand" BorderBrush="{Binding BorderBrush}" BorderThickness="1" 
 											PointerEntered="Border_PointerEntered" 
 											PointerExited="Border_PointerExited" Margin="0 2 0 0" 
 											PointerPressed="Border_PointerPressed"
 											Tapped="Border_Tapped">
 
 										<!-- Setting to transparent is needed for the hit test to work everywhere (otherwise doesn't work on the gap) -->
-										<Grid ColumnDefinitions="*,*,10" Background="Transparent">
+										<Grid Background="Transparent">
 											<StackPanel Orientation="Vertical">
-												<StackPanel Grid.Column="0" Orientation="Horizontal" IsHitTestVisible="False">
-													<Label Width="26" FontWeight="Bold" Content=">>"/>
-													<Label Content="{Binding Name}"/>
-												</StackPanel>
-												<TextBlock Margin="29,-4,0,2" Text="{Binding Caption}" FontSize="8" FontWeight="Bold" Foreground="DimGray" IsVisible="{Binding Caption, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+												<Grid ColumnDefinitions="Auto,*,20">
+												    <Label Grid.Column="0" Width="26" FontWeight="Bold" Content=">>" IsHitTestVisible="False"/>
+												    <StackPanel Orientation="Vertical" Grid.Column="1" IsHitTestVisible="False">
+												        <Label Content="{Binding Name}"/>
+												        <TextBlock Margin="4,-4,0,2" Text="{Binding Caption}" FontSize="8" FontWeight="Bold" Foreground="DimGray" IsVisible="{Binding Caption, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+												    </StackPanel>
+												
+												    <Panel Grid.Column="2" Background="Transparent" Tapped="Component_Tapped" PointerPressed="Component_DeleteClicked" IsVisible="{Binding #ComponentBorder.IsPointerOver}">
+												        <Image Width="8" Height="8" IsHitTestVisible="False">
+												            <Image.Source>
+												                <controls:VectorIconDrawingImage Brush="White" Drawing="{Binding Source='Material.Close', Converter={StaticResource vectorIconConverter}}"/>
+												            </Image.Source>
+												        </Image>
+												    </Panel>
+												</Grid>
 											</StackPanel>
 										</Grid>
 									</Border>

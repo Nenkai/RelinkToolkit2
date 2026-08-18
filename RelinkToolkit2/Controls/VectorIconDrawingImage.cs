@@ -15,7 +15,8 @@ using Avalonia.Styling;
 
 namespace RelinkToolkit2.Controls;
 
-public class VectorIconDrawingImage : DrawingImage
+public class VectorIconDrawingImage : DrawingImage,
+    IRecipient<ThemeChangedMessage>
 {
     public static readonly StyledProperty<IBrush?> BrushProperty =
         AvaloniaProperty.Register<VectorIconDrawingImage, IBrush?>(nameof(Brush), defaultValue: null!);
@@ -30,10 +31,12 @@ public class VectorIconDrawingImage : DrawingImage
 
     public VectorIconDrawingImage()
     {
-        WeakReferenceMessenger.Default.Register<ThemeChangedMessage>(this, (recipient, message) =>
-        {
-            UpdateBrushes(message.Theme);
-        });
+        WeakReferenceMessenger.Default.RegisterAll(this);
+    }
+
+    public void Receive(ThemeChangedMessage message)
+    {
+        UpdateBrushes(message.Theme);
     }
 
     public void UpdateBrushes(AppTheme appTheme)

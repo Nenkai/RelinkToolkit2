@@ -9,7 +9,6 @@
         Icon="/Assets/avalonia-logo.ico"
         Title="RelinkToolkit2"
 		TransparencyLevelHint="AcrylicBlur"
-	    ExtendClientAreaChromeHints="PreferSystemChrome"
 		WindowState="Maximized"
 		FontFamily="Segoe UI">
 	<views:MainView />

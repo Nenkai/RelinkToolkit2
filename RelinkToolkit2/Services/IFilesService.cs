@@ -11,4 +11,6 @@ public interface IFilesService
     public void SetStorageProvider(IStorageProvider storageProvider);
     public Task<IStorageFile?> OpenFileAsync(string title, IReadOnlyList<FilePickerFileType>? filters = null);
     public Task<IStorageFile?> SaveFileAsync(string title, IReadOnlyList<FilePickerFileType>? filters = null, string? suggestedFileName = null, Uri? suggestedStartLocation = null);
+
+    public Task<IStorageFolder?> OpenFolderAsync(string title, string? suggestedFileName = null, Uri? suggestedStartLocation = null);
 }

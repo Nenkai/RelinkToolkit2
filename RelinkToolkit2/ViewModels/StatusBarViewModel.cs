@@ -11,17 +11,20 @@ using RelinkToolkit2.Messages.StatusBar;
 
 namespace RelinkToolkit2.ViewModels;
 
-public partial class StatusBarViewModel : ObservableObject
+public partial class StatusBarViewModel : ObservableObject,
+    IRecipient<SetStatusBarTextRequest>
 {
     [ObservableProperty]
     public string? _message = "Welcome to RelinkToolkit2";
 
     public StatusBarViewModel()
     {
-        WeakReferenceMessenger.Default.Register<SetStatusBarTextRequest>(this, (recipient, message) =>
-        {
-            Message = message.Text;
-            message.Reply(true);
-        });
+        WeakReferenceMessenger.Default.RegisterAll(this);
+    }
+
+    public void Receive(SetStatusBarTextRequest message)
+    {
+        Message = message.Text;
+        message.Reply(true);
     }
 }

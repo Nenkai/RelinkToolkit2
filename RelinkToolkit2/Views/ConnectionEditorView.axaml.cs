@@ -3,15 +3,21 @@ using Avalonia.Markup.Xaml.Templates;
 
 using CommunityToolkit.Mvvm.Messaging;
 
+using GBFRDataTools.Entities;
 using GBFRDataTools.FSM.Components;
+
+using Microsoft.Extensions.DependencyInjection;
 
 using Nodify;
 
 using RelinkToolkit2.Messages.Fsm;
+using RelinkToolkit2.Services;
 using RelinkToolkit2.ViewModels.Documents;
 using RelinkToolkit2.ViewModels.Documents.GraphEditor;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 using RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents;
 using RelinkToolkit2.ViewModels.Search;
+using RelinkToolkit2.Views.Documents.GraphEditor;
 
 using System;
 using System.Collections.Generic;
@@ -75,85 +81,18 @@ public partial class ConnectionEditorView : UserControl
             condVm.Operand = TransitionOperandType.AND;
     }
 
-    private static IEnumerable<Type>? _conditionTypes;
     private void Button_AddConditionComponent(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        var flyout = new Flyout();
-
-        var content = new ComponentSearchView();
-        flyout.Content = content;
-
-        var searchVM = new ComponentSearchViewModel();
-        content.DataContext = searchVM;
-
         var control = sender as Control;
-        searchVM.Context = control!.DataContext as TransitionViewModel;
 
-        if (_conditionTypes is null)
-        {
-            _conditionTypes = Assembly.GetAssembly(typeof(BehaviorTreeComponent))!.GetTypes()
-                .Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(typeof(ConditionComponent)));
-        }
+        ComponentSearchService componentSearchService = App.Current?.Services!.GetRequiredService<ComponentSearchService>()!;
+        ComponentSearchViewModel searchVM = componentSearchService.BuildSearchViewModel((TransitionViewModel)control!.DataContext!,
+            ComponentSearchCategoryType.Action, onSelected: OnAddConditionComponent);
 
-        string baseNamespace = typeof(ConditionComponent).Namespace!;
-        ComponentSearchPageViewModel mainPage = new ComponentSearchPageViewModel();
-        foreach (Type compType in _conditionTypes)
-        {
-            if (compType.Namespace is null)
-                continue;
+        var content = new ComponentSearchView { DataContext = searchVM };
 
-            if (compType.Namespace.StartsWith("GBFRDataTools.FSM.Components.Conditions"))
-            {
-                string desc = compType.GetCustomAttribute<DescriptionAttribute>()?.Description ?? string.Empty;
-
-                if (compType.Namespace == "GBFRDataTools.FSM.Components.Conditions")
-                {
-                    mainPage.AddComponent(compType.Name, compType, desc, OnAddConditionComponent);
-                }
-                else
-                {
-                    string subNamespace = compType.Namespace["GBFRDataTools.FSM.Components.Conditions".Length..];
-                    if (!string.IsNullOrEmpty(subNamespace))
-                    {
-                        string[] subSplit = subNamespace.Substring(1).Split('.');
-                        var currentPage = mainPage;
-
-                        string pageName = "";
-                        for (int i = 0; i < subSplit.Length; i++)
-                        {
-                            string? folder = subSplit[i];
-                            pageName += folder;
-
-                            if (!currentPage.TryGetByName(folder, out ComponentSearchItemViewModel component))
-                            {
-                                component = new ComponentSearchItemViewModel() { Name = folder };
-                                currentPage.AddComponent(component);
-
-                                ComponentSearchPageViewModel subPage = new()
-                                {
-                                    Title = pageName,
-                                };
-
-                                component.SetPage(subPage);
-                                currentPage = subPage;
-                            }
-                            else
-                            {
-                                currentPage = ((ComponentSearchPageViewModel)component.Data!);
-                            }
-
-                            if (i == subSplit.Length - 1)
-                                currentPage.AddComponent(compType.Name, compType, desc, OnAddConditionComponent);
-                            else
-                                pageName += " > ";
-                        }
-                    }
-                }
-            }
-        }
-
-        searchVM.AddPage(mainPage);
-        searchVM.SortAndBuildSearch();
+        var flyout = new Flyout();
+        flyout.Content = content;
         flyout.ShowAt(control, showAtPointer: false);
     }
 
