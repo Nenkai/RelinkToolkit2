@@ -25,7 +25,8 @@ using RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents;
 
 namespace RelinkToolkit2.ViewModels;
 
-public partial class ConnectionEditorViewModel : Tool
+public partial class ConnectionEditorViewModel : Tool,
+    IRecipient<EditConnectionRequest>
 {
     [ObservableProperty]
     private FsmConnectionViewModel? _connection;
@@ -44,40 +45,55 @@ public partial class ConnectionEditorViewModel : Tool
                 Target = new FsmNodeViewModel() { ParentEditor = editor, },
             };
 
-            for (int i = 0; i < 5; i++)
+            var parentOperator = new TransitionConditionOpViewModel(_connection)
+                .AddElement(new TransitionConditionViewModel(new RecvSignal()) { Title = "RecvSignal" })
+                .AddElement(new TransitionConditionViewModel(new CheckAnyHaveBahaWeapon()) { Title = "CheckAnyHaveBahaWeapon" })
+                .AddElement(new TransitionConditionOpViewModel(_connection, null, TransitionOperandType.AND)
+                    .AddElement(new TransitionConditionViewModel(new RecvSignal()) { Title = "RecvSignal" })
+                )
+                .AddElement(new TransitionConditionViewModel(new CheckChallengeMissionClear()) { Title = "CheckChallengeMissionClear" });
+
+            _connection.Transitions.Add(new TransitionViewModel(_connection)
             {
-                _connection.Transitions.Add(new TransitionViewModel(_connection)
+                Source = new()
                 {
-                    Source = new()
-                    {
-                        ParentEditor = editor,
-                        Title = "Source",
-                    },
-                    Target = new()
-                    {
-                        ParentEditor = editor,
-                        Title = "Target"
-                    },
-                    ConditionComponents = 
-                    [
-                        new TransitionConditionViewModel(new RecvSignal())
-                        {
-                            Title = "Condition 1",
-                        },
-                        new TransitionConditionOpViewModel() { Operand = TransitionOperandType.AND, Priority = 0 },
-                        new TransitionConditionViewModel(new CheckChallengeMissionClear())
-                        {
-                            Title = "Condition 2",
-                        },
-                    ]
-                });
-            }
+                    ParentEditor = editor,
+                    Title = "Source",
+                },
+                Target = new()
+                {
+                    ParentEditor = editor,
+                    Title = "Target"
+                },
+                ConditionOperatorGroups = [parentOperator]
+            });
+
+            _connection.Transitions.Add(new TransitionViewModel(_connection)
+            {
+                Source = new()
+                {
+                    ParentEditor = editor,
+                    Title = "Target",
+                },
+                Target = new()
+                {
+                    ParentEditor = editor,
+                    Title = "Source"
+                },
+                ConditionOperatorGroups =
+                [
+                    new TransitionConditionOpViewModel(_connection)
+                        .AddElement(new TransitionConditionViewModel(new RecvSignal()) { Title = "RecvSignal" })
+                ]
+            });
         }
 
-        WeakReferenceMessenger.Default.Register<EditConnectionRequest>(this, (recipient, message) =>
-        {
-            Connection = message.Connection;
-        });
+        WeakReferenceMessenger.Default.RegisterAll(this);
+    }
+
+    public void Receive(EditConnectionRequest message)
+    {
+        Connection = message.Connection;
     }
 
     [RelayCommand]

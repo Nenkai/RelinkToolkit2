@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Mvvm.Messaging;
+﻿using Avalonia.Threading;
+
+using CommunityToolkit.Mvvm.Messaging;
 
 using Dock.Model.Controls;
 using Dock.Model.Mvvm.Controls;
@@ -50,7 +52,7 @@ public class DocumentsViewModel : DocumentDock
 
         if (setActive)
         {
-            SetActiveDocument(document.Id);
+            Dispatcher.UIThread.Post(() => SetActiveDocument(document.Id), DispatcherPriority.Background);
         }
     }
 

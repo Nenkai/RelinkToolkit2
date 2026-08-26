@@ -29,7 +29,7 @@ namespace RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 /// <summary>
 /// Represents a node on a graph.
 /// </summary>
-public partial class NodeViewModel : NodeViewModelBase //, IDropTarget
+public abstract partial class NodeViewModel : NodeViewModelBase
 {
     [ObservableProperty]
     private Point _anchor;
@@ -50,6 +50,28 @@ public partial class NodeViewModel : NodeViewModelBase //, IDropTarget
 
     public NodeViewModel()
     {
-        
+        Components.CollectionChanged += Components_CollectionChanged;
+    }
+
+    private void Components_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        UpdateVisuals();
+    }
+
+    public abstract void UpdateVisuals();
+
+    /// <summary>
+    /// Deletes a component from the node.
+    /// </summary>
+    /// <param name="component"></param>
+    public void DeleteComponent(NodeComponentViewModel component)
+    {
+        Components.Remove(component);
+
+        var editor = (FsmEditorViewModel)ParentEditor;
+        editor.UnregisterFsmElementGuid(component.Component.Guid);
+
+        NodeViewModel parentNode = component.Parent;
+        parentNode.UpdateVisuals();
     }
 }

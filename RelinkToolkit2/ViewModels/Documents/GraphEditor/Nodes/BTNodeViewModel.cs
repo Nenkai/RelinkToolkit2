@@ -1,28 +1,17 @@
-﻿using Avalonia;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+
 using Avalonia.Controls;
-using Avalonia.Input;
-using Avalonia.Media;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
 
 using GBFRDataTools.FSM.Components;
 using GBFRDataTools.FSM.Components.Actions.AI.Enemy;
 using GBFRDataTools.FSM.Components.Actions.Quest;
-
-using Nodify.Compatibility;
-
-using RelinkToolkit2.Messages.Fsm;
-
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
 
 namespace RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 
@@ -60,10 +49,10 @@ public partial class BTNodeViewModel : NodeViewModel //, IDropTarget
         {
             Name = btComponent.ComponentName,
         });
-        UpdateBorderColor();
+        UpdateVisuals();
     }
 
-    public void UpdateBorderColor()
+    public override void UpdateVisuals()
     {
         
     }
@@ -76,42 +65,6 @@ public partial class BTNodeViewModel : NodeViewModel //, IDropTarget
 
         DeleteComponent(nodeComponentVM);
     }
-
-    /// <summary>
-    /// Deletes a component from the node.
-    /// </summary>
-    /// <param name="component"></param>
-    public void DeleteComponent(NodeComponentViewModel component)
-    {
-        Components.Remove(component);
-
-        var editor = (FsmEditorViewModel)ParentEditor;
-        editor.UnregisterFsmElementGuid(component.Component.Guid);
-
-        ((FsmNodeViewModel)component.Parent).UpdateBorderColor();
-    }
-
-    /*
-    public void DragOver(IDropInfo dropInfo)
-    {
-        if (dropInfo.Data is ComponentTreeViewItemViewModel)
-        {
-            dropInfo.Effects = DragDropEffects.Move;
-        }
-        else
-            GongSolutions.Wpf.DragDrop.DragDrop.DefaultDropHandler.DragOver(dropInfo);
-    }
-
-    public void Drop(IDropInfo dropInfo)
-    {
-        if (dropInfo.Data is ComponentTreeViewItemViewModel componentTvi)
-        {
-            AddComponentFromToolboxItem(componentTvi);
-        }
-        else
-            GongSolutions.Wpf.DragDrop.DragDrop.DefaultDropHandler.Drop(dropInfo);
-    }
-    */
 
     [RelayCommand]
     public void OnDrop(object param)

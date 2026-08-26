@@ -22,12 +22,13 @@
     <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.1" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.1" />
     <PackageReference Include="Avalonia.Themes.Simple" Version="12.1.1" />
+    <PackageReference Include="AvaloniaDialogs" Version="3.7.1" />
     <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-    <PackageReference Include="Dock.Avalonia" Version="12.1.0.1" />
-    <PackageReference Include="Dock.Avalonia.Themes.Simple" Version="12.1.0.1" />
-    <PackageReference Include="Dock.Model.Avalonia" Version="12.1.0.1" />
-    <PackageReference Include="Dock.Model.Mvvm" Version="12.1.0.1" />
+    <PackageReference Include="Dock.Avalonia" Version="12.1.0.4" />
+    <PackageReference Include="Dock.Avalonia.Themes.Simple" Version="12.1.0.4" />
+    <PackageReference Include="Dock.Model.Avalonia" Version="12.1.0.4" />
+    <PackageReference Include="Dock.Model.Mvvm" Version="12.1.0.4" />
     <PackageReference Include="MessageBox.Avalonia" Version="12.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.11" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.11" />
@@ -35,9 +36,9 @@
 	  <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.11" />
     <PackageReference Include="Microsoft.Msagl" Version="1.1.6" />
-    <PackageReference Include="NLog" Version="6.1.4" />
-    <PackageReference Include="NLog.Extensions.Logging" Version="6.1.4" />
-    <PackageReference Include="Xaml.Behaviors" Version="12.0.5" />
+    <PackageReference Include="NLog" Version="6.2.0" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="6.2.0" />
+    <PackageReference Include="Xaml.Behaviors" Version="12.0.7" />
   </ItemGroup>
 	
   <ItemGroup>    

@@ -4,7 +4,8 @@
 			 xmlns:core="using:Dock.Model.Core"
              x:Class="RelinkToolkit2.App"
 			 xmlns:controls="using:RelinkToolkit2.Controls"
-			 xmlns:pgc="using:Avalonia.PropertyGrid.Controls"
+			 xmlns:dialogHostAvalonia="using:DialogHostAvalonia"
+             xmlns:dialogs="using:AvaloniaDialogs.Views"
              RequestedThemeVariant="Default">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
@@ -23,6 +24,18 @@
 				<ResourceInclude Source="avares://Nodify/Themes/Generic.xaml" />
 				<ResourceInclude Source="avares://Nodify/Themes/Dark.xaml" />
 			</ResourceDictionary.MergedDictionaries>
+
+			<!-- Snackbar Background Brushes -->
+			<ResourceDictionary.ThemeDictionaries>
+				<ResourceDictionary x:Key="Light">
+					<SolidColorBrush x:Key="CustomSnackbarBrush"
+									 Color="#aaa"/>
+				</ResourceDictionary>
+				<ResourceDictionary x:Key="Dark">
+					<SolidColorBrush x:Key="CustomSnackbarBrush"
+									 Color="#666"/>
+				</ResourceDictionary>
+			</ResourceDictionary.ThemeDictionaries>
 
 			<!-- For EditableTextBlock -->
 			<ControlTheme x:Key="EditableTextBlockBaseStyle" TargetType="{x:Type controls:EditableTextBlock}">
@@ -112,6 +125,13 @@
 		<!-- Icons -->
 		<StyleInclude Source="avares://RelinkToolkit2/Assets/Icons/Bootstrap.xaml"/>
 		<StyleInclude Source="avares://RelinkToolkit2/Assets/Icons/Material.xaml"/>
+
+		<dialogHostAvalonia:DialogHostStyles/>
+
+        <Style Selector="dialogs|Snackbar">
+			<Setter Property="Background"
+				Value="{DynamicResource CustomSnackbarBrush}"/>
+	    </Style>
 
 		<!-- Dock -->
 		<Style Selector="DockControl">

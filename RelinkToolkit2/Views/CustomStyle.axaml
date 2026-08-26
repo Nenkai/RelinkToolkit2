@@ -1,0 +1,21 @@
+<Styles xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:dialogs="using:AvaloniaDialogs.Views">
+	<Design.PreviewWith>
+		<Border Padding="20">
+			<!-- Add Controls for Previewer Here -->
+		</Border>
+	</Design.PreviewWith>
+
+	<!--Snackbar-->
+	<Style Selector="dialogs|Snackbar">
+		<Setter Property="Background"
+				Value="{DynamicResource CustomSnackbarBrush}"/>
+	</Style>
+	<Style Selector="dialogs|Snackbar Button">
+		<Setter Property="Background"
+				Value="{DynamicResource CustomSnackbarBrush}"/>
+		<Setter Property="Padding"
+				Value="8"/>
+	</Style>
+</Styles>

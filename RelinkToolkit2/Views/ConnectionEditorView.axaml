@@ -21,48 +21,153 @@
 
 	<UserControl.Resources>
 		<converters:VectorIconConverter x:Key="vectorIconConverter"/>
-	</UserControl.Resources>
 
-	<UserControl.Styles>
-		<Style Selector="ItemsControl.ItemsDragAndDrop">
-			<Style.Resources>
-				<b:TransitionComponentDropHandler x:Key="TransitionComponentDropHandler" />
-			</Style.Resources>
-			<Setter Property="(Interaction.Behaviors)">
-				<BehaviorCollectionTemplate>
-					<BehaviorCollection>
+		<b:TransitionComponentDropHandler x:Key="TransitionComponentDropHandler" />
+
+		<DataTemplate x:Key="ConditionOpTemplate" DataType="condVMs:TransitionConditionOpViewModel">
+		    <Border BorderThickness="4,1,1,1" CornerRadius="0" BorderBrush="{Binding BorderBrush}" Margin="4,2,6,4">
+		        <StackPanel Orientation="Vertical" Background="Transparent">
+					<!-- Make operator group draggable, but also make it so groups can receive conditions -->
+					<Interaction.Behaviors>
+						<ContextDragBehavior/>
 						<ContextDropBehavior Handler="{StaticResource TransitionComponentDropHandler}" />
-					</BehaviorCollection>
-				</BehaviorCollectionTemplate>
-			</Setter>
-		</Style>
+					</Interaction.Behaviors>
+		            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" Margin="4,4,4,4">
+						<Grid Grid.Column="0" Cursor="SizeAll" Margin="4 1 6 0">
+		                    <Image Width="14">
+		                        <Image.Source>
+		                            <controls:VectorIconDrawingImage Drawing="{DynamicResource Material.DragHorizontalVariant}" Brush="Gray"/>
+		                        </Image.Source>
+		                    </Image>
+		                </Grid>
+		                <ComboBox Grid.Column="1" SelectedIndex="{Binding Operand}" PlaceholderText="All must be true" 
+								  IsEnabled="{Binding Operand, Converter={x:Static converters:ValueConverters.NotMinusOne}}">
+							<ComboBox.ItemTemplate>
+								<DataTemplate>
+									<TextBlock Height="18">
+										<TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis" />
+									</TextBlock>
+								</DataTemplate>
+							</ComboBox.ItemTemplate>
+							<ComboBoxItem Content="AND (All should be true)"/>
+							<ComboBoxItem Content="OR (Any may be true)"/>
+						</ComboBox>
+		                <Button Grid.Column="2" HorizontalContentAlignment="Left" Click="Button_AddConditionComponent" Cursor="Hand" Margin="2,0,0,0">
+		                    <StackPanel Orientation="Horizontal">
+		                        <Image Width="12" Height="12" Margin="0,0,4,0">
+		                            <Image.Source>
+		                                <controls:VectorIconDrawingImage Drawing="{DynamicResource Material.FlagPlus}"/>
+		                            </Image.Source>
+		                        </Image>
+		                        <TextBlock Text="Condition" FontSize="11"/>
+		                    </StackPanel>
+		                </Button>
+		                <Button Grid.Column="3" Margin="2,0,0,0" Command="{Binding AddOperandCommand}">
+							<StackPanel Orientation="Horizontal">
+		                        <Image Width="12" Height="12" Margin="0,0,4,0">
+		                            <Image.Source>
+		                                <controls:VectorIconDrawingImage Drawing="{DynamicResource Material.ShuffleVariant}"/>
+		                            </Image.Source>
+		                        </Image>
+		                        <TextBlock Text="Operand" FontSize="11"/>
+		                    </StackPanel>
+		                </Button>
+						<Button Grid.Column="4" DockPanel.Dock="Right" Margin="2,0,0,0" Command="{Binding DeleteOperandCommand}" IsEnabled="{Binding CanDelete}">
+							<Image Width="12" Height="12">
+								<Image.Source>
+									<controls:VectorIconDrawingImage Drawing="{DynamicResource Material.Delete}"/>
+								</Image.Source>
+							</Image>
+						</Button>
+		            </Grid>
 
-		<Style Selector="ItemsControl.ItemsDragAndDrop ContentPresenter">
-			<Setter Property="HorizontalContentAlignment" Value="Stretch" />
-			<Setter Property="(Interaction.Behaviors)">
-				<BehaviorCollectionTemplate>
-					<BehaviorCollection>
-						<ContextDragBehavior HorizontalDragThreshold="3" VerticalDragThreshold="3" />
-					</BehaviorCollection>
-				</BehaviorCollectionTemplate>
-			</Setter>
-		</Style>
-	</UserControl.Styles>
+					<!-- List of conditions, or operators -->
+		            <ItemsControl ItemsSource="{Binding Elements}">
+		                <ItemsControl.DataTemplates>
+							<!-- Recursive logical group -->
+		                    <StaticResource ResourceKey="ConditionOpTemplate"/>
+
+		                    <!-- Actual condition -->
+		                    <StaticResource ResourceKey="ConditionTemplate"/>
+		                </ItemsControl.DataTemplates>
+        
+						<Interaction.Behaviors>
+							<!-- Make the items a drop target -->
+							<ContextDropBehavior Handler="{StaticResource TransitionComponentDropHandler}" />
+						</Interaction.Behaviors>
+		            </ItemsControl>
+		        </StackPanel>
+		    </Border>
+		</DataTemplate>
+
+		<!-- Condition Group -->
+		<DataTemplate x:Key="ConditionTemplate" DataType="{x:Type condVMs:TransitionConditionViewModel}">
+		    <Expander IsExpanded="{Binding IsExpanded}" Margin="4,0,4,2" HorizontalAlignment="Stretch">
+				<!-- Make the condition draggable, also make them draggable to so their position can be swapped -->
+				<Interaction.Behaviors>
+					<ContextDragBehavior/>
+					<ContextDropBehavior Handler="{StaticResource TransitionComponentDropHandler}" />
+				</Interaction.Behaviors>
+				<Expander.ContentTransition>
+					<CrossFade Duration="0:0:0.0" />
+				</Expander.ContentTransition>
+		        <Expander.Header>
+		            <DockPanel HorizontalAlignment="Stretch" Height="20" Margin="0 2 0 2" LastChildFill="True">
+		                <Grid DockPanel.Dock="Left" Background="Transparent" Cursor="SizeAll" Margin="2 1 6 0">
+		                    <Image Width="14">
+		                        <Image.Source>
+		                            <controls:VectorIconDrawingImage Drawing="{DynamicResource Material.DragHorizontalVariant}" Brush="Gray"/>
+		                        </Image.Source>
+		                    </Image>
+		                </Grid>
+		
+		                <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" FontWeight="Bold" Text="{Binding Title}" FontSize="11"/>
+		                <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" Text=" is " FontSize="11"/>
+		                <CheckBox DockPanel.Dock="Left" VerticalAlignment="Center" Margin="2 0 2 0" IsChecked="{Binding !IsFalse}" />
+		                <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" IsVisible="{Binding IsFalse}" Text="false" FontSize="11"/>
+		                <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" IsVisible="{Binding !IsFalse}" Text="true" FontSize="11"/>
+		
+		                <Button DockPanel.Dock="Right" Margin="0 0 2 0" Command="{Binding RemoveConditionCommand}" CommandParameter="{Binding}">
+		                    <Image Width="12" Height="12">
+		                        <Image.Source>
+		                            <controls:VectorIconDrawingImage Drawing="{DynamicResource Material.Delete}"/>
+		                        </Image.Source>
+		                    </Image>
+		                </Button>
+		                <Grid DockPanel.Dock="Right"/>
+		            </DockPanel>
+		        </Expander.Header>
+		        <ScrollViewer>
+		            <pgc:PropertyGrid
+		                x:Name="propertyGrid_Basic"
+		                IsQuickFilterVisible="False"
+		                IsHeaderVisible="False"
+		                IsTitleVisible="False"
+		                IsCategoryVisible="False"
+		                IsAutoNameWidth="True"
+		                LayoutStyle="Inline"
+		                DataContext="{Binding ConditionComponent}"/>
+		        </ScrollViewer>
+		    </Expander>
+		</DataTemplate>			
+	</UserControl.Resources>
 	
 	<!--TRANSITIONS-->
-	<Border Padding="5"
-            HorizontalAlignment="Left">
+	<Border Padding="4">
 		<ScrollViewer VerticalScrollBarVisibility="Auto">
 			<StackPanel>
-				<ItemsControl x:Name="TransitionControl" ItemsSource="{Binding Connection.Transitions}" HorizontalAlignment="Left">
+				<ItemsControl x:Name="TransitionControl" ItemsSource="{Binding Connection.Transitions}">
 					<ItemsControl.ItemTemplate>
 						<DataTemplate DataType="{x:Type fsmVMs:TransitionViewModel}">
-							<Expander x:Name="ConnectionExpander" CornerRadius="4 4 4 4" IsExpanded="true" Margin="0 0 5 2"
+							<Expander x:Name="ConnectionExpander" CornerRadius="4 4 4 4" IsExpanded="true" Margin="0 0 2 2"
 									  BorderThickness="1" BorderBrush="Gray"
 									  PointerEntered="ConnectionExpander_PointerEntered"
 									  PointerExited="ConnectionExpander_PointerExited"
 									  Focusable="True">
 
+								<Expander.ContentTransition>
+									<CrossFade Duration="0:0:0.0" />
+								</Expander.ContentTransition>
 								<!-- Expander Header with node to node info -->
 								<Expander.Header>
 									<Grid>
@@ -117,83 +222,12 @@
 
 								<!-- Connection information -->
 								<Border BorderThickness="0 1 0 0" BorderBrush="LightGray">
-									<StackPanel Orientation="Vertical" Margin="4 2 4 2">
-										<ItemsControl x:Name="ConditionsControl" ItemsSource="{Binding ConditionComponents}" Classes="ItemsDragAndDrop">
+									<StackPanel Orientation="Vertical" Margin="0 2 0 2">
+										<ItemsControl x:Name="ConditionsControl" ItemsSource="{Binding ConditionOperatorGroups}">
 											<ItemsControl.DataTemplates>
-												<DataTemplate DataType="{x:Type condVMs:TransitionConditionViewModel}">
-													<StackPanel x:Name="TransitionStackPanel" Orientation="Horizontal" HorizontalAlignment="Stretch" Focusable="True">
-														<Expander IsExpanded="{Binding IsExpanded}">
-															<Expander.Header>
-																<!-- Binding is needed. Otherwise it won't spread across -->
-																<DockPanel HorizontalAlignment="Left" Height="20" Width="{Binding #TransitionStackPanel.Bounds.Width}" Margin="0 4 0 4" LastChildFill="True">
-																	<Grid DockPanel.Dock="Left" Background="Transparent" Cursor="SizeAll" Margin="2 1 6 0">
-																		<Image Width="14">
-																			<Image.Source>
-																				<controls:VectorIconDrawingImage Drawing="{DynamicResource Material.DragHorizontalVariant}" Brush="Gray"/>
-																			</Image.Source>
-																		</Image>
-																	</Grid>
-
-																	<TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold" Text="{Binding Title}" FontSize="11"/>
-																	<TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" HorizontalAlignment="Center" Text=" is " FontSize="11"/>
-																	<CheckBox  DockPanel.Dock="Left" VerticalAlignment="Center" Margin="2 0 2 0" IsChecked="{Binding !IsFalse}" />
-																	<TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" IsVisible="{Binding IsFalse}" Text="false" FontSize="11"/>
-																	<TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" IsVisible="{Binding !IsFalse}" Text="true" FontSize="11"/>
-
-																	<!-- Excessive right side margin because for some reason it clips past. -->
-																	<Button DockPanel.Dock="Right" Margin="4 0 25 0"
-																		Command="{Binding #ConditionsControl.((fsmVMs:TransitionViewModel)DataContext).TransitionComponentDeletedCommand}"
-																		CommandParameter="{Binding}">
-																		<Image Width="12" Height="12">
-																			<Image.Source>
-																				<controls:VectorIconDrawingImage Drawing="{DynamicResource Material.Delete}"/>
-																			</Image.Source>
-																		</Image>
-																	</Button>
-																	<Grid DockPanel.Dock="Right"/>
-																</DockPanel>
-															</Expander.Header>
-
-															<!-- Component Properties -->
-															<!-- Same margin here. -->
-															<ScrollViewer Margin="0 0 25 0">
-																<pgc:PropertyGrid
-																	x:Name="propertyGrid_Basic"
-																	IsQuickFilterVisible="False"
-																	IsHeaderVisible="False"
-																	IsTitleVisible="False"
-																    IsCategoryVisible="False"
-																	IsAutoNameWidth="True"
-																    LayoutStyle="Inline"
-																	DataContext="{Binding ConditionComponent}"/>
-															</ScrollViewer>
-														</Expander>
-													</StackPanel>
-												</DataTemplate>
-
-												<!-- Condition Operator -->
-												<DataTemplate DataType="{x:Type condVMs:TransitionConditionOpViewModel}">
-													<Grid Width="385" HorizontalAlignment="Left" Margin="0,2,0,2">
-														<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-															<Button Name="Button_OperandType" Padding="2,1,2,1" Content="{Binding Title}" FontWeight="Bold" Click="Button_OperandType_Click"/>
-															<Label Content="(Priority: " Padding="2,4,2,0"/>
-															<NumericUpDown Value="{Binding Priority}" Width="39" Height="23" Padding="8,0,0,0" FormatString="0"/>
-															<Label Content=")" Padding="2,4,2,0"/>
-														</StackPanel>
-													</Grid>
-												</DataTemplate>
+												<StaticResource ResourceKey="ConditionOpTemplate"/>
 											</ItemsControl.DataTemplates>
 										</ItemsControl>
-										<Button HorizontalContentAlignment="Left" Click="Button_AddConditionComponent" Cursor="Hand" Margin="0,2,0,2">
-											<StackPanel Orientation="Horizontal">
-												<Image Width="12" Height="12" Margin="0,0,4,0">
-													<Image.Source>
-														<controls:VectorIconDrawingImage Drawing="{DynamicResource Material.Plus}"/>
-													</Image.Source>
-												</Image>
-												<TextBlock Text="Add Condition..." FontSize="11"/>
-											</StackPanel>
-										</Button>
 									</StackPanel>
 								</Border>
 							</Expander>

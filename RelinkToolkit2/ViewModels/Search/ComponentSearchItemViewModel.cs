@@ -12,31 +12,50 @@ namespace RelinkToolkit2.ViewModels.Search;
 public partial class ComponentSearchItemViewModel : ObservableObject
 {
     [ObservableProperty]
-    private string? _name;
+    public partial string Name { get; set; } = "Item";
 
+    /// <summary>
+    /// Lefthand side icon
+    /// </summary>
     [ObservableProperty]
-    private string? _icon = "Material.FileCode";
+    public partial string? Icon { get; set; }
 
+    /// <summary>
+    /// Righthand side icon
+    /// </summary>
     [ObservableProperty]
-    private string? _innerRightIcon;
+    public partial string? InnerRightIcon { get; set; }
 
+    /// <summary>
+    /// Hoverable caption.
+    /// </summary>
     [ObservableProperty]
-    private string? _helpCaption;
+    public partial string? HelpCaption { get; set; }
 
+    /// <summary>
+    /// User-data associated to this item.
+    /// </summary>
     [ObservableProperty]
-    private object? _data;
+    public partial object? Data { get; set; }
 
+    /// <summary>
+    /// Display tag for the item
+    /// </summary>
     [ObservableProperty]
-    public string? _tag;
+    public partial string? Tag { get; set; }
 
-    public Action<ComponentSearchViewModel, ComponentSearchItemViewModel>? OnSelected { get; set; }
+    /// <summary>
+    /// Text to display upon hovering this item
+    /// </summary>
+    [ObservableProperty]
+    public partial string? HoverText { get; set; }
 
+    /// <summary>
+    /// Whether this item leads to another page - it is a folder
+    /// </summary>
     public bool IsFolder => Data is ComponentSearchPageViewModel;
 
-    public ComponentSearchItemViewModel()
-    {
-
-    }
+    public Action<ComponentSearchViewModel, ComponentSearchItemViewModel>? OnSelected { get; set; }
 
     public void SetPage(ComponentSearchPageViewModel page)
     {
@@ -45,9 +64,9 @@ public partial class ComponentSearchItemViewModel : ObservableObject
 
     partial void OnDataChanged(object? value)
     {
+        // If the data for this item is a page, set an icon
         if (value is ComponentSearchPageViewModel)
         {
-            Icon = string.Empty;
             InnerRightIcon = "Material.ChevronRight";
         }
     }

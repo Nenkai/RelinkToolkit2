@@ -9,18 +9,23 @@ using System.Collections.Specialized;
 using Avalonia.Controls;
 
 using CommunityToolkit.Mvvm.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
+using Gma.DataStructures.StringSearch;
+using RelinkToolkit2.Services;
 
 namespace RelinkToolkit2.ViewModels.Search;
 
 public partial class ComponentSearchPageViewModel : ObservableObject
 {
     [ObservableProperty]
-    private string? _title = "Search";
+    public partial string? Title { get; set; } = "Search";
 
     [ObservableProperty]
-    private ObservableCollection<ComponentSearchItemViewModel> _components = [];
+    public partial ObservableCollection<ComponentSearchItemViewModel> Components { get; set; } = [];
 
-    private Dictionary<string, ComponentSearchItemViewModel> _lut = [];
+    private readonly Dictionary<string, ComponentSearchItemViewModel> _lut = [];
+
+    public UkkonenTrie<ComponentSearchItemViewModel>? SearchTrie { get; set; }
 
     public ComponentSearchPageViewModel()
     {
@@ -39,15 +44,18 @@ public partial class ComponentSearchPageViewModel : ObservableObject
     /// <param name="name"></param>
     /// <param name="data"></param>
     /// <param name="caption"></param>
-    public ComponentSearchItemViewModel AddComponent(string name, object data, string? caption = null, string? tag = null, Action<ComponentSearchViewModel, ComponentSearchItemViewModel>? onSelectedCallback = null)
+    public ComponentSearchItemViewModel AddComponent(string name, object data, string? caption = null, string? icon = "Material.FileCode", string? tag = null, 
+        string? hoverText = null, Action<ComponentSearchViewModel, ComponentSearchItemViewModel>? onSelectedCallback = null)
     {
         var component = new ComponentSearchItemViewModel()
         {
             Name = name,
             Data = data,
+            Icon = icon,
             HelpCaption = caption,
             Tag = tag,
-            InnerRightIcon = !string.IsNullOrEmpty(caption) ? "Material.HelpCircle" : null,
+            HoverText = hoverText,
+            InnerRightIcon = !string.IsNullOrWhiteSpace(caption) ? "Material.HelpCircle" : null,
             OnSelected = onSelectedCallback,
         };
 
@@ -78,12 +86,12 @@ public partial class ComponentSearchPageViewModel : ObservableObject
         Components.Add(item);
     }
 
-    public bool TryGetByName(string name, out ComponentSearchItemViewModel item)
+    public bool TryGetByName(string name, [NotNullWhen(true)] out ComponentSearchItemViewModel? item)
     {
         return _lut.TryGetValue(name, out item);
     }
 
-    public void Components_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    public void Components_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         if (e.Action == NotifyCollectionChangedAction.Add)
         {
@@ -95,6 +103,37 @@ public partial class ComponentSearchPageViewModel : ObservableObject
             var item = (ComponentSearchItemViewModel)e.NewItems![0]!;
             _lut.Remove(item.Name);
         }
+    }
+
+    public void SortPage()
+    {
+        Components = new ObservableCollection<ComponentSearchItemViewModel>(
+            Components.OrderByDescending(e => e.IsFolder).ThenBy(e => e.Name));
+
+        foreach (var comp in Components)
+        {
+            if (comp.Data is ComponentSearchPageViewModel subPage)
+                subPage.SortPage();
+        }
+    }
+
+    public UkkonenTrie<ComponentSearchItemViewModel> BuildSearchTrie()
+    {
+        UkkonenTrie<ComponentSearchItemViewModel> trie = new();
+        BuildSearchTrieForPage(this);
+
+        void BuildSearchTrieForPage(ComponentSearchPageViewModel page)
+        {
+            foreach (var component in page.Components)
+            {
+                if (component.Data is ComponentSearchPageViewModel subPage)
+                    BuildSearchTrieForPage(subPage);
+                else
+                    trie.Add(component.Name.ToLower(), component);
+            }
+        }
+
+        return trie;
     }
 }
 

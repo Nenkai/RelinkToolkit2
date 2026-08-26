@@ -23,16 +23,14 @@ using System.Threading.Tasks;
 
 namespace RelinkToolkit2.Views.Documents.GraphEditor;
 
-public partial class BTNodeView : UserControl
+public partial class BTNodeView : UserControl,
+    IRecipient<FsmNodeLayerChangedMessage>
 {
-    private Label _label;
+    private Label? _label;
 
     public BTNodeView()
     {
         InitializeComponent();
-
-        AddHandler(DragDrop.DropEvent, Drop);
-        AddHandler(DragDrop.DragOverEvent, DragOver);
     }
 
     private CancellationTokenSource? _layerLabelAnimCt = new CancellationTokenSource();
@@ -42,52 +40,31 @@ public partial class BTNodeView : UserControl
 
         if (DataContext is not null)
         {
-            NodeViewModel nvm = (NodeViewModel)DataContext!;
-            WeakReferenceMessenger.Default.Register<FsmNodeLayerChangedMessage, uint>(this, nvm.Guid, async (recipient, message) =>
-            {
-                await AnimateLayerChange();
-            });
+            NodeViewModel nvm = (NodeViewModel)DataContext!; 
+            WeakReferenceMessenger.Default.Register<FsmNodeLayerChangedMessage, uint>(this, nvm.Guid);
         }
+    }
+
+    /// <summary>
+    /// Fired when the node's layer has changed, where we start an animation.
+    /// </summary>
+    /// <param name="message"></param>
+    public async void Receive(FsmNodeLayerChangedMessage message)
+    {
+        await AnimateLayerChange();
     }
 
     private async Task AnimateLayerChange()
     {
         _layerLabelAnimCt?.Cancel();
 
-        _layerLabelAnimCt = new CancellationTokenSource();
-        var anim = (Animation)_label!.Resources["LayerChangedAnimation"]!;
-        await anim.RunAsync(_label, cancellationToken: _layerLabelAnimCt.Token);
-        _layerLabelAnimCt = null;
-    }
-
-    private void Drop(object? sender, DragEventArgs e)
-    {
-        if (e.Source is Control c && c.DataContext is NodeViewModel targetViewModel)
+        if (_label is not null)
         {
-            var component = e.DataTransfer.TryGetManagedValue<NodeComponentViewModel>("Context");
-            if (component is null)
-                return;
-
-            if (targetViewModel == component.Parent)
-                return;
-
-            component.Parent.Components.Remove(component);
-            targetViewModel.Components.Add(component);
-            component.Parent = targetViewModel;
+            _layerLabelAnimCt = new CancellationTokenSource();
+            var anim = (Animation)_label.Resources["LayerChangedAnimation"]!;
+            await anim.RunAsync(_label, cancellationToken: _layerLabelAnimCt.Token);
+            _layerLabelAnimCt = null;
         }
-    }
-
-    private void DragOver(object? sender, DragEventArgs e)
-    {
-        if (e.Source is Control c && c.DataContext is NodeViewModel)
-        {
-            e.DragEffects |= DragDropEffects.Move;
-        }
-        else
-        {
-            e.DragEffects = DragDropEffects.None;
-        }
-
     }
 
     private void Border_PointerPressed(object? sender, PointerPressedEventArgs e)

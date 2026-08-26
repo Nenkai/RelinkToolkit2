@@ -3,7 +3,12 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
+using GBFRDataTools.Entities;
+using GBFRDataTools.FSM;
 using GBFRDataTools.FSM.Components;
+using GBFRDataTools.FSM.Components.Conditions;
+
+using RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 
 using System;
 using System.Collections.Generic;
@@ -11,9 +16,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-
-using RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 
 namespace RelinkToolkit2.ViewModels.Documents.GraphEditor;
 
@@ -33,7 +38,8 @@ public partial class NodeComponentViewModel : ObservableObject
 
     public BehaviorTreeComponent Component { get; set; }
 
-    public NodeViewModel Parent { get; set; }
+    [JsonIgnore]
+    public NodeViewModel Parent { get; private set; }
 
     public NodeComponentViewModel(NodeViewModel parent, BehaviorTreeComponent component)
     {
@@ -43,6 +49,29 @@ public partial class NodeComponentViewModel : ObservableObject
         UpdateCaption(component);
     }
 
+    public NodeComponentViewModel CloneAsNewComponent(NodeViewModel parentNode)
+    {
+        var type = FSMParser.ComponentNameToType[Component.ComponentName];
+        var serialized = JsonSerializer.Serialize(Component, type, DefaultJsonSerializerOptions.InstanceForWrite);
+        BehaviorTreeComponent? clonedComponent = (BehaviorTreeComponent?)JsonSerializer.Deserialize(serialized, type, DefaultJsonSerializerOptions.InstanceForRead);
+        if (clonedComponent is null)
+            throw new ArgumentNullException(nameof(clonedComponent));
+
+        var editor = (NodeEditorViewModelBase)Parent.ParentEditor!;
+        clonedComponent.ParentGuid = parentNode.Guid;
+        clonedComponent.Guid = editor.GetNewGuid();
+        return new NodeComponentViewModel(parentNode, clonedComponent)
+        {
+            Name = Name,
+            Caption = Caption,
+        };
+    }
+    public void SetParentNode(NodeViewModel parentNode)
+    {
+        Parent = parentNode;
+        Component.ParentGuid = parentNode.Guid;
+    }
+
     private void Component_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         UpdateCaption(Component);
@@ -50,27 +79,16 @@ public partial class NodeComponentViewModel : ObservableObject
 
     private void UpdateCaption(BehaviorTreeComponent btComponent)
     {
-        string caption = btComponent.GetCaption();
+        string? caption = btComponent.GetCaption();
         if (btComponent is ConditionComponent conditionComponent)
         {
-            if (!string.IsNullOrEmpty(caption))
+            if (!string.IsNullOrWhiteSpace(caption))
                 caption += " ";
 
             caption += $"is {!conditionComponent.IsReverseSuccess}";
         }
 
         Caption = caption;
-    }
-
-    public static string GetEnumDescription1(Enum value)
-    {
-        if (value == null) { return ""; }
-
-        var type = value.GetType();
-        var field = type.GetField(value.ToString());
-        var custAttr = field?.GetCustomAttributes(typeof(DescriptionAttribute), false);
-        DescriptionAttribute attribute = custAttr?.SingleOrDefault() as DescriptionAttribute;
-        return attribute == null ? value.ToString() : attribute.Description;
     }
 
     [RelayCommand]

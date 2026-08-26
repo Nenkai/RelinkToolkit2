@@ -45,7 +45,7 @@ namespace RelinkToolkit2.Views.Documents.GraphEditor;
 
 public partial class BTEditorView : UserControl,
     IRecipient<BringNodeIntoViewRequest>,
-    IRecipient<GetNodeControlRequest>,
+    IRecipient<OpenContextMenuFlyoutAtNode>,
     IRecipient<DismissSearchComponentMenuRequest>,
     IRecipient<FsmComponentContextMenuRequest>
 {
@@ -77,13 +77,17 @@ public partial class BTEditorView : UserControl,
         message.Reply(true);
     }
 
-    public void Receive(GetNodeControlRequest message)
+    public void Receive(OpenContextMenuFlyoutAtNode message)
     {
         Control? control = Editor.ContainerFromItem(message.Node);
         if (control is null)
             return;
 
-        message.Reply(control);
+        var flyout = new MenuFlyout
+        {
+            ItemsSource = message.Items
+        };
+        flyout.ShowAt(control, showAtPointer: true);
     }
 
     public void Receive(DismissSearchComponentMenuRequest message)
@@ -321,7 +325,7 @@ public partial class BTEditorView : UserControl,
         if (item.Data is not Type type)
             return;
 
-        if (searchVM.Context is not BTNodeViewModel nodeViewModel)
+        if (searchVM.UserData is not BTNodeViewModel nodeViewModel)
             return;
 
         var component = Activator.CreateInstance(type);

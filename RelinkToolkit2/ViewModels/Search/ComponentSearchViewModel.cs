@@ -1,6 +1,11 @@
 ﻿using Avalonia.Controls;
 
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+
+using Gma.DataStructures.StringSearch;
+
+using RelinkToolkit2.Services;
 
 using System;
 using System.Collections.Generic;
@@ -8,8 +13,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
-using Gma.DataStructures.StringSearch;
 
 namespace RelinkToolkit2.ViewModels.Search;
 
@@ -33,15 +36,25 @@ public partial class ComponentSearchViewModel : ObservableObject
     private bool? _isOpen;
 
     /// <summary>
-    /// Data context/parameter for the search.
+    /// User data context/parameter for the search such as where it was spawned from.
     /// </summary>
-    public object? Context { get; set; }
+    public object? UserData { get; set; }
 
-    // Used for searching
-    private readonly UkkonenTrie<ComponentSearchItemViewModel> _trie = new();
+    /// <summary>
+    /// Type of search.
+    /// </summary>
+    public ComponentSearchCategoryType SearchCategoryType { get; set; }
+
+    internal Action<ComponentSearchViewModel, ComponentSearchItemViewModel>? OnSelected { get; set; }
 
     // Cached main page, used for restoring main page after searching is done
     private ComponentSearchPageViewModel _mainPage;
+
+    [RelayCommand]
+    public void OnSearchTextClear()
+    {
+        SearchText = string.Empty;
+    }
 
     partial void OnIsOpenChanged(bool? value)
     {
@@ -61,17 +74,20 @@ public partial class ComponentSearchViewModel : ObservableObject
         }
         else
         {
-            List<ComponentSearchItemViewModel> items = _trie.Retrieve(value.ToLower());
-            var filterPage = new ComponentSearchPageViewModel();
-            if (items is not null)
+            if (_mainPage.SearchTrie is not null)
             {
-                foreach (var item in items)
-                    filterPage.AddComponent(item);
+                List<ComponentSearchItemViewModel> items = _mainPage.SearchTrie.Retrieve(value.ToLower());
+                var filterPage = new ComponentSearchPageViewModel();
+                if (items is not null)
+                {
+                    foreach (var item in items.Distinct())
+                        filterPage.AddComponent(item);
+                }
+
+                SortPage(filterPage);
+
+                Pages[0] = filterPage;
             }
-
-            SortPage(filterPage);
-
-            Pages[0] = filterPage;
         }
     }
 
@@ -100,27 +116,15 @@ public partial class ComponentSearchViewModel : ObservableObject
         }
     }
 
-    public void SortAndBuildSearch()
-    {
-        if (Pages.Count == 0)
-            return;
-
-        SortPage(Pages[0]);
-    }
-
     private void SortPage(ComponentSearchPageViewModel page)
     {
-        // NOTE: Can probably be optimized.
-        page.Components.CollectionChanged -= page.Components_CollectionChanged;
-        page.Components = new ObservableCollection<ComponentSearchItemViewModel>(page.Components.OrderByDescending(e => e.IsFolder).ThenBy(e => e.Name));
-        page.Components.CollectionChanged += page.Components_CollectionChanged;
+        page.Components = new ObservableCollection<ComponentSearchItemViewModel>(
+            page.Components.OrderByDescending(e => e.IsFolder).ThenBy(e => e.Name));
 
         foreach (var comp in page.Components)
         {
             if (comp.Data is ComponentSearchPageViewModel subPage)
                 SortPage(subPage);
-            else
-                _trie.Add(comp.Name.ToLower(), comp);
         }
     }
 }

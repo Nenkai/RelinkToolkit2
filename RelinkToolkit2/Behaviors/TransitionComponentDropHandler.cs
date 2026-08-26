@@ -3,66 +3,110 @@ using Avalonia.Input;
 using Avalonia.VisualTree;
 using Avalonia.Xaml.Interactions.DragAndDrop;
 
-using RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents;
 using RelinkToolkit2.ViewModels.Documents.GraphEditor;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents;
+
+using System.Diagnostics;
 
 namespace RelinkToolkit2.Behaviors;
 
 public class TransitionComponentDropHandler : DropHandlerBase
 {
-    private bool Validate<T>(ItemsControl listBox, DragEventArgs e, object? sourceContext, object? targetContext, bool bExecute) where T : TransitionConditionViewModel
+    private bool Validate(object? sender, DragEventArgs e, object? sourceContext, TransitionConditionOpViewModel targetOperator, bool bExecute)
     {
-        if (sourceContext is not T sourceComponent || targetContext is not TransitionViewModel targetTransitionViewModel)
+        Debug.WriteLine(sourceContext);
+
+        // Moving a group to another group
+        if (sourceContext is TransitionConditionOpViewModel sourceGroup)
         {
-            return false;
-        }
+            // Moving a group to the same group (reorder)
+            if (sourceGroup.ParentOperand == targetOperator.ParentOperand)
+            {
+                if (sourceGroup.ParentOperand is null)
+                    return false;
 
-        if (listBox.GetVisualAt(e.GetPosition(listBox)) is not Control targetControl)
-            return false;
+                TransitionConditionOpViewModel targetOperatorGroup = sourceGroup.ParentOperand;
+                int sourceIndex = targetOperatorGroup.Elements.IndexOf(sourceGroup);
+                int targetIndex = targetOperatorGroup.Elements.IndexOf(targetOperator);
 
-        if (targetControl.DataContext is not TransitionConditionViewModel targetComponent)
-            return false;
+                if (sourceIndex != targetIndex)
+                {
+                    if (bExecute)
+                        MoveItem(targetOperatorGroup.Elements, sourceIndex, targetIndex);
 
-        var items = targetTransitionViewModel.ConditionComponents;
-        int sourceIndex = items.IndexOf(sourceComponent);
-        int targetIndex = items.IndexOf(targetComponent);
-        if (sourceIndex == -1) // If this is -1, then we are moving it to a different node
-        {
+                    return true;
+                }
+
+                return false;
+            }
+            else
+            {
+                ;
+            }
+
+            if (bExecute)
+            {
+                
+            }
             return true;
         }
-        else
+        else if (sourceContext is TransitionConditionViewModel sourceCondition) // Moving a condition to a group
         {
             if (bExecute)
             {
-                MoveItem(items, sourceIndex, targetIndex);
-
-                // Ensure to adjust the old item since they're between conditions.
-                if (sourceIndex > targetIndex)
-                    MoveItem(items, targetIndex + 1, sourceIndex);
-                else
-                    MoveItem(items, targetIndex - 1, sourceIndex);
+                sourceCondition.ParentOperand?.Elements.Remove(sourceCondition);
+                targetOperator.AddElement(sourceCondition);
             }
 
             return true;
         }
+
+        return false;
     }
-        
+
+    public bool Validate(object? sender, DragEventArgs e, object? sourceContext, TransitionConditionViewModel targetCondition, bool bExecute)
+    {
+        if (sourceContext == targetCondition)
+            return false;
+
+        if (sourceContext is not TransitionConditionElementViewModelBase conditionVmBase)
+            return false;
+
+        if (conditionVmBase.ParentOperand == targetCondition.ParentOperand && conditionVmBase.ParentOperand is not null)
+        {
+            TransitionConditionOpViewModel targetOperatorGroup = conditionVmBase.ParentOperand;
+            int sourceIndex = targetOperatorGroup.Elements.IndexOf(conditionVmBase);
+            int targetIndex = targetOperatorGroup.Elements.IndexOf(targetCondition);
+
+            if (sourceIndex != targetIndex)
+            {
+                if (bExecute)
+                    MoveItem(targetOperatorGroup.Elements, sourceIndex, targetIndex);
+
+                return true;
+            }
+        }
+
+        return true;
+    }
+
     public override bool Validate(object? sender, DragEventArgs e, object? sourceContext, object? targetContext, object? state)
     {
-        if (sender is ItemsControl listBox)
-        {
-            return Validate<TransitionConditionViewModel>(listBox, e, sourceContext, targetContext, false);
-        }
+        if (targetContext is TransitionConditionOpViewModel operatorGroup)
+            return Validate(sender, e, sourceContext, operatorGroup, false);
+        else if (targetContext is TransitionConditionViewModel condition)
+            return Validate(sender, e, sourceContext, condition, false);
 
         return false;
     }
 
     public override bool Execute(object? sender, DragEventArgs e, object? sourceContext, object? targetContext, object? state)
     {
-        if (sender is ItemsControl listBox)
-        {
-            return Validate<TransitionConditionViewModel>(listBox, e, sourceContext, targetContext, true);
-        }
+        if (targetContext is TransitionConditionOpViewModel operatorGroup)
+            return Validate(sender, e, sourceContext, operatorGroup, true);
+        else if (targetContext is TransitionConditionViewModel condition)
+            return Validate(sender, e, sourceContext, condition, true);
+
         return false;
     }
 }

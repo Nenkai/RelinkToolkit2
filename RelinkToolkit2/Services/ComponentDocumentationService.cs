@@ -122,6 +122,10 @@ public class ComponentDocumentationService : IHostedService
                 {
                     return component;
                 }
+                else if (alternate.TryGetValue(key, out Component? elem))
+                {
+                    return elem;
+                }
 
                 return null;
             }

@@ -21,6 +21,7 @@ using GBFRDataTools.Entities;
 using GBFRDataTools.FSM;
 using GBFRDataTools.FSM.BehaviorTree;
 using GBFRDataTools.FSM.Components;
+using GBFRDataTools.FSM.Components.Conditions;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -101,7 +102,7 @@ public partial class BTEditorViewModel : NodeEditorViewModelBase, /* ISaveableDo
                 IsLayerRootNode = true,
                 Location = new Point(-200, 0),
             };
-            node.UpdateBorderColor();
+            node.UpdateVisuals();
             AddNode(node);
 
             var node2 = new BTNodeViewModel()
@@ -112,7 +113,7 @@ public partial class BTEditorViewModel : NodeEditorViewModelBase, /* ISaveableDo
                 IsEndNode = true,
                 Location = new Point(-100, 0),
             };
-            node2.UpdateBorderColor();
+            node2.UpdateVisuals();
             AddNode(node2);
 
             Connections.Add(new GraphConnectionViewModel()
@@ -175,16 +176,13 @@ public partial class BTEditorViewModel : NodeEditorViewModelBase, /* ISaveableDo
     public void Receive(TransitionComponentAddRequest message)
     {
         ConditionComponent component = message.Component;
-        TransitionViewModel transition = message.Transition;
+        TransitionConditionOpViewModel operatorGroup = message.OperatorGroup;
 
         component.Guid = GetNewGuid();
         RegisterBtElementGuid(component.Guid, component);
 
-        if (transition.ConditionComponents.Count != 0)
-            transition.ConditionComponents.Add(new TransitionConditionOpViewModel());
-
-        transition.ConditionComponents.Add(new TransitionConditionViewModel(component) { Title = component.ComponentName });
-        transition.ParentConnection.UpdateConnection();
+        operatorGroup.AddElement(new TransitionConditionViewModel(component, operatorGroup) { Title = component.ComponentName });
+        operatorGroup.ParentConnection.UpdateConnection();
         message.Reply(true);
     }
 
@@ -285,6 +283,7 @@ public partial class BTEditorViewModel : NodeEditorViewModelBase, /* ISaveableDo
 
         AddNode(node);
     }
+
 
     /// <summary>
     /// Removes a node from the graph.
@@ -437,7 +436,7 @@ public partial class BTEditorViewModel : NodeEditorViewModelBase, /* ISaveableDo
             }
         }
 
-        nodeViewModel.UpdateBorderColor();
+        nodeViewModel.UpdateVisuals();
         _guidToNodeVm.Add(node.Guid, nodeViewModel);
 
         return nodeViewModel;
@@ -451,10 +450,6 @@ public partial class BTEditorViewModel : NodeEditorViewModelBase, /* ISaveableDo
 
         if (PendingConnection.Source == PendingConnection.Target)
             return;
-
-        // Bring up context menu
-        // Not ideal and not very MVVM friendly to ask the view to respond, but no other way.
-        var message = WeakReferenceMessenger.Default.Send(new GetNodeControlRequest(target));
 
         var sourceNode = (BTNodeViewModel)PendingConnection.Source;
         var targetNode = (BTNodeViewModel)PendingConnection.Target;
@@ -482,9 +477,7 @@ public partial class BTEditorViewModel : NodeEditorViewModelBase, /* ISaveableDo
             },
         ];
 
-        var flyout = new MenuFlyout();
-        flyout.ItemsSource = items;
-        flyout.ShowAt(message.Response, showAtPointer: true);
+        WeakReferenceMessenger.Default.Send(new OpenContextMenuFlyoutAtNode(target, items));
     }
 
     /// <summary>

@@ -1,4 +1,12 @@
-﻿using System;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+
+using Nodify;
+
+using RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents;
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -6,16 +14,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
-
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-
-using GBFRDataTools.FSM.Entities;
-
-using Nodify;
-
-using RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents;
-using RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 
 namespace RelinkToolkit2.ViewModels.Documents.GraphEditor;
 
@@ -30,25 +28,24 @@ public partial class TransitionViewModel : ObservableObject
     public required FsmNodeViewModel Target { get; set; }
     public bool IsOverrideTransition { get; set; }
 
-    public ObservableCollection<TransitionConditionBase> ConditionComponents { get; set; } = [];
+    public ObservableCollection<TransitionConditionOpViewModel> ConditionOperatorGroups { get; set; } = [];
 
     public TransitionViewModel(FsmConnectionViewModel parentConnection)
     {
         ParentConnection = parentConnection;
+
+        // Default condition group.
+        var operatorGroup = new TransitionConditionOpViewModel(parentConnection)
+        {
+            CanDelete = false,
+        };
+        ConditionOperatorGroups.Add(operatorGroup);
     }
 
     [RelayCommand]
-    public void OnTransitionComponentDeleted(TransitionConditionViewModel component)
+    public void OnTransitionComponentDeleted(TransitionConditionOpViewModel component)
     {
-        int idx = ConditionComponents.IndexOf(component);
-        if (idx - 1 > 0 && ConditionComponents[idx - 1] is TransitionConditionOpViewModel operatorVm)
-            ConditionComponents.Remove(operatorVm);
-
-        ConditionComponents.Remove(component);
-
-        if (ConditionComponents.Count > 0 && ConditionComponents[0] is TransitionConditionOpViewModel firstOp)
-            ConditionComponents.Remove(firstOp);
-
+        ConditionOperatorGroups.Remove(component);
         ParentConnection.UpdateConnection();
     }
 }

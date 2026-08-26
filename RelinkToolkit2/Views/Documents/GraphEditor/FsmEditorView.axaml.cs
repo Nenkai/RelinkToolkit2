@@ -9,14 +9,16 @@ using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 
-using GBFRDataTools.Entities;
+using DynamicData;
+
 using GBFRDataTools.FSM.Components;
+using GBFRDataTools.FSM.Components.Actions;
+using GBFRDataTools.FSM.Components.Conditions;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Msagl.Core.Geometry.Curves;
 using Microsoft.Msagl.Core.Layout;
 using Microsoft.Msagl.Core.Routing;
-
 using Microsoft.Msagl.Layout.Layered;
 
 using MsBox.Avalonia;
@@ -26,13 +28,11 @@ using Nodify;
 
 using RelinkToolkit2.Messages.Fsm;
 using RelinkToolkit2.Services;
-using RelinkToolkit2.ViewModels.Documents;
 using RelinkToolkit2.ViewModels.Documents.GraphEditor;
 using RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 using RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents;
 using RelinkToolkit2.ViewModels.Menu;
 using RelinkToolkit2.ViewModels.Search;
-using RelinkToolkit2.Views.Documents;
 
 using System;
 using System.Collections.Generic;
@@ -41,58 +41,21 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace RelinkToolkit2.Views.Documents.GraphEditor;
 
-public partial class FsmEditorView : UserControl
+public partial class FsmEditorView : UserControl,
+    IRecipient<BringNodeIntoViewRequest>,
+    IRecipient<OpenContextMenuFlyoutAtNode>,
+    IRecipient<DismissSearchComponentMenuRequest>,
+    IRecipient<FsmComponentContextMenuRequest>
 {
     public FsmEditorView()
     {
         InitializeComponent();
-    }
-
-    private void RegisterMessages()
-    {
-        WeakReferenceMessenger.Default.Register<BringNodeIntoViewRequest>(this, (recipient, message) =>
-        {
-            if (DataContext is not FsmEditorViewModel editorVm)
-                return;
-
-            if (!editorVm.Nodes.Contains(message.Node))
-                return;
-
-            Editor.BringIntoView(message.Node.Center, animated: message.Animated);
-            Editor.ZoomAtPosition(1.0f, message.Node.Center);
-            message.Reply(true);
-        });
-
-        WeakReferenceMessenger.Default.Register<GetNodeControlRequest>(this, (recipient, message) =>
-        {
-            Control? control = Editor.ContainerFromItem(message.Node);
-            if (control is null)
-                return;
-
-            message.Reply(control);
-        });
-
-        WeakReferenceMessenger.Default.Register<DismissSearchComponentMenuRequest>(this, (recipient, message) =>
-        {
-            _searchFlyout?.Hide();
-            message.Reply(true);
-        });
-
-        WeakReferenceMessenger.Default.Register<FsmComponentContextMenuRequest>(this, (recipient, message) =>
-        {
-            ObservableCollection<MenuItemViewModel> items = CreateNodeContextMenu((FsmNodeView)message.NodeView, (FsmNodeViewModel)message.Component.Parent, message.Component);
-
-            var flyout = new MenuFlyout();
-            flyout.ItemsSource = items;
-            flyout.ShowAt(message.NodeView, showAtPointer: true);
-
-            message.Reply(true);
-        });
     }
 
     private void NodifyEditor_Loaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -114,6 +77,62 @@ public partial class FsmEditorView : UserControl
     private void NodifyEditor_Unloaded_1(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         UnregisterMessages();
+    }
+
+    private void RegisterMessages()
+    {
+        WeakReferenceMessenger.Default.RegisterAll(this);
+    }
+
+    /// <summary>
+    /// Fired when a node is requested to be focused on.
+    /// </summary>
+    /// <param name="message"></param>
+    public void Receive(BringNodeIntoViewRequest message)
+    {
+        if (DataContext is not FsmEditorViewModel editorVm)
+            return;
+
+        if (!editorVm.Nodes.Contains(message.Node))
+            return;
+
+        Editor.BringIntoView(message.Node.Center, animated: message.Animated);
+        Editor.ZoomAtPosition(1.0f, message.Node.Center);
+        message.Reply(true);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="message"></param>
+    public void Receive(OpenContextMenuFlyoutAtNode message)
+    {
+        Control? control = Editor.ContainerFromItem(message.Node);
+        if (control is null)
+            return;
+
+        var flyout = new MenuFlyout
+        {
+            ItemsSource = message.Items
+        };
+        flyout.ShowAt(control, showAtPointer: true);
+    }
+
+    public void Receive(DismissSearchComponentMenuRequest message)
+    {
+        _searchFlyout?.Hide();
+        message.Reply(true);
+    }
+
+    public void Receive(FsmComponentContextMenuRequest message)
+    {
+        ObservableCollection<MenuItemViewModel> items = CreateNodeContextMenu((FsmNodeView)message.NodeView, (FsmNodeViewModel)message.Component.Parent, message.Component);
+
+        var flyout = new MenuFlyout();
+        flyout.ItemsSource = items;
+        flyout.ShowAt(message.NodeView, showAtPointer: true);
+
+        message.Reply(true);
     }
 
     private void UnregisterMessages()
@@ -159,7 +178,7 @@ public partial class FsmEditorView : UserControl
 
                 GeometryGraph layerGraph = graphPerLayer[srcFsmNode.LayerIndex];
 
-                int width = (connection.Transitions.Any() && connection.Transitions[0].ConditionComponents.Any()) ? 150 : 50;
+                int width = (connection.Transitions.Any() && connection.Transitions[0].ConditionOperatorGroups.Any()) ? 150 : 50;
                 Edge edge = new(layerGraph.FindNodeByUserData(connection.Source), layerGraph.FindNodeByUserData(connection.Target), width, 30, 20);
                 layerGraph.Edges.Add(edge);
             }
@@ -332,40 +351,36 @@ public partial class FsmEditorView : UserControl
 
             ObservableCollection<MenuItemViewModel> items = CreateNodeContextMenu(nodeView, nodeVM);
 
-            var flyout = new MenuFlyout();
-            flyout.ItemsSource = items;
+            var flyout = new MenuFlyout
+            {
+                ItemsSource = items
+            };
             flyout.ShowAt(nodeView, showAtPointer: true);
         }
     }
 
     private ObservableCollection<MenuItemViewModel> CreateNodeContextMenu(FsmNodeView nodeView, FsmNodeViewModel nodeVM, NodeComponentViewModel? componentVM = null)
     {
-        bool canAddComponent = !nodeVM.IsEndNode && // End nodes don't physically exist therefore they cannot have components
-            (string.IsNullOrEmpty(nodeVM.FsmName) && string.IsNullOrEmpty(nodeVM.FsmFolderName)) && // Nodes that call fsm files don't seem to have components
-            !nodeVM.IsLayerRootNode; // Root nodes cannot have components it seems
-
-        bool canBeEndNode = !nodeVM.IsEndNode && !nodeVM.IsLayerRootNode && nodeVM.Components.Count == 0 && nodeVM.Transitions.Count == 0;
-
         bool canDeleteNode = !nodeVM.IsLayerRootNode;
 
         ObservableCollection<MenuItemViewModel> items =
         [
             new MenuItemViewModel()
-                {
-                    Header = nodeVM.Title,
-                    FontWeight = FontWeight.Bold,
-                    IconKind = "Material.CogBox",
-                    Enabled = true,
-                    IsHitTestVisible = false, // Not greyed out but not clickable
-                },
-                MenuItemViewModel.Separator,
+            {
+                Header = nodeVM.Title,
+                FontWeight = FontWeight.Bold,
+                IconKind = "Material.CogBox",
+                Enabled = true,
+                IsHitTestVisible = false, // Not greyed out but not clickable
+            },
+            MenuItemViewModel.Separator,
         ];
 
         items.Add(new MenuItemViewModel()
         {
             Header = $"Add Component",
             IconKind = "Material.PuzzlePlus",
-            Enabled = canAddComponent,
+            Enabled = nodeVM.CanHaveComponents(),
             Command = new RelayCommand<FsmNodeView>(NodeContextMenu_AddComponent),
             Parameter = nodeView,
         });
@@ -400,15 +415,6 @@ public partial class FsmEditorView : UserControl
 
         items.Add(new MenuItemViewModel()
         {
-            Header =  !nodeVM.IsEndNode ? "Set as end node (only for empty nodes)" : "Unset as end node",
-            IconKind = "Material.Octagon",
-            Enabled = (!nodeVM.IsEndNode && canBeEndNode) || nodeVM.IsEndNode,
-            Command = new RelayCommand<FsmNodeViewModel>(NodeContextMenu_SetAsEndNode),
-            Parameter = nodeVM,
-        });
-
-        items.Add(new MenuItemViewModel()
-        {
             Header = !nodeVM.IsBranch ? "Mark as branch (evaluate & jump to child nodes on same tick/update)" : $"Unset as branch (only jump to child nodes on next tick/update)",
             IconKind = !nodeVM.IsBranch ? "Material.SourceBranchPlus" : "Material.SourceBranchMinus",
             Enabled = !nodeVM.IsEndNode,
@@ -416,16 +422,62 @@ public partial class FsmEditorView : UserControl
             Parameter = nodeVM,
         });
 
+        items.Add(new MenuItemViewModel()
+        {
+            Header =  !nodeVM.IsEndNode ? "Set as end node (only for empty nodes)" : "Unset as end node",
+            IconKind = "Material.Octagon",
+            Enabled = nodeVM.CanSetAsEndNode() || nodeVM.IsEndNode,
+            Command = new RelayCommand<FsmNodeViewModel>(NodeContextMenu_SetAsEndNode),
+            Parameter = nodeVM,
+        });
+
         items.Add(MenuItemViewModel.Separator);
+        items.Add(new MenuItemViewModel()
+        {
+            Header = $"Copy as new node",
+            Enabled = true,
+            IconKind = "Material.ContentCopy",
+            Command = new RelayCommand<FsmNodeView>(NodeContextMenu_CopyAsNewNode),
+            Parameter = nodeView,
+        });
         items.Add(new MenuItemViewModel()
         {
             Header = $"Copy guid ({nodeVM.Guid})",
             Enabled = true,
-            IconKind = "Material.ContentCopy",
+            IconKind = "Material.Numeric",
             Command = new RelayCommand<FsmNodeView>(NodeContextMenu_CopyGuid),
             Parameter = nodeView,
         });
         items.Add(MenuItemViewModel.Separator);
+
+        if (componentVM is not null)
+        {
+            items.Add(new MenuItemViewModel()
+            {
+                Enabled = false,
+                Header = componentVM.Name,
+                FontWeight = FontWeight.Bold,
+                IconKind = "Material.Exclamation",
+                IsHitTestVisible = false, // Not greyed out but not clickable
+            });
+            items.Add(new MenuItemViewModel()
+            {
+                Header = $"Copy as new component",
+                IconKind = "Material.ContentCopy",
+                Enabled = true,
+                Command = new RelayCommand<NodeComponentViewModel>(NodeContextMenu_CopyComponent),
+                Parameter = componentVM,
+            });
+            items.Add(new MenuItemViewModel()
+            {
+                Header = $"Delete component",
+                IconKind = "Material.Delete",
+                Enabled = true,
+                Command = new RelayCommand<NodeComponentViewModel>(NodeContextMenu_DeleteComponent),
+                Parameter = componentVM,
+            });
+            items.Add(MenuItemViewModel.Separator);
+        }
 
         if (nodeVM.Transitions.Count > 0)
         {
@@ -479,18 +531,6 @@ public partial class FsmEditorView : UserControl
             items.Add(MenuItemViewModel.Separator);
         }
 
-        if (componentVM is not null)
-        {
-            items.Add(new MenuItemViewModel()
-            {
-                Header = $"Delete component ({componentVM.Name})",
-                IconKind = "Material.Delete",
-                Enabled = true,
-                Command = new RelayCommand<NodeComponentViewModel>(NodeContextMenu_DeleteComponent),
-                Parameter = componentVM,
-            });
-        }
-
         items.Add(new MenuItemViewModel()
         {
             Header = $"Delete node",
@@ -503,6 +543,13 @@ public partial class FsmEditorView : UserControl
         return items;
     }
 
+    private void NodeContextMenu_CopyComponent(NodeComponentViewModel? componentVM)
+    {
+        var parentNode = (FsmNodeViewModel)componentVM!.Parent;
+        var clonedComponent = componentVM.CloneAsNewComponent(parentNode);
+        parentNode.Components.Add(clonedComponent);
+    }
+
     private void NodeContextMenu_DeleteComponent(NodeComponentViewModel? componentVM)
     {
         ((FsmNodeViewModel)componentVM!.Parent).DeleteComponent(componentVM);
@@ -511,7 +558,7 @@ public partial class FsmEditorView : UserControl
     private void NodeContextMenu_SetAsEndNode(FsmNodeViewModel? nodeVM)
     {
         nodeVM!.IsEndNode = !nodeVM.IsEndNode;
-        nodeVM.UpdateBorderColor();
+        nodeVM.UpdateVisuals();
     }
 
     private void NodeContextMenu_EditNodeName(FsmNodeViewModel? nodeVM)
@@ -603,7 +650,7 @@ public partial class FsmEditorView : UserControl
         if (item.Data is not Type type)
             return;
 
-        if (searchVM.Context is not FsmNodeViewModel nodeViewModel)
+        if (searchVM.UserData is not FsmNodeViewModel nodeViewModel)
             return;
 
         var component = Activator.CreateInstance(type);
@@ -658,15 +705,23 @@ public partial class FsmEditorView : UserControl
 
             TransitionViewModel transition = nodeViewModel.Transitions.FirstOrDefault(e => e.Source == nodeViewModel && e.Target == nodeViewModel)!;
 
-            FsmConnectionViewModel fsmParentConnection = (FsmConnectionViewModel)transition.ParentConnection;
+            FsmConnectionViewModel fsmParentConnection = transition.ParentConnection;
             fsmParentConnection.Transitions.Remove(transition);
             nodeViewModel.Transitions.Remove(transition);
 
             var editorVm = (FsmEditorViewModel)Editor.DataContext!;
-            foreach (var transitionComponent in transition.ConditionComponents)
+            foreach (TransitionConditionOpViewModel transitionComponent in transition.ConditionOperatorGroups)
+                UnregisterGuidRecursive(editorVm, transitionComponent);
+
+            static void UnregisterGuidRecursive(FsmEditorViewModel editorViewModel, TransitionConditionOpViewModel operatorGroup)
             {
-                if (transitionComponent is TransitionConditionViewModel cond)
-                    editorVm.UnregisterFsmElementGuid(cond.ConditionComponent.Guid); 
+                foreach (TransitionConditionElementViewModelBase component in operatorGroup.Elements)
+                {
+                    if (component is TransitionConditionViewModel condition)
+                        editorViewModel.UnregisterFsmElementGuid(condition.ConditionComponent.Guid);
+                    else if (component is TransitionConditionOpViewModel subOperatorGroup)
+                        UnregisterGuidRecursive(editorViewModel, subOperatorGroup);
+                }
             }
         }
         else
@@ -690,6 +745,20 @@ public partial class FsmEditorView : UserControl
     {
         var editorVm = (FsmEditorViewModel)Editor.DataContext!;
         editorVm.RemoveNode(node!);
+    }
+
+    private async void NodeContextMenu_CopyAsNewNode(FsmNodeView? nodeView)
+    {
+        if (nodeView is null)
+            return;
+
+        FsmEditorViewModel editorVm = (FsmEditorViewModel)Editor.DataContext!;
+
+        FsmNodeViewModel nodeVm = (FsmNodeViewModel)nodeView.DataContext!;
+        FsmNodeViewModel newNode = nodeVm.CloneAsNewNode();
+
+        editorVm.AddNode(newNode);
+        newNode.IsRenaming = true;
     }
 
     private async void NodeContextMenu_CopyGuid(FsmNodeView? nodeView)
@@ -875,7 +944,7 @@ public partial class FsmEditorView : UserControl
 
                 Cluster layerCluster = graphPerLayer[srcFsmNode.LayerIndex];
 
-                int width = (connection.Transitions.Any() && connection.Transitions[0].ConditionComponents.Any()) ? 150 : 50;
+                int width = (connection.Transitions.Any() && connection.Transitions[0].ConditionOperatorGroups.Any()) ? 150 : 50;
                 Edge edge = new(layerCluster.Nodes.FirstOrDefault(e => e.UserData == connection.Source), layerCluster.Nodes.FirstOrDefault(e => e.UserData == connection.Target), width, 30, 20);
                 mainGraph.Edges.Add(edge);
             }

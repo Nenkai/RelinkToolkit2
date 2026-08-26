@@ -87,12 +87,10 @@ public partial class FsmConnectionViewModel : GraphConnectionViewModel
         }
         else if (Transitions.Count == 1)
         {
-            int condCount = Transitions[0].ConditionComponents.Count(e => e is TransitionConditionViewModel);
+            int condCount = Transitions[0].ConditionOperatorGroups.Count(e => e.Elements.Count > 0);
             if (condCount > 0)
             {
-                Title = condCount > 1 ?
-                    $"{condCount} conditions" :
-                    "1 condition";
+                Title = "w/ Conditions";
             }
             else
                 Title = string.Empty;
@@ -103,7 +101,7 @@ public partial class FsmConnectionViewModel : GraphConnectionViewModel
         else if (Transitions.Count == 2)
         {
             ArrowHeadEnds = ArrowHeadEnds.Both;
-            Title = "Dual";
+            Title = "w/ Conditions (both ways)";
         }
     }
 

@@ -7,6 +7,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 
+using GBFRDataTools.Entities;
+using GBFRDataTools.FSM;
+using GBFRDataTools.FSM.BehaviorTree;
 using GBFRDataTools.FSM.Components;
 using GBFRDataTools.FSM.Components.Actions.AI.Enemy;
 using GBFRDataTools.FSM.Components.Actions.Quest;
@@ -21,6 +24,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
@@ -32,27 +37,28 @@ namespace RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 public partial class FsmNodeViewModel : FsmNodeViewModelBase //, IDropTarget
 {
     [ObservableProperty]
-    private string? _fsmSource;
+    public partial string? FsmSource { get; set; }
 
     [ObservableProperty]
-    private bool _isBranch;
+    public partial bool IsBranch { get; set; }
 
     [ObservableProperty]
-    private bool _hasSelfTransition;
+    public partial bool HasSelfTransition { get; set; }
 
     public string? FsmFolderName { get; set; }
     public string? FsmName { get; set; }
     public uint NameHash { get; set; }
 
-
     /// <summary>
     /// Parent group/layer this node belongs to.
     /// </summary>
+    [JsonIgnore]
     public FsmGroupNodeViewModel ParentGroup { get; set; }
 
     /// <summary>
     /// Transitions FROM this node.
     /// </summary>
+    [JsonIgnore]
     public ObservableCollection<TransitionViewModel> Transitions { get; set; } = [];
     
     /// <summary>
@@ -77,13 +83,73 @@ public partial class FsmNodeViewModel : FsmNodeViewModelBase //, IDropTarget
         }
     }
 
+    public FsmNodeViewModel CloneAsNewNode()
+    {
+        var editor = (FsmEditorViewModel)ParentEditor;
+
+        var node = new FsmNodeViewModel()
+        {
+            Anchor = Anchor,
+            Location = Location + new Point(50, 50),
+            Guid = editor.GetNewGuid(),
+            Title = Title + " - Copy",
+            Size = Size,
+            NameHash = NameHash,
+
+            ParentEditor = ParentEditor,
+            FsmSource = FsmSource,
+            LayerIndex = LayerIndex,
+            FsmFolderName = FsmFolderName,
+            FsmName = FsmName,
+            ParentGroup = ParentGroup,
+            IsEndNode = IsEndNode,
+            IsBranch = IsBranch,
+        };
+
+        foreach (NodeComponentViewModel srcComponent in Components)
+        {
+            var clonedComponent = srcComponent.CloneAsNewComponent(node);
+            node.Components.Add(clonedComponent);
+        }
+
+        node.UpdateVisuals();
+
+        return node;
+    }
+    
+    /// <summary>
+    /// Returns whether this node has a base FSM link.
+    /// </summary>
+    /// <returns></returns>
+    public bool HasBaseFSMLink()
+    {
+        return !string.IsNullOrWhiteSpace(FsmName) && !string.IsNullOrWhiteSpace(FsmFolderName);
+    }
+
+    public bool CanSetAsEndNode()
+    {
+        return !IsEndNode && !IsLayerRootNode && Components.Count == 0 && Transitions.Count == 0 && !HasBaseFSMLink();
+    }
+
+    /// <summary>
+    /// Returns whether this node is allowed to have components
+    /// </summary>
+    /// <returns></returns>
+    public bool CanHaveComponents()
+    {
+        return !IsEndNode && // End nodes don't physically exist therefore they cannot have components
+            !HasBaseFSMLink() && // Nodes that call fsm files don't seem to have components
+            !IsLayerRootNode; // Root nodes cannot have components it seems
+    }
+
     public void AddComponent(BehaviorTreeComponent btComponent)
     {
         Components.Add(new NodeComponentViewModel(this, btComponent)
         {
             Name = btComponent.ComponentName,
         });
-        UpdateBorderColor();
+
+        // Visuals will be updated with collection change
     }
 
     public void ClearBaseFsm()
@@ -103,16 +169,17 @@ public partial class FsmNodeViewModel : FsmNodeViewModelBase //, IDropTarget
     public void SetRootNodeState(bool isRootNode)
     {
         IsLayerRootNode = isRootNode;
-        if (isRootNode)
+
+        UpdateVisuals();
+    }
+
+    public override void UpdateVisuals()
+    {
+        if (IsLayerRootNode)
             CornerRadius = new CornerRadius(3);
         else
             CornerRadius = new CornerRadius(0);
 
-        UpdateBorderColor();
-    }
-
-    public void UpdateBorderColor()
-    {
         if (IsLayerRootNode)
         {
             BorderBrush = GraphColors.NodeLayerRoot;
@@ -138,42 +205,6 @@ public partial class FsmNodeViewModel : FsmNodeViewModelBase //, IDropTarget
 
         DeleteComponent(nodeComponentVM);
     }
-
-    /// <summary>
-    /// Deletes a component from the node.
-    /// </summary>
-    /// <param name="component"></param>
-    public void DeleteComponent(NodeComponentViewModel component)
-    {
-        Components.Remove(component);
-
-        var editor = (FsmEditorViewModel)ParentEditor;
-        editor.UnregisterFsmElementGuid(component.Component.Guid);
-
-        ((FsmNodeViewModel)component.Parent).UpdateBorderColor();
-    }
-
-    /*
-    public void DragOver(IDropInfo dropInfo)
-    {
-        if (dropInfo.Data is ComponentTreeViewItemViewModel)
-        {
-            dropInfo.Effects = DragDropEffects.Move;
-        }
-        else
-            GongSolutions.Wpf.DragDrop.DragDrop.DefaultDropHandler.DragOver(dropInfo);
-    }
-
-    public void Drop(IDropInfo dropInfo)
-    {
-        if (dropInfo.Data is ComponentTreeViewItemViewModel componentTvi)
-        {
-            AddComponentFromToolboxItem(componentTvi);
-        }
-        else
-            GongSolutions.Wpf.DragDrop.DragDrop.DefaultDropHandler.Drop(dropInfo);
-    }
-    */
 
     [RelayCommand]
     public void OnDrop(object param)

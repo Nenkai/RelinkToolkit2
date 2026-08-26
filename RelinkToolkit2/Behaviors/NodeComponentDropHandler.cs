@@ -53,8 +53,9 @@ public class NodeComponentDropHandler : DropHandlerBase
             {
                 NodeViewModel parentNode = sourceComponent.Parent;
                 parentNode.Components.Remove(sourceComponent);
+
                 targetNodeVm.Components.Insert(targetIndex, sourceComponent);
-                sourceComponent.Parent = targetNodeVm; // Make sure to adjust the parent
+                sourceComponent.SetParentNode(targetNodeVm);
             }
             return true;
         }
@@ -85,6 +86,9 @@ public class NodeComponentDropHandler : DropHandlerBase
         if (sourceComponent.Parent == targetNodeVm)
             return false;
 
+        if (targetNodeVm is FsmNodeViewModel fsmNode && !fsmNode.CanHaveComponents())
+            return false;
+
         if (stateNode.GetVisualAt(e.GetPosition(stateNode)) is not Control targetControl)
             return false;
 
@@ -110,7 +114,7 @@ public class NodeComponentDropHandler : DropHandlerBase
                 targetNodeVm.Components.Add(sourceComponent);
             }
 
-            sourceComponent.Parent = targetNodeVm; // Make sure to adjust the parent
+            sourceComponent.SetParentNode(targetNodeVm);
         }
 
         return true;
@@ -120,8 +124,6 @@ public class NodeComponentDropHandler : DropHandlerBase
     {
         if (sourceContext is not NodeComponentViewModel)
             return false;
-
-        Debug.WriteLine(sender);
 
         if (sender is ItemsControl listBox)
         {

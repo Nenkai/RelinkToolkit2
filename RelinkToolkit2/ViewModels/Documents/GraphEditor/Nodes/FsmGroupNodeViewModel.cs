@@ -25,20 +25,22 @@ public partial class FsmGroupNodeViewModel : FsmNodeViewModelBase //, IDropTarge
     /// Guid for this group, mainly for tree view referencing.
     /// </summary>
     [ObservableProperty]
-    private Guid _id = System.Guid.CreateVersion7();
-
-    [ObservableProperty]
-    private int _layerIndex;
+    public partial Guid Id { get; set; } = System.Guid.CreateVersion7();
 
     // Yes this is VERY bad considering NodeViewModel already has one.
     // That essentially means there's two size properties now, why?
     // Because sizing doesn't seem to work otherwise for some very strange reason
     // Binding related issue, i don't know
     [ObservableProperty]
-    private Size _size;
+    public partial Size Size { get; set; }
 
     /// <summary>
     /// Nodes in this group/layer.
     /// </summary>
     public ObservableCollection<FsmNodeViewModel> Nodes { get; set; } = [];
+
+    public override void UpdateVisuals()
+    {
+        
+    }
 }

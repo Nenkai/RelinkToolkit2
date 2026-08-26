@@ -9,7 +9,7 @@ using Dock.Model.Controls;
 using GBFRDataTools.Entities;
 using GBFRDataTools.Entities.Quest;
 using GBFRDataTools.FSM;
-using GBFRDataTools.FSM.Components;
+using GBFRDataTools.FSM.Components.Actions;
 
 using MessagePack.Formatters;
 
@@ -289,12 +289,13 @@ public partial class MainViewModel : ObservableObject,
         }
     }
 
-    public async Task<string?> OnLocateFSMFile(string file)
+    public async Task<string?> OnLocateFSMFile(string className, string fsmName)
     {
         var filesService = App.Current?.Services?.GetService<IFilesService>();
         if (filesService is null)
             return null;
 
+        string file = $"{className}_{fsmName}_fsm_ingame.msg";
         string fileNoExtension = Path.GetFileNameWithoutExtension(file);
         var localFile = await filesService.OpenFileAsync($"Locate template FSM {file}", filters:
         [

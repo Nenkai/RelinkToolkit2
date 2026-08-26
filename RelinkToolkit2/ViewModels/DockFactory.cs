@@ -9,6 +9,8 @@ using Dock.Model.Controls;
 using Dock.Model.Core;
 using Dock.Model.Mvvm;
 using Dock.Model.Mvvm.Controls;
+using Dock.Settings;
+
 using RelinkToolkit2.ViewModels.Documents;
 
 namespace RelinkToolkit2.ViewModels;

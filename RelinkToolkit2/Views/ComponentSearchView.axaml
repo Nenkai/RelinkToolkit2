@@ -2,14 +2,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="350" d:DesignHeight="350"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="350"
 			 xmlns:searchVMs="using:RelinkToolkit2.ViewModels.Search"
 			 xmlns:b="using:RelinkToolkit2.Behaviors"
 			 xmlns:controls="using:RelinkToolkit2.Controls"
 			 xmlns:converters="using:RelinkToolkit2.Converters"
              x:Class="RelinkToolkit2.Views.ComponentSearchView"
 			 x:DataType="searchVMs:ComponentSearchViewModel"
-			 Width="350"
+			 Width="400"
 			 Height="350"
 			 CornerRadius="3,3,3,3">
 	<UserControl.Resources>
@@ -19,7 +19,8 @@
 	<Design.DataContext>
 		<searchVMs:ComponentSearchViewModel/>
 	</Design.DataContext>
-
+	
+	<!-- Search Bar -->
 	<StackPanel Name="SearchPanel" Orientation="Vertical">
 		<TextBox PlaceholderText="Search Components..." Text="{Binding SearchText}" CornerRadius="2,2,2,2" FontSize="10" Margin="3,3,3,3"
 				 AttachedToVisualTree="TextBox_AttachedToVisualTree">
@@ -31,13 +32,18 @@
 				</Image>
 			</TextBox.InnerLeftContent>
 			<TextBox.InnerRightContent>
-				<Image Width="8" Height="8" Margin="0,0,2,0">
-					<Image.Source>
-						<controls:VectorIconDrawingImage Brush="Gray" Drawing="{Binding Source='Material.Close', Converter={StaticResource vectorIconConverter}}"/>
-					</Image.Source>
-				</Image>
+				<Button Width="8" Height="8" Margin="0,0,2,0" BorderThickness="0" Command="{Binding SearchTextClearCommand}" Background="Transparent" Cursor="Arrow">
+					<Image Width="8" Height="8">
+						<Image.Source>
+							<controls:VectorIconDrawingImage Brush="Gray" Drawing="{Binding Source='Material.Close', Converter={StaticResource vectorIconConverter}}"/>
+						</Image.Source>
+					</Image>
+				</Button>
+				
 			</TextBox.InnerRightContent>
 		</TextBox>
+
+		<!-- Pages -->
 		<TransitioningContentControl>
 			<Carousel Name="GroupSlides" ItemsSource="{Binding Pages}" SelectedIndex="{Binding PageIndex}">
 				<Carousel.PageTransition >
@@ -48,6 +54,7 @@
 				<Carousel.ItemTemplate>
 					<DataTemplate>
 						<StackPanel x:DataType="searchVMs:ComponentSearchPageViewModel">
+							<!-- Title -->
 							<Border>
 								<Grid Background="Gray" Height="25" ColumnDefinitions="*">
 									<Panel Grid.Column="0" PointerPressed="PreviousImage_PointerPressed" Background="Transparent">
@@ -63,13 +70,18 @@
 								</Grid>
 							</Border>
 							
+							<!-- Component List -->
 							<ListBox Margin="0,2,0,0"
 									 ItemsSource="{Binding Components}"
 									 BorderThickness="0" Height="290"
 									 SelectionChanged="Grid_PointerPressed_1">
 								<ListBox.ItemTemplate>
 									<DataTemplate>
-										<Grid ColumnDefinitions="Auto,*,Auto,Auto" x:DataType="searchVMs:ComponentSearchItemViewModel">
+										<Grid ColumnDefinitions="Auto,*,Auto,Auto" x:DataType="searchVMs:ComponentSearchItemViewModel"
+											  ToolTip.ServiceEnabled="{Binding HoverText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Background="Transparent">
+											<ToolTip.Tip>
+												<TextBlock Text="{Binding HoverText}"/>
+											</ToolTip.Tip>
 											<Image Grid.Column="0" Width="14" Height="14" Margin="0,0,2,0">
 												<Image.Source>
 													<controls:VectorIconDrawingImage Drawing="{Binding Icon, Converter={StaticResource vectorIconConverter}}"/>
@@ -77,15 +89,14 @@
 											</Image>
 											<TextBlock Text="{Binding Name}" Grid.Column="1"/>
 											<Panel Grid.Column="2" Background="Transparent" ToolTip.ShowDelay="0" 
-												   IsVisible="{Binding Tag, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-												   ToolTip.ServiceEnabled="{Binding HelpCaption, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+												   IsVisible="{Binding Tag, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
 
 												<Border Margin="0,0,2,0" Padding="4,0,4,0" Background="DarkGray" BorderThickness="1" CornerRadius="20">
 													<TextBlock FontWeight="Bold" TextAlignment="Center" Text="{Binding Tag}" Foreground="#DDDDDD" FontSize="10"/>
 												</Border>
 											</Panel>
 											<Panel Grid.Column="3" Background="Transparent" ToolTip.ShowDelay="0" 
-												   IsVisible="{Binding HelpCaption, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+												   IsVisible="{Binding InnerRightIcon, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
 												   ToolTip.ServiceEnabled="{Binding HelpCaption, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
 												<ToolTip.Tip>
 													<TextBlock Text="{Binding HelpCaption}"/>
@@ -97,6 +108,7 @@
 												</Image>
 											</Panel>
 										</Grid>
+
 									</DataTemplate>
 								</ListBox.ItemTemplate>
 							</ListBox>

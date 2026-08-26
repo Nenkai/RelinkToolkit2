@@ -4,7 +4,7 @@ using Avalonia.Markup.Xaml.Templates;
 using CommunityToolkit.Mvvm.Messaging;
 
 using GBFRDataTools.Entities;
-using GBFRDataTools.FSM.Components;
+using GBFRDataTools.FSM.Components.Conditions;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -66,33 +66,19 @@ public partial class ConnectionEditorView : UserControl
         connection.SetAnimatingState(false, false);
     }
 
-    private void Button_OperandType_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-    {
-        if (sender is not Control control)
-            return;
-
-        var dataContext = control.DataContext;
-        if (dataContext is not TransitionConditionOpViewModel condVm)
-            return;
-
-        if (condVm.Operand == TransitionOperandType.AND)
-            condVm.Operand = TransitionOperandType.OR;
-        else
-            condVm.Operand = TransitionOperandType.AND;
-    }
-
     private void Button_AddConditionComponent(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         var control = sender as Control;
 
         ComponentSearchService componentSearchService = App.Current?.Services!.GetRequiredService<ComponentSearchService>()!;
-        ComponentSearchViewModel searchVM = componentSearchService.BuildSearchViewModel((TransitionViewModel)control!.DataContext!,
-            ComponentSearchCategoryType.Action, onSelected: OnAddConditionComponent);
+        ComponentSearchViewModel searchVM = componentSearchService.BuildSearchViewModel((TransitionConditionOpViewModel)control!.DataContext!,
+            ComponentSearchCategoryType.Condition, onSelected: OnAddConditionComponent);
 
         var content = new ComponentSearchView { DataContext = searchVM };
-
-        var flyout = new Flyout();
-        flyout.Content = content;
+        var flyout = new Flyout
+        {
+            Content = content
+        };
         flyout.ShowAt(control, showAtPointer: false);
     }
 
@@ -101,13 +87,17 @@ public partial class ConnectionEditorView : UserControl
         if (item.Data is not Type type)
             return;
 
-        if (searchVM.Context is not TransitionViewModel transition)
+        if (searchVM.UserData is not TransitionConditionOpViewModel operatorGroup)
             return;
 
         var component = Activator.CreateInstance(type);
         if (component is not ConditionComponent conditionComponent)
             return;
 
-        WeakReferenceMessenger.Default.Send(new TransitionComponentAddRequest() { Transition = transition, Component = conditionComponent });
+        WeakReferenceMessenger.Default.Send(new TransitionComponentAddRequest() 
+        { 
+            OperatorGroup = operatorGroup,
+            Component = conditionComponent 
+        });
     }
 }

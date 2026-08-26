@@ -18,9 +18,6 @@
 
 	<UserControl.Styles>
 		<Style Selector="TreeView.NodesDragAndDrop">
-			<Style.Resources>
-				<b:NewTransitionComponentDropHandler x:Key="NodesTreeViewDropHandler" />
-			</Style.Resources>
 			<Setter Property="(Interaction.Behaviors)">
 				<BehaviorCollectionTemplate>
 					<BehaviorCollection>

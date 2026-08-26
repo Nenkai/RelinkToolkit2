@@ -1,36 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Input;
-using Avalonia.Styling;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input;
 using Avalonia.Platform.Storage;
+using Avalonia.Styling;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 
+using GBFRDataTools.FSM;
+using GBFRDataTools.FSM.Entities;
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
 using RelinkToolkit2.Messages;
+using RelinkToolkit2.Messages.Documents;
 using RelinkToolkit2.Messages.IO;
+using RelinkToolkit2.Messages.StatusBar;
 using RelinkToolkit2.Services;
 using RelinkToolkit2.ViewModels.Documents;
-using RelinkToolkit2.ViewModels.Menu;
-using RelinkToolkit2.Messages.Documents;
-using RelinkToolkit2.Messages.StatusBar;
 using RelinkToolkit2.ViewModels.Documents.Interfaces;
+using RelinkToolkit2.ViewModels.Menu;
 using RelinkToolkit2.Views.Tools;
+
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
-using GBFRDataTools.FSM;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
 
 
 namespace RelinkToolkit2.ViewModels;
@@ -278,7 +280,9 @@ public partial class TopMenuViewModel : ObservableObject,
     {
         try
         {
-            App.Current.Services.GetService<ComponentDocumentationService>()?.LoadDocumentFile();
+            var service = App.Current.Services.GetService<ComponentDocumentationService>();
+            service.LoadDocumentFile();
+            WeakReferenceMessenger.Default.Send(new SnackbarMessage($"Component documents updated. ({service.Components.Count} components)"));
         }
         catch (Exception ex)
         {
@@ -286,6 +290,7 @@ public partial class TopMenuViewModel : ObservableObject,
         }
     }
 
+    private string? _fsmPath;
     public async Task VerifyAllFSMs()
     {
         var filesService = App.Current?.Services?.GetService<IFilesService>();
@@ -296,11 +301,11 @@ public partial class TopMenuViewModel : ObservableObject,
         if (folder is null)
             return;
 
-        string? folderPath = folder.TryGetLocalPath();
-        if (folderPath is null)
+        _fsmPath = folder.TryGetLocalPath();
+        if (_fsmPath is null)
             return;
 
-        foreach (var file in Directory.GetFiles(folderPath, "*.msg", SearchOption.AllDirectories))
+        foreach (var file in Directory.GetFiles(_fsmPath, "*.msg", SearchOption.AllDirectories))
         {
             _logger?.LogInformation(file);
 
@@ -315,21 +320,10 @@ public partial class TopMenuViewModel : ObservableObject,
         }
     }
 
-    public async Task<string?> OnLocateFSMFile(string file)
+    public async Task<string?> OnLocateFSMFile(string className, string fsmName)
     {
-        var filesService = App.Current?.Services?.GetService<IFilesService>();
-        if (filesService is null)
-            return null;
-
-        var localFile = await filesService.OpenFileAsync($"Locate template FSM {file}", filters:
-        [
-            new FilePickerFileType("FSM File")
-            {
-                Patterns = ["*_fsm_ingame.msg", "*_fsm_ingame.json"]
-            },
-            FilePickerFileTypes.All,
-        ]);
-        return localFile.Path.LocalPath;
+        string file = $"{className}_{fsmName}_fsm_ingame.msg";
+        return $"{_fsmPath}/{className}/{file}";
     }
 
     public void StringHasherClicked()
@@ -360,7 +354,7 @@ public partial class TopMenuViewModel : ObservableObject,
         if (file is null) 
             return;
 
-        var stream = await file.OpenReadAsync();
+        using Stream stream = await file.OpenReadAsync();
         WeakReferenceMessenger.Default.Send(new FileOpenRequestMessage(new FileOpenResult(file.Path, stream)));
     }
 
@@ -374,8 +368,9 @@ public partial class TopMenuViewModel : ObservableObject,
         Uri? outputFile = await saveableDocument.SaveDocument(filesService, isSaveAs);
         if (outputFile is not null)
         {
-            _logger?.LogInformation("Saved file as {outputFile}", outputFile);
-            WeakReferenceMessenger.Default.Send(new SetStatusBarTextRequest($"{DateTime.Now} - Saved file as {outputFile}."));
+            _logger?.LogInformation("Saved as {outputFile}", outputFile);
+            WeakReferenceMessenger.Default.Send(new SetStatusBarTextRequest($"{DateTime.Now} - Saved as {outputFile}."));
+            WeakReferenceMessenger.Default.Send(new SnackbarMessage($"Saved as {outputFile}.", TimeSpan.FromSeconds(5)));
 
             saveableDocument.LastFile = outputFile;
         }

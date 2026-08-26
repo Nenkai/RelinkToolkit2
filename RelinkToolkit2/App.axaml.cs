@@ -6,6 +6,8 @@ using Avalonia.Markup.Xaml;
 using Avalonia.PropertyGrid.Services;
 using Avalonia.Styling;
 
+using Dock.Controls.DeferredContentControl;
+
 using GBFRDataTools.FSM;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -43,12 +45,20 @@ public partial class App : Application
 
     public override void Initialize()
     {
+        // Property grid factories.
         CellEditFactoryService.Default.AddFactory(new eObjIdCellEditFactory());
         CellEditFactoryService.Default.AddFactory(new Vector4CellEditFactory());
         CellEditFactoryService.Default.AddFactory(new Vector3CellEditFactory());
         CellEditFactoryService.Default.AddFactory(new Vector2CellEditFactory());
 
+        // Nodify settings.
         NodifyEditor.EnableSnappingCorrection = false;
+
+        // Dock System: Make reveal duration for deferred documents zero.
+        // Why: Because FSM documents would appear with 85% opacity, the timer wouldn't play for some reason
+        // https://github.com/wieslawsoltes/Dock/blob/72fe7d19ab91748d8d0778817d065d1d59f8ec34/src/Dock.Controls.DeferredContentControl/DeferredContentControl.cs#L1076
+        // It would make the document subtlely transparent, but on light theme it'd make the background/grid not visible
+        DeferredContentPresentationSettings.RevealDuration = TimeSpan.Zero;
 
         AvaloniaXamlLoader.Load(this);
 
@@ -115,7 +125,7 @@ public partial class App : Application
 
         services.AddSingleton<ComponentDocumentationService>();
         services.AddSingleton<ComponentSearchService>();
-        services.AddHostedService<ComponentDocumentationService>(sp => {
+        services.AddHostedService(sp => {
             return sp.GetRequiredService<ComponentDocumentationService>();
         });
 

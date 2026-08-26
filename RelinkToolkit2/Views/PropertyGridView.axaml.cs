@@ -31,7 +31,7 @@ public partial class PropertyGridView : UserControl
         var textBlock = new TextBlock()
         {
             Padding = new Thickness(4),
-            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
             Background = Brushes.Transparent,
         };
 

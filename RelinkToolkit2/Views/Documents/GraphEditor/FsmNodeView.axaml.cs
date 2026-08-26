@@ -33,9 +33,6 @@ public partial class FsmNodeView : UserControl,
     public FsmNodeView()
     {
         InitializeComponent();
-
-        AddHandler(DragDrop.DropEvent, Drop);
-        AddHandler(DragDrop.DragOverEvent, DragOver);
     }
 
     private void UserControl_DataContextChanged(object? sender, System.EventArgs e)
@@ -66,36 +63,6 @@ public partial class FsmNodeView : UserControl,
         var anim = (Animation)_label!.Resources["LayerChangedAnimation"]!;
         await anim.RunAsync(_label, cancellationToken: _layerLabelAnimCt.Token);
         _layerLabelAnimCt = null;
-    }
-
-    private void Drop(object? sender, DragEventArgs e)
-    {
-        if (e.Source is Control c && c.DataContext is NodeViewModel targetViewModel)
-        {
-            var component = e.DataTransfer.TryGetManagedValue<NodeComponentViewModel>("Context");
-            if (component is null)
-                return;
-
-            if (targetViewModel == component.Parent)
-                return;
-
-            component.Parent.Components.Remove(component);
-            targetViewModel.Components.Add(component);
-            component.Parent = targetViewModel;
-        }
-    }
-
-    private void DragOver(object? sender, DragEventArgs e)
-    {
-        if (e.Source is Control c && c.DataContext is NodeViewModel)
-        {
-            e.DragEffects |= DragDropEffects.Move;
-        }
-        else
-        {
-            e.DragEffects = DragDropEffects.None;
-        }
-
     }
 
     private void Border_PointerPressed(object? sender, PointerPressedEventArgs e)

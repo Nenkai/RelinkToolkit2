@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using CommunityToolkit.Mvvm.Messaging.Messages;
 
-using GBFRDataTools.FSM.Components;
+using GBFRDataTools.FSM.Components.Conditions;
 
 namespace RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents;
 
@@ -15,7 +15,7 @@ namespace RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents;
 /// </summary>
 public class TransitionComponentAddRequest : RequestMessage<bool>
 {
-    public required TransitionViewModel Transition { get; set; }
+    public required TransitionConditionOpViewModel OperatorGroup { get; set; }
     public required ConditionComponent Component { get; set; }
 
     public TransitionComponentAddRequest()

@@ -1,14 +1,4 @@
-﻿using System;
-using System.Collections.Frozen;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Numerics;
-using System.Threading.Tasks;
-
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
@@ -17,8 +7,11 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 
+using Dock.Controls.DeferredContentControl;
+
 using GBFRDataTools.FSM;
 using GBFRDataTools.FSM.Components;
+using GBFRDataTools.FSM.Components.Conditions;
 using GBFRDataTools.FSM.Entities;
 using GBFRDataTools.Hashing;
 
@@ -38,9 +31,22 @@ using RelinkToolkit2.ViewModels.Documents.Interfaces;
 using RelinkToolkit2.ViewModels.Menu;
 using RelinkToolkit2.ViewModels.TreeView;
 
+using System;
+using System.Collections.Frozen;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Numerics;
+using System.Threading.Tasks;
+
 namespace RelinkToolkit2.ViewModels.Documents.GraphEditor;
 
-public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocument, IGraphEditor
+public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocument, IGraphEditor,
+    IRecipient<TransitionComponentAddRequest>,
+    IRecipient<NodeGraphSelectionChangeRequest>,
+    IRecipient<DeleteNodeConnectionRequest>
 {
     private readonly ILogger? _logger;
     private readonly DialogService _dialogService;
@@ -86,8 +92,6 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
 
     private FsmNodeViewModel? _rootNode;
 
-
-
     public bool ShouldPromptAsFirstSave { get; set; } = true;
 
     /// <summary>
@@ -95,6 +99,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
     /// </summary>
     public ObservableCollection<MenuItemViewModel> EditorContextMenuItems { get; set; } = [];
     public MenuItemViewModel AddLayerMenuItem { get; set; }
+
 
     /// <summary>
     /// Quest context. Used for Quest FSMs.
@@ -126,7 +131,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
                 Location = new Point(-200, 0),
                 ParentGroup = rootLayer,
             };
-            node.UpdateBorderColor();
+            node.UpdateVisuals();
             AddNode(node);
 
             var node2 = new FsmNodeViewModel()
@@ -140,7 +145,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
                 Location = new Point(-100, 0),
                 ParentGroup = rootLayer,
             };
-            node2.UpdateBorderColor();
+            node2.UpdateVisuals();
             AddNode(node2);
 
             Connections.Add(new FsmConnectionViewModel()
@@ -236,16 +241,17 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
     public void Receive(TransitionComponentAddRequest message)
     {
         ConditionComponent component = message.Component;
-        TransitionViewModel transition = message.Transition;
+        TransitionConditionOpViewModel operatorGroup = message.OperatorGroup;
 
         component.Guid = GetNewGuid();
         RegisterFsmElementGuid(component.Guid, component);
 
-        if (transition.ConditionComponents.Count != 0)
-            transition.ConditionComponents.Add(new TransitionConditionOpViewModel());
-
-        transition.ConditionComponents.Add(new TransitionConditionViewModel(component) { Title = component.ComponentName });
-        transition.ParentConnection.UpdateConnection();
+        operatorGroup.AddElement(new TransitionConditionViewModel(component, operatorGroup)
+        {
+            Title = component.ComponentName,
+            IsExpanded = true
+        });
+        operatorGroup.ParentConnection.UpdateConnection();
         message.Reply(true);
     }
 
@@ -309,7 +315,6 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
         }
 
         Uri? outputUri = LastFile;
-        string? outputPath = null;
         if (isSaveAs || outputUri is null || ShouldPromptAsFirstSave)
         {
             string defaultSaveFileName;
@@ -318,15 +323,15 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
             else
                 defaultSaveFileName = $"{Title}_fsm_ingame.json";
 
-            var file = await filesService.SaveFileAsync("Save FSM file", null,
-                                      defaultSaveFileName, LastFile);
+            var file = await filesService.SaveFileAsync("Save FSM file", null, defaultSaveFileName, LastFile);
             if (file is null)
                 return null;
 
-            outputPath = file.TryGetLocalPath();
+            LastFile = file.Path;
         }
 
-        if (string.IsNullOrEmpty(outputPath))
+        string? outputPath = LastFile?.LocalPath;
+        if (string.IsNullOrWhiteSpace(outputPath))
             return null;
 
         FSMState buildState = BuildTreeFromCurrentGraph();
@@ -334,19 +339,28 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
         var builder = new FSMSerializer(buildState);
         builder.WriteJson(stream);
 
-        this.LastFile = outputUri;
+        LastFile = outputUri;
 
         string newTitle = Path.GetFileNameWithoutExtension(outputPath);
         if (newTitle.EndsWith("_fsm_ingame"))
             newTitle = newTitle.Replace("_fsm_ingame", string.Empty);
 
         _currentFsmName = newTitle;
-        this.Title = _currentFsmName;
+        Title = _currentFsmName;
         SolutionTreeViewItem.TreeViewName = _currentFsmName;
 
         if (buildState.HasOrphanNodes)
         {
-            var box = MessageBoxManager.GetMessageBoxStandard("Warning", $"File has been saved but has orphan/disconnected nodes, check log window.", icon: MsBox.Avalonia.Enums.Icon.Warning);
+            var box = MessageBoxManager.GetMessageBoxStandard("Warning", $"File has been saved but has orphan/disconnected nodes, check log window.\n", icon: MsBox.Avalonia.Enums.Icon.Warning);
+            await _dialogService.ShowMessageBoxDialogAsync(box);
+        }
+
+        int emptyLayers = buildState.Layers.Count(e => e.Value.Count == 0);
+        if (emptyLayers > 0)
+        {
+            IEnumerable<int> emptyLayerIndices = buildState.Layers.Where(e => e.Value.Count == 0).Select(e => e.Key);
+            var box = MessageBoxManager.GetMessageBoxStandard("Warning", $"File has been saved but has empty layers (layer {string.Join(", ", emptyLayerIndices)})\n" +
+                $"Disconnected layers will not be saved!", icon: MsBox.Avalonia.Enums.Icon.Warning);
             await _dialogService.ShowMessageBoxDialogAsync(box);
         }
 
@@ -403,7 +417,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
             catch (Exception ex)
             {
                 var box = MessageBoxManager.GetMessageBoxStandard("Error", $"Failed to setup the graph for the FSM.\n{ex.Message}", icon: MsBox.Avalonia.Enums.Icon.Error);
-                await _dialogService.ShowMessageBoxDialogAsync(box); 
+                await _dialogService.ShowMessageBoxDialogAsync(box);
                 return false;
             }
 
@@ -426,12 +440,15 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
     /// </summary>
     public void AddNewNode()
     {
-        var node = new FsmNodeViewModel() { ParentEditor = this };
-        node.Guid = GetNewGuid();
-        node.Location = MouseLocation;
-        node.IsRenaming = true;
-        node.Title = "FSMNode";
-        node.ParentGroup = LayerGroups[0];
+        var node = new FsmNodeViewModel
+        {
+            ParentEditor = this,
+            Guid = GetNewGuid(),
+            Location = MouseLocation,
+            IsRenaming = true,
+            Title = "FSMNode",
+            ParentGroup = LayerGroups[0]
+        };
 
         AddNode(node);
         UpdateNodeLayerFromLocation(node);
@@ -442,12 +459,12 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
     /// </summary>
     public void AddNewLayer()
     {
-        int layerIndex = this.LayerGroups.MaxBy(e => e.Key).Key + 1;
+        int layerIndex = LayerGroups.MaxBy(e => e.Key).Key + 1;
 
-        var layerGroup = new FsmGroupNodeViewModel() 
-        { 
-            ParentEditor = this, 
-            LayerIndex = layerIndex, 
+        var layerGroup = new FsmGroupNodeViewModel()
+        {
+            ParentEditor = this,
+            LayerIndex = layerIndex,
             Location = MouseLocation,
             Title = $"Layer {layerIndex}",
             IsRenaming = true,
@@ -530,12 +547,21 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
             TransitionViewModel transition = nodeVM.Transitions[i];
             if (transition.Source.Guid == guid || transition.Target.Guid == guid)
             {
-                foreach (TransitionConditionBase component in transition.ConditionComponents)
-                {
-                    if (component is TransitionConditionViewModel condVM)
-                        UnregisterFsmElementGuid(condVM.ConditionComponent.Guid);
-                }
+                foreach (TransitionConditionOpViewModel component in transition.ConditionOperatorGroups)
+                    UnregisterGuidRecursive(component);
+
                 nodeVM.Transitions.Remove(transition);
+            }
+        }
+
+        void UnregisterGuidRecursive(TransitionConditionOpViewModel operatorGroup)
+        {
+            foreach (TransitionConditionElementViewModelBase component in operatorGroup.Elements)
+            {
+                if (component is TransitionConditionViewModel condition)
+                    UnregisterFsmElementGuid(condition.ConditionComponent.Guid);
+                else if (component is TransitionConditionOpViewModel subOperatorGroup)
+                    UnregisterGuidRecursive(subOperatorGroup);
             }
         }
     }
@@ -552,7 +578,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
         if (_guidToNodeVm.TryGetValue(node.Guid, out FsmNodeViewModel? nodeViewModel))
             return nodeViewModel;
 
-        string title;
+        string? title;
         if (loadEditorParameters && !string.IsNullOrWhiteSpace(node.Name))
         {
             title = node.Name;
@@ -560,7 +586,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
         else
         {
             title = NodeNameStore.TryGetNameForNode(_currentFsmName, node.Guid, node.NameHash);
-            if (string.IsNullOrEmpty(title))
+            if (string.IsNullOrWhiteSpace(title))
                 title = $"{node.Guid}";
         }
 
@@ -586,7 +612,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
         if (loadEditorParameters)
             nodeViewModel.Size = new Size(node.BoundaryBox.Z, node.BoundaryBox.W);
 
-        if (!string.IsNullOrEmpty(node.FsmFolderName))
+        if (!string.IsNullOrWhiteSpace(node.FsmFolderName) && !string.IsNullOrWhiteSpace(node.FsmName))
             nodeViewModel.SetBaseFsm(node.FsmFolderName, node.FsmName);
 
         foreach (BehaviorTreeComponent component in node.ExecutionComponents)
@@ -597,7 +623,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
             });
         }
 
-        nodeViewModel.UpdateBorderColor();
+        nodeViewModel.UpdateVisuals();
         _guidToNodeVm.Add(node.Guid, nodeViewModel);
 
         return nodeViewModel;
@@ -612,10 +638,6 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
         if (PendingConnection.Source == PendingConnection.Target)
             return;
 
-        // Bring up context menu
-        // Not ideal and not very MVVM friendly to ask the view to respond, but no other way.
-        var message = WeakReferenceMessenger.Default.Send(new GetNodeControlRequest(target));
-
         var sourceNode = (FsmNodeViewModel)PendingConnection.Source;
         var targetNode = (FsmNodeViewModel)PendingConnection.Target;
 
@@ -628,9 +650,9 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
 
         // for layer connections - connections to root only, make sure nothing else connects
         // Previously it was assumed that a layer can only be connected from one node - but this is not true (issue #1)
-        bool canLayerConnection = targetNode.IsLayerRootNode && !isSameLayer 
+        bool canLayerConnection = targetNode.IsLayerRootNode && !isSameLayer
             // && !Connections.Any(e => e.Target == targetNode) 
-            && !sourceNode.Transitions.Any(e => e.Source.LayerIndex != e.Target.LayerIndex); 
+            && !sourceNode.Transitions.Any(e => e.Source.LayerIndex != e.Target.LayerIndex);
 
         ObservableCollection<MenuItemViewModel> items =
         [
@@ -672,9 +694,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
             },
         ];
 
-        var flyout = new MenuFlyout();
-        flyout.ItemsSource = items;
-        flyout.ShowAt(message.Response, showAtPointer: true);
+        WeakReferenceMessenger.Default.Send(new OpenContextMenuFlyoutAtNode(target, items));
     }
 
     /// <summary>
@@ -702,7 +722,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
                 Rect groupBbox = parentLayerGroup.BoundaryBox;
 
                 // Was it dragged outside of its layer?
-                if (!groupBbox.Contains(newNodeCollision))
+                if (!groupBbox.Contains(newNodeCollision) && !nodeViewModel.IsLayerRootNode)
                 {
                     obj.Canceled = true;
                     return;
@@ -720,7 +740,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
                             obj.Canceled = true;
                             return;
                         }
-                        
+
                     }
                 }
             }
@@ -776,7 +796,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
         foreach (FsmNodeViewModelBase node in SelectedNodes)
         {
             if (node is not FsmNodeViewModel nodeVM)
-                continue; 
+                continue;
 
             UpdateNodeLayerFromLocation(nodeVM);
         }
@@ -852,7 +872,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
                     // Yes, update relationship
                     SetNodeToLayer(node, layer);
                 }
-                
+
                 break;
             }
 
@@ -1035,11 +1055,27 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
         }
 
         nodeViewModel = graphNode;
+
+        // Possible orphan nodes
+        foreach (var subNode in node.Children)
+        {
+            if (!_processedNodes.Contains(subNode.Guid))
+            {
+                TryGetOrCreateGraphNode(subNode, layersToNodes, ref depth, loadEditorParameters, out _);
+            }
+        }
         return true;
     }
 
-    private void AddNode(FsmNodeViewModel node)
+    public void AddNode(FsmNodeViewModel node)
     {
+        if (_rootNode is null)
+        {
+            _rootNode = node;
+            node.IsLayerRootNode = true;
+            node.UpdateVisuals();
+        }
+
         RegisterFsmElementGuid(node.Guid, node);
         Nodes.Add(node);
 
@@ -1047,8 +1083,6 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
         {
             RegisterFsmElementGuid(componentVM.Component.Guid, componentVM.Component);
         }
-
-        _rootNode ??= node;
     }
 
     /// <summary>
@@ -1101,7 +1135,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
     /// <param name="i">Index (for location placement, before auto-layouting).</param>
     /// <param name="isOverrideTransition">Whether this is an override transition.</param>
     /// <param name="loadEditorParameters">Whether to load editor parameters such as node names and node locations.</param>
-    private void AddTransition(Transition trans, FSMNode sourceNode, List<List<FSMNode>> layersToNodes, int depth, FsmNodeViewModel sourceNodeVm, int i, 
+    private void AddTransition(Transition trans, FSMNode sourceNode, List<List<FSMNode>> layersToNodes, int depth, FsmNodeViewModel sourceNodeVm, int i,
         bool isOverrideTransition = false, bool loadEditorParameters = false)
     {
         FSMNode? toFsmNode = sourceNode.Children.FirstOrDefault(e => e.Guid == trans.FromNodeGuid);
@@ -1138,7 +1172,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
             else
             {
                 // This branch is invalid?
-                Debug.WriteLine($"WARN: A transition refers to node {trans.FromNodeGuid}, but it does not exist in node list");
+                _logger?.LogWarning("A transition refers to node {}, but it does not exist in node list", trans.FromNodeGuid);
                 return;
             }
         }
@@ -1149,7 +1183,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
         {
             toNode.Title = "END";
             toNode.IsEndNode = true;
-            toNode.UpdateBorderColor();
+            toNode.UpdateVisuals();
         }
 
         if (!_processedNodes.Contains(toFsmNode.Guid))
@@ -1196,31 +1230,86 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
 
         connection.Transitions.Add(transition);
 
-        if (trans.ConditionComponents.Count != 0)
+        if (trans.ConditionComponents.Count == 1)
         {
-            for (int j = 0; j < trans.ConditionComponents.Count; j++)
+            // There's always a default operator group in a transition, add the condition to it
+            transition.ConditionOperatorGroups[0].AddElement(new TransitionConditionViewModel(trans.ConditionComponents[0])
             {
-                if (j != 0)
-                {
-                    int paramsIndex = j - 1;
-                    Transition.TransitionParam param = trans.TransitionParams[paramsIndex];
+                Title = trans.ConditionComponents[0].ComponentName,
+                IsFalse = trans.ConditionComponents[0].IsReverseSuccess,
+            });
+        }
+        else if (trans.ConditionComponents.Count >= 2)
+        {
+            transition.ConditionOperatorGroups.Clear();
 
-                    var opVm = new TransitionConditionOpViewModel() // DO NOT SIMPLIFY. OnOperandChanged must be called for Operand
-                    {
-                        Priority = param.Priority,
-                    };
-                    opVm.Operand = param.IsAndCondition ? TransitionOperandType.AND : TransitionOperandType.OR;
-                    transition.ConditionComponents.Add(opVm);
+            TransitionConditionElementViewModelBase root = BuildConditionTree(trans, connection);
+            if (root is TransitionConditionOpViewModel rootOp)
+            {
+                rootOp.Operand = TransitionOperandType.None;
+                transition.ConditionOperatorGroups.Add(rootOp);
+            }
+        }
+
+        connection.UpdateConnection();
+    }
+
+    /// <summary>
+    /// Builds condition operator group tree for a transition.
+    /// </summary>
+    /// <param name="fsmTransition"></param>
+    /// <param name="connection"></param>
+    /// <returns></returns>
+    private static TransitionConditionElementViewModelBase BuildConditionTree(Transition fsmTransition, FsmConnectionViewModel connection)
+    {
+        int numComponents = fsmTransition.ConditionComponents.Count;
+        if (numComponents == 1)
+        {
+            return TransitionConditionViewModel.FromConditionComponent(fsmTransition.ConditionComponents[0]);
+        }
+        else
+        {
+            var nodes = new TransitionConditionElementViewModelBase[numComponents];
+            for (int i = 0; i < numComponents; i++)
+                nodes[i] = TransitionConditionViewModel.FromConditionComponent(fsmTransition.ConditionComponents[i]);
+
+            return BuildRange(0, numComponents - 1);
+
+            TransitionConditionElementViewModelBase BuildRange(int start, int end)
+            {
+                if (start == end)
+                    return nodes[start];
+
+                int highestPriority = int.MinValue;
+                for (int i = start; i < end; i++)
+                    highestPriority = Math.Max(highestPriority, fsmTransition.TransitionParams[i].Priority);
+
+                var splitIndices = new List<int>();
+                for (int i = start; i < end; i++)
+                {
+                    if (fsmTransition.TransitionParams[i].Priority == highestPriority)
+                        splitIndices.Add(i);
                 }
 
-                transition.ConditionComponents.Add(new TransitionConditionViewModel(trans.ConditionComponents[j])
-                {
-                    Title = trans.ConditionComponents[j].ComponentName,
-                    IsFalse = trans.ConditionComponents[j].IsReverseSuccess,
-                });
-            }
+                if (splitIndices.Count == 0)
+                    throw new InvalidOperationException();
 
-            connection.UpdateConnection();
+                var firstParam = fsmTransition.TransitionParams[splitIndices[0]];
+                var operandType = firstParam.IsAndCondition ? TransitionOperandType.AND : TransitionOperandType.OR;
+
+                var op = new TransitionConditionOpViewModel(connection, operatorType: operandType);
+
+                int sectionStart = start;
+                foreach (int split in splitIndices)
+                {
+                    op.AddElement(BuildRange(sectionStart, split));
+                    sectionStart = split + 1;
+                }
+
+                op.AddElement(BuildRange(sectionStart, end));
+
+                return op;
+            }
         }
     }
 
@@ -1229,8 +1318,8 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
 
     private FSMState BuildTreeFromCurrentGraph()
     {
-        var state = new FSMState() 
-        { 
+        var state = new FSMState()
+        {
             EditorSettings =
             {
                 ViewportLocation = new Vector2((float)ViewportLocation.X, (float)ViewportLocation.Y),
@@ -1250,17 +1339,33 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
         var savedNodes = state.Layers.SelectMany(e => e.Value).ToFrozenDictionary(e => e.Guid, e => e);
         foreach (FsmNodeViewModelBase node in Nodes)
         {
-            if (node is FsmGroupNodeViewModel)
-                continue;
-
-            var fsmNode = (FsmNodeViewModel)node;
-            if (fsmNode.IsEndNode)
-                continue;
-
-            if (!savedNodes.ContainsKey(node.Guid))
+            if (!state.Layers.TryGetValue(node.LayerIndex, out List<FSMNode>? layerNodes))
             {
-                _logger?.LogWarning("Tree has orphan/disconnected node {name} ({guid})", node.Title, node.Guid);
-                state.HasOrphanNodes = true;
+                layerNodes = [];
+                state.Layers[node.LayerIndex] = layerNodes;
+            }
+
+            if (node is FsmGroupNodeViewModel layerNode)
+            {
+
+            }
+            else if (node is FsmNodeViewModel fsmNode)
+            {
+                if (fsmNode.IsEndNode)
+                    continue;
+
+                // Check for potential orphan nodes
+                if (!savedNodes.ContainsKey(node.Guid))
+                {
+                    FSMNode? orphanNode = CreateFSMNodeFromViewModel(fsmNode);
+                    processedNodes.TryAdd(orphanNode.Guid, orphanNode);
+                    layerNodes.Add(orphanNode);
+
+                    BuildFSMNode(state, fsmNode, orphanNode, processedNodes);
+
+                    state.HasOrphanNodes = true;
+                    _logger?.LogWarning("FSM has at least one orphan/disconnected node {name} ({guid}).", node.Title, node.Guid);
+                }
             }
         }
 
@@ -1385,20 +1490,24 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
     private static Transition BuildFSMTransition(Dictionary<uint, FSMNode> processedNodes, TransitionViewModel transition, FSMNode node)
     {
         Transition fsmTransition = new(transition.Source.Guid, transition.Target.Guid);
-        foreach (TransitionConditionBase conditionBase in transition.ConditionComponents)
+
+        var root = transition.ConditionOperatorGroups[0];
+        if (root.Elements.Count > 0)
         {
-            if (conditionBase is TransitionConditionViewModel conditionComponent)
+            root.FlattenConditionTree(out List<ConditionComponent> components, out List<Transition.TransitionParam> operators);
+
+            for (int i = 0; i < components.Count; i++)
             {
-                fsmTransition.ConditionComponents.Add(conditionComponent.ConditionComponent);
-                fsmTransition.ConditionGuids.Add(conditionComponent.ConditionComponent.Guid);
+                ConditionComponent component = components[i];
+
+                fsmTransition.ConditionComponents.Add(component);
+                fsmTransition.ConditionGuids.Add(component.Guid);
             }
-            else if (conditionBase is TransitionConditionOpViewModel operand)
+
+            for (int i = 0; i < operators.Count; i++)
             {
-                fsmTransition.TransitionParams.Add(new Transition.TransitionParam()
-                {
-                    Priority = operand.Priority,
-                    IsAndCondition = operand.Operand == TransitionOperandType.AND,
-                });
+                Transition.TransitionParam @operator = operators[i];
+                fsmTransition.TransitionParams.Add(@operator);
             }
         }
 

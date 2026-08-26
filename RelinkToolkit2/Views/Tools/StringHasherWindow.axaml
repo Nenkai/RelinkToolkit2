@@ -17,7 +17,7 @@
 	
 	<StackPanel Orientation="Vertical">
 		<Grid ColumnDefinitions="*,100" Margin="2">
-			<TextBox Watermark="String to hash..." Text="{Binding InputString}" Margin="2,2,8,2"/>
+			<TextBox PlaceholderText="String to hash..." Text="{Binding InputString}" Margin="2,2,8,2"/>
 			<CheckBox Grid.Column="1" Content="To Lower (?)" IsChecked="{Binding ToLower}" ToolTip.Tip="'Hello' will become 'hello' before hashing if checked."/>
 		</Grid>
 
