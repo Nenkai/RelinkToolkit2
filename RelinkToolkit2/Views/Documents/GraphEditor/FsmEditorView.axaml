@@ -3,20 +3,12 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:nodify="https://miroiu.github.io/nodify"
-			 xmlns:local="clr-namespace:RelinkToolkit2;assembly=RelinkToolkit2"
-			 xmlns:views="using:RelinkToolkit2.Views"
 			 xmlns:fsmViews="using:RelinkToolkit2.Views.Documents.GraphEditor"
-			 xmlns:searchVMs="using:RelinkToolkit2.ViewModels.Search"
-			 xmlns:docVMs="using:RelinkToolkit2.ViewModels.Documents"
 			 xmlns:graphVMs="using:RelinkToolkit2.ViewModels.Documents.GraphEditor"
 			 xmlns:nodeVMs="using:RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes"
-			 xmlns:collections="clr-namespace:System.Collections;assembly=System.Runtime"
 			 xmlns:converters="using:RelinkToolkit2.Converters"
 			 xmlns:controls="using:RelinkToolkit2.Controls"
-			 xmlns:menuVMs="using:RelinkToolkit2.ViewModels.Menu"
-			 xmlns:b="using:RelinkToolkit2.Behaviors"
-			 xmlns:i="using:Avalonia.Xaml.Interactivity"
-             xmlns:ia="using:Avalonia.Xaml.Interactions.Core"
+			 xmlns:design="clr-namespace:RelinkToolkit2"
              mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="650"
              x:Class="RelinkToolkit2.Views.Documents.GraphEditor.FsmEditorView"
 			 x:DataType="graphVMs:FsmEditorViewModel">
@@ -57,33 +49,8 @@
 		</DataTemplate>
 	</UserControl.Resources>
 
-	<UserControl.Styles>
-		<Style x:DataType="menuVMs:MenuItemViewModel" Selector="MenuItem">
-		    <Setter Property="Header" Value="{Binding Header}" />
-		    <Setter Property="FontWeight" Value="{Binding FontWeight}" />
-		    <Setter Property="Command" Value="{Binding Command}" />
-		    <Setter Property="CommandParameter" Value="{Binding Parameter}"/>
-		    <Setter Property="IsEnabled" Value="{Binding Enabled}" />
-		    <Setter Property="IsChecked" Value="{Binding Checked}" />
-		    <Setter Property="ToggleType" Value="{Binding ToggleType}" />
-		    <Setter Property="ItemsSource" Value="{Binding MenuItems}"/>
-		    <Setter Property="IsHitTestVisible" Value="{Binding IsHitTestVisible}"/>
-		    <Setter Property="HotKey" Value="{Binding HotKey}"/>
-		</Style>
-		    <Style x:DataType="menuVMs:MenuItemViewModel" Selector="MenuItem[ToggleType=None]">
-				<Setter Property="Icon">
-				    <Template>
-				        <Image>
-				            <Image.Source>
-				                <controls:VectorIconDrawingImage Brush="{Binding IconBrush, Mode=TwoWay}" Drawing="{Binding IconKind, Converter={StaticResource vectorIconConverter}}"/>
-				            </Image.Source>
-				        </Image>
-				    </Template>
-				</Setter>
-		</Style>
-	</UserControl.Styles>
 	<Design.DataContext>
-		<fsmViews:FsmEditorView/>
+		<x:Static Member="design:DesignData.FsmEditorViewModel" />
 	</Design.DataContext>
 
 	<Grid Background="#1E1E1E">
@@ -107,7 +74,7 @@
 			<!--TODO: ^ Find out how to use Viewport* with Mode=TwoWay without shit breaking when panning/zooming. -->
 
 			<nodify:NodifyEditor.ContextFlyout>
-			    <MenuFlyout Opening="MenuFlyout_Opening" ItemsSource="{Binding EditorContextMenuItems}"/>
+			    <controls:ExtendableMenuFlyout ItemContainerTheme="{StaticResource MenuItemViewModelTheme}" Opening="MenuFlyout_Opening" ItemsSource="{Binding EditorContextMenuItems}"/>
 			</nodify:NodifyEditor.ContextFlyout>
 			
 			<nodify:NodifyEditor.ItemContainerTheme>

@@ -20,11 +20,6 @@ namespace RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 /// </summary>
 public partial class BTNodeViewModel : NodeViewModel //, IDropTarget
 {    
-    /// <summary>
-    /// Whether this node is the root of the layer it belongs to.
-    /// </summary>
-    public bool IsLayerRootNode { get; set; }
-
     public bool IsEndNode { get; set; }
 
     // Preferably this should be removed in favor of viewmodels/views for EACH type of node.
@@ -33,6 +28,8 @@ public partial class BTNodeViewModel : NodeViewModel //, IDropTarget
 
     public BTNodeViewModel()
     {
+        Title = NodeViewModel.DefaultNodeName;
+
         if (Design.IsDesignMode)
         {
             Title = "Test Node";

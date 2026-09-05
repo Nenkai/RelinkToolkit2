@@ -1,0 +1,63 @@
+﻿<UserControl x:Class="RelinkToolkit2.Controls.PropertyGrid.Views.DocumentablePropertyGridView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:converters="using:RelinkToolkit2.Converters"
+			 xmlns:VMs="using:RelinkToolkit2.Controls.PropertyGrid.ViewModel"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:pgc="using:Avalonia.PropertyGrid.Controls"
+			 xmlns:md="https://github.com/whistyun/Markdown.Avalonia"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="350"
+			 x:DataType="VMs:DocumentablePropertyGridViewModel"
+			 xmlns:design="clr-namespace:RelinkToolkit2"
+			 Name="MainPropertyGrid">
+   	<Design.DataContext>
+		 <x:Static Member="design:DesignData.DocumentablePropertyGridViewModel" />
+	</Design.DataContext>
+
+	<UserControl.Resources>
+		<converters:VectorIconConverter x:Key="vectorIconConverter"/>
+	</UserControl.Resources>
+
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*"></RowDefinition>
+			<RowDefinition Height="4"></RowDefinition>
+			<RowDefinition MinHeight="70" Height="120"></RowDefinition>
+		</Grid.RowDefinitions>
+		<pgc:PropertyGrid Grid.Row="0"
+			x:Name="propertyGrid_Basic"
+			Margin="4"
+			IsQuickFilterVisible="False"
+			IsTitleVisible="False"
+			IsAutoNameWidth="True"
+			DataContext="{Binding SelectedObject}"
+			PropertyCategorizingStyle="CategorizeByObjectInheritingOrder"
+			CustomNameBlock="PropertyGrid_CustomNameBlock">
+			<pgc:PropertyGrid.Styles>
+				<Style>
+					<Setter Property="(Interaction.Behaviors)">
+							<BehaviorCollectionTemplate>
+								<BehaviorCollection>
+									<EventTriggerBehavior EventName="PropertyGotFocus">
+										<InvokeCommandAction Command="{Binding #MainPropertyGrid.((VMs:DocumentablePropertyGridViewModel)DataContext).PropertyGotFocusCommand}" PassEventArgsToCommand="True"/>
+									</EventTriggerBehavior>
+									<EventTriggerBehavior EventName="PropertyLostFocus">
+										<InvokeCommandAction Command="{Binding #MainPropertyGrid.((VMs:DocumentablePropertyGridViewModel)DataContext).PropertyLostFocusCommand}" PassEventArgsToCommand="True"/>
+									</EventTriggerBehavior>
+								</BehaviorCollection>
+							</BehaviorCollectionTemplate>
+						</Setter>
+					</Style>
+			</pgc:PropertyGrid.Styles>
+		</pgc:PropertyGrid>
+		<!-- TODO: Use PropertyGrid.BottomContent -->
+		<GridSplitter Grid.Row="1"/>
+		<Grid Grid.Row="2" RowDefinitions="Auto,*">
+			<Label Grid.Row="0" Margin="0,0,0,0" FontSize="13" FontWeight="Bold" Content="{Binding ObjectName}"/>
+			<md:MarkdownScrollViewer Grid.Row="1" DockPanel.Dock="Bottom" Markdown="{Binding Description}"/>
+		</Grid>
+	</Grid>
+
+</UserControl>

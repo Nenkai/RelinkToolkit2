@@ -1,44 +1,110 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Dock.Avalonia.Controls;
+﻿using Dock.Avalonia.Controls;
+using Dock.Model;
 using Dock.Model.Controls;
 using Dock.Model.Core;
 using Dock.Model.Mvvm;
 using Dock.Model.Mvvm.Controls;
+/* using Dock.Serializer; */
 using Dock.Settings;
 
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
+using NLog.Layouts;
+
 using RelinkToolkit2.ViewModels.Documents;
+using RelinkToolkit2.ViewModels.Properties;
+using RelinkToolkit2.ViewModels.Tools;
+
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace RelinkToolkit2.ViewModels;
 
 public class DockFactory : Factory
 {
-    private IRootDock? _rootDock;
-    private readonly DocumentsViewModel _documentsViewModel;
-    private readonly ToolboxViewModel _toolboxViewModel;
-    private readonly ConnectionEditorViewModel _connectionEditorViewModel;
-    private readonly SolutionExplorerViewModel _solutionExplorerViewModel;
-    private readonly PropertyGridViewModel _propertyGridViewModel;
+    public const string LayoutFilePath = "config/dock_layout.json";
 
-    public DockFactory(DocumentsViewModel documentsViewModel, 
-        ToolboxViewModel toolboxViewModel, 
-        ConnectionEditorViewModel connectionEditorViewModel,
-        SolutionExplorerViewModel solutionExplorerViewModel,
-        PropertyGridViewModel propertyGridViewModel)
+    private readonly ILogger _logger;
+    private readonly DockState _dockState;
+
+    private IRootDock? _rootDock;
+    private readonly DocumentsViewModel _documents;
+    private readonly ToolboxViewModel _toolbox;
+    private readonly ConnectionEditorViewModel _connectionEditor;
+    private readonly SolutionExplorerViewModel _solutionExplorer;
+    private ToolDock? _propertiesToolDock;
+
+    public DockFactory(ILogger<DockFactory> logger,
+        DockState dockState,
+
+        DocumentsViewModel documents, 
+        ToolboxViewModel toolbox, 
+        ConnectionEditorViewModel connectionEditor,
+        SolutionExplorerViewModel solutionExplorer)
     {
-        _documentsViewModel = documentsViewModel;
-        _toolboxViewModel = toolboxViewModel;
-        _connectionEditorViewModel = connectionEditorViewModel;
-        _solutionExplorerViewModel = solutionExplorerViewModel;
-        _propertyGridViewModel = propertyGridViewModel;
+        _logger = logger;
+        _dockState = dockState;
+
+        _documents = documents;
+        _toolbox = toolbox;
+        _connectionEditor = connectionEditor;
+        _solutionExplorer = solutionExplorer;
+    }
+
+    public IRootDock LoadOrCreateLayout()
+    {
+        _logger?.LogInformation("Initializing dock layout");
+
+        // TODO: Figure out why serialization doesn't work, what I am doing wrong with the library or MVVM model
+        // ^ This extends to App.axaml.cs
+        /*
+        if (File.Exists(LayoutFilePath))
+        {
+            _logger?.LogInformation("Loading dock layout from {}", LayoutFilePath);
+
+            try
+            {
+                using var stream = File.OpenRead(LayoutFilePath);
+                IDockSerializer serializer = App.Current.Services.GetRequiredService<IDockSerializer>();
+                var deserializedLayout = serializer.Load<IDock?>(stream);
+
+                if (deserializedLayout is IRootDock rootDock)
+                {
+                    _logger?.LogWarning("Dock layout successfully loaded from {}", LayoutFilePath);
+
+                    _dockState.Restore(deserializedLayout);
+                    return rootDock;
+                }
+                else
+                {
+                    _logger?.LogWarning("Layout is not root dock, invalid saved layout, creating new one");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Failed to load dock layout from {}", LayoutFilePath);
+            }
+        }
+        else
+        {
+            _logger?.LogInformation("Not loading docklayout from {}, does not exist. Creating new one", LayoutFilePath);
+        }
+        */
+
+        var layout = CreateLayout();
+        return layout;
     }
 
     public override IRootDock CreateLayout()
     {
+        _logger.LogInformation("CreateLayout called, creating new layout");
+
         var leftSide = CreateLeftSide();
         var rightSideDock = CreateRightSide();
 
@@ -46,12 +112,12 @@ public class DockFactory : Factory
         {
             Orientation = Orientation.Horizontal,
             IsCollapsable = false,
-            ActiveDockable = _documentsViewModel,
+            ActiveDockable = _documents,
             VisibleDockables = CreateList<IDockable>
             (
                 leftSide,
                 new ProportionalDockSplitter(),
-                _documentsViewModel, // Refer to DocumentsViewModel.cs for default values such as deck proportion.
+                _documents, // Refer to DocumentsViewModel.cs for default values such as deck proportion.
                 new ProportionalDockSplitter(),
                 rightSideDock
             ),
@@ -70,24 +136,24 @@ public class DockFactory : Factory
 
     private void DockFactory_ActiveDockableChanged(object? sender, Dock.Model.Core.Events.ActiveDockableChangedEventArgs e)
     {
-        if (e.Dockable?.Owner is DocumentsViewModel documents)
+        if (e.Dockable?.Owner is DocumentsViewModel documents && e.Dockable is EditorDocumentBase editorDocument)
         {
-            documents.OnNewDocumentOpen((EditorDocumentBase)e.Dockable);
+            documents.OnNewDocumentOpen(editorDocument);
         }
     }
 
     public ProportionalDock CreateLeftSide()
     {
-        var toolboxDock = new ToolDock
+        var solutionExplorerToolDock = new ToolDock
         {
-            Id = "Toolbox",
-            Title = "Toolbox",
+            Id = "SolutionExplorer",
+            Title = "Solution Explorer",
             IsCollapsable = true,
             GripMode = GripMode.Visible,
-            Proportion = 0.40,
+            Alignment = Alignment.Left,
             VisibleDockables = CreateList<IDockable>
             (
-                _toolboxViewModel
+                _solutionExplorer
             ),
         };
 
@@ -98,56 +164,14 @@ public class DockFactory : Factory
             IsCollapsable = true,
             GripMode = GripMode.Visible,
             Proportion = 0.60,
+            Alignment = Alignment.Left,
             VisibleDockables = CreateList<IDockable>
             (
-                _connectionEditorViewModel
+                _connectionEditor
             ),
         };
 
         var leftPane = new ProportionalDock
-        {
-            Orientation = Orientation.Vertical,
-            IsCollapsable = true,
-            ActiveDockable = toolboxDock,
-            Proportion = 0.20,
-            VisibleDockables = CreateList<IDockable>
-            (
-                toolboxDock,
-                new ProportionalDockSplitter(),
-                connectionEditorToolDock
-            ),
-        };
-
-        return leftPane;
-    }
-
-    public ProportionalDock CreateRightSide()
-    {
-        var solutionExplorerToolDock = new ToolDock
-        {
-            Id = "SolutionExplorer",
-            Title = "Solution Explorer",
-            IsCollapsable = true,
-            GripMode = GripMode.Visible,
-            VisibleDockables = CreateList<IDockable>
-            (
-                _solutionExplorerViewModel
-            ),
-        };
-
-        var propertiesToolDeck = new ToolDock
-        {
-            Id = "Properties",
-            Title = "Properties",
-            IsCollapsable = true,
-            GripMode = GripMode.Visible,
-            VisibleDockables = CreateList<IDockable>
-            (
-                _propertyGridViewModel
-            ),
-        };
-
-        var rightPane = new ProportionalDock
         {
             Orientation = Orientation.Vertical,
             IsCollapsable = true,
@@ -157,11 +181,60 @@ public class DockFactory : Factory
             (
                 solutionExplorerToolDock,
                 new ProportionalDockSplitter(),
-                propertiesToolDeck
+                connectionEditorToolDock
             ),
         };
 
-        return rightPane;
+        return leftPane;
+    }
+
+    public IDockable CreateRightSide()
+    {
+        _propertiesToolDock = new ToolDock
+        {
+            Id = "Properties",
+            Title = "Properties",
+            IsCollapsable = false,
+            GripMode = GripMode.Visible,
+            Alignment = Alignment.Right,
+            VisibleDockables = [],
+        };
+
+        return _propertiesToolDock;
+    }
+
+    public void RemovePropertyTool(string id)
+    {
+        var tool = _propertiesToolDock?.VisibleDockables?.FirstOrDefault(e => e.Id == id);
+        if (tool is not null)
+            CloseDockable(tool);
+    }
+
+    /// <summary>
+    /// Adds the given tool to the properties pane if it isn't already there and makes it active
+    /// </summary>
+    public void ShowInPropertiesPane(IDockable dockable, bool makeActive = false)
+    {
+        if (_propertiesToolDock is null)
+            return;
+
+        bool alreadyPresent = _propertiesToolDock.VisibleDockables?.Contains(dockable) == true;
+        if (alreadyPresent)
+        {
+            if (makeActive)
+                SetActiveDockable(dockable);
+            return;
+        }
+
+        if (_propertiesToolDock.VisibleDockables?.Count > 0)
+            CloseAllDockables(_propertiesToolDock);
+
+        AddDockable(_propertiesToolDock, dockable);
+        if (dockable is ToolBase toolBase)
+            toolBase.OnActive();
+
+        if (makeActive)
+            SetActiveDockable(dockable);
     }
 
     public override void InitLayout(IDockable layout)
@@ -169,7 +242,7 @@ public class DockFactory : Factory
         DockableLocator = new Dictionary<string, Func<IDockable?>>()
         {
             ["Root"] = () => _rootDock,
-            ["Documents"] = () => _documentsViewModel
+            ["Documents"] = () => _documents
         };
 
         HostWindowLocator = new Dictionary<string, Func<IHostWindow?>>

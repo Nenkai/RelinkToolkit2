@@ -1,0 +1,105 @@
+﻿using System;
+using System.IO;
+using System.Runtime.CompilerServices;
+using System.Text;
+
+using Avalonia.Media;
+
+using CommunityToolkit.Mvvm.ComponentModel;
+
+using GBFRDataTools.Hashing;
+
+namespace RelinkToolkit2.ViewModels.Windows;
+
+public partial class StringHasherViewModel : ObservableObject
+{
+    [ObservableProperty]
+    public partial string? InputString { get; set; }
+
+    [ObservableProperty]
+    public partial string? ExpectedString { get; set; }
+
+    [ObservableProperty]
+    public partial bool ToLower { get; set; }
+
+    [ObservableProperty]
+    public partial string? XXHash64Hex { get; set; }
+
+    [ObservableProperty]
+    public partial IBrush? XXHash64HexBackground { get; set; }
+
+    [ObservableProperty]
+    public partial string? XXHash64Dec { get; set; }
+
+    [ObservableProperty]
+    public partial IBrush? XXHash64DecBackground { get; set; }
+
+    [ObservableProperty]
+    public partial string? XXHash32Hex { get; set; }
+
+    [ObservableProperty]
+    public partial IBrush? XXHash32HexBackground { get; set; }
+
+    [ObservableProperty]
+    public partial string? XXHash32Dec { get; set; }
+
+    [ObservableProperty]
+    public partial IBrush? XXHash32DecBackground { get; set; }
+
+    [ObservableProperty]
+    public partial string? CRC32Hex { get; set; }
+
+    [ObservableProperty]
+    public partial IBrush? CRC32HexBackground { get; set; }
+
+    [ObservableProperty]
+    public partial string? CRC32Dec { get; set; }
+
+    [ObservableProperty]
+    public partial IBrush? CRC32DecBackground { get; set; }
+
+    public StringHasherViewModel()
+    {
+        
+    }
+
+    partial void OnToLowerChanged(bool value)
+    {
+        Update();
+    }
+
+    partial void OnInputStringChanged(string? value)
+    {
+        Update();
+    }
+
+    partial void OnExpectedStringChanged(string? value)
+    {
+        Update();
+    }
+
+    private void Update()
+    {
+        string str = InputString ?? string.Empty;
+        str = ToLower ? str.ToLower() : str;
+
+        ulong xxhash64 = XXHash64.Hash(Encoding.UTF8.GetBytes(str), 0);
+        XXHash64Hex = xxhash64.ToString("X16");
+        XXHash64Dec = xxhash64.ToString();
+
+        uint xxHash32 = XXHash32Custom.Hash(str);
+        XXHash32Hex = xxHash32.ToString("X8");
+        XXHash32Dec = xxHash32.ToString();
+
+        uint crc32 = CRC32.crc32_0x77073096(str, toLower: ToLower);
+        CRC32Hex = crc32.ToString("X8");
+        CRC32Dec = crc32.ToString();
+
+        XXHash64HexBackground = XXHash64Hex == ExpectedString ? Brushes.Green : null;
+        XXHash64DecBackground = XXHash64Dec == ExpectedString ? Brushes.Green : null;
+        XXHash32HexBackground = XXHash32Hex == ExpectedString ? Brushes.Green : null;
+        XXHash32DecBackground = XXHash32Dec == ExpectedString ? Brushes.Green : null;
+        CRC32HexBackground = CRC32Hex == ExpectedString ? Brushes.Green : null;
+        CRC32DecBackground = CRC32Dec == ExpectedString ? Brushes.Green : null;
+    }
+}

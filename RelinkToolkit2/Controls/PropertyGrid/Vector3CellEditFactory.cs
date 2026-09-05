@@ -23,6 +23,9 @@ namespace RelinkToolkit2.Controls.PropertyGrid;
 
 public class Vector3CellEditFactory : AbstractCellEditFactory
 {
+    // AOT
+    public override ICellEditFactory Clone() => new Vector3CellEditFactory();
+
     public override Control? HandleNewProperty(PropertyCellContext context)
     {
         var propertyDescriptor = context.Property;

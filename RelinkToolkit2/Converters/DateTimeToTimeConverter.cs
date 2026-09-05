@@ -7,7 +7,7 @@ namespace RelinkToolkit2.Converters;
 
 public class DateTimeToTimeConverter : IValueConverter
 {
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         if (value is DateTime dt)
             return dt.ToLongTimeString();
@@ -15,7 +15,7 @@ public class DateTimeToTimeConverter : IValueConverter
         return string.Empty;
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         throw new NotImplementedException();
     }

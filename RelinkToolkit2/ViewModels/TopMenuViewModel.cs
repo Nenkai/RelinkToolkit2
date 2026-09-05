@@ -9,52 +9,69 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 
-using GBFRDataTools.FSM;
-using GBFRDataTools.FSM.Entities;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 using RelinkToolkit2.Messages;
 using RelinkToolkit2.Messages.Documents;
+using RelinkToolkit2.Messages.Fsm;
 using RelinkToolkit2.Messages.IO;
 using RelinkToolkit2.Messages.StatusBar;
 using RelinkToolkit2.Services;
+using RelinkToolkit2.Services.Configuration.Models;
+using RelinkToolkit2.Services.FSM;
 using RelinkToolkit2.ViewModels.Documents;
 using RelinkToolkit2.ViewModels.Documents.Interfaces;
 using RelinkToolkit2.ViewModels.Menu;
-using RelinkToolkit2.Views.Tools;
+using RelinkToolkit2.ViewModels.Windows;
 
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
-
 
 namespace RelinkToolkit2.ViewModels;
 
 public partial class TopMenuViewModel : ObservableObject,
     IRecipient<ActiveDocumentChangedMessage>
 {
-    private ILogger? _logger;
+    private readonly ILogger? _logger;
+    private readonly IDialogService _dialog;
+    private readonly IFilesService _filesService;
+    private readonly RecentFilesService _recentFiles;
+    private readonly FSMFileService _fsmBtVerifierService;
 
     public ObservableCollection<IMenuItemViewModel> MenuItems { get; set; } = [];
     public ObservableCollection<MenuItemViewModel> _themeMenuItems = [];
 
     private MenuItemViewModel _saveMenuItem;
     private MenuItemViewModel _saveAsMenuItem;
+    private MenuItemViewModel _recentItemsMenuItem;
 
-    public TopMenuViewModel(ILogger<TopMenuViewModel>? logger) 
+    public TopMenuViewModel(ILogger<TopMenuViewModel>? logger,
+        IDialogService dialogService,
+        IFilesService filesService,
+        FSMFileService fsmBtVerifierService,
+        RecentFilesService recentFiles) 
     {
         _logger = logger;
+        _dialog = dialogService;
+        _filesService = filesService;
+        _fsmBtVerifierService = fsmBtVerifierService;
+        _recentFiles = recentFiles;
 
         BuildMenu();
 
         WeakReferenceMessenger.Default.RegisterAll(this);
+    }
+
+    private void OnRecentFilesUpdated(Collections.RecentItemsStack<Uri> items)
+    {
+        _recentItemsMenuItem.MenuItems.Clear();
+
+        foreach (var item in items)
+            AddRecentItem(item);
     }
 
     public void Receive(ActiveDocumentChangedMessage message)
@@ -77,6 +94,9 @@ public partial class TopMenuViewModel : ObservableObject,
 
         MenuItemViewModel viewMenuItem = CreateViewMenu();
         MenuItems.Add(viewMenuItem);
+
+        MenuItemViewModel settingsMenuItem = CreateSettingsMenu();
+        MenuItems.Add(settingsMenuItem);
 
         MenuItemViewModel toolsMenuItem = CreateToolsMenu();
         MenuItems.Add(toolsMenuItem);
@@ -132,8 +152,8 @@ public partial class TopMenuViewModel : ObservableObject,
 
         file.MenuItems.Add(new MenuItemViewModel()
         {
-            Header = "Open File",
-            Command = new RelayCommand(OnOpenFileClicked),
+            Header = "_Open File",
+            Command = new AsyncRelayCommand(OnOpenFileClicked),
             IconKind = "Material.FileFind",
             HotKey = new Avalonia.Input.KeyGesture(Avalonia.Input.Key.O, modifiers: Avalonia.Input.KeyModifiers.Control),
             Enabled = true,
@@ -145,7 +165,7 @@ public partial class TopMenuViewModel : ObservableObject,
         {
             Header = $"Save",
             IconKind = "Material.ContentSave",
-            Command = new RelayCommand<bool>(OnSave),
+            Command = new AsyncRelayCommand<bool>(OnSave),
             Parameter = false,
             HotKey = new Avalonia.Input.KeyGesture(Avalonia.Input.Key.S, modifiers: Avalonia.Input.KeyModifiers.Control),
             Enabled = false,
@@ -154,12 +174,27 @@ public partial class TopMenuViewModel : ObservableObject,
         _saveAsMenuItem = new MenuItemViewModel()
         {
             Header = $"Save As...",
-            Command = new RelayCommand<bool>(OnSave),
+            Command = new AsyncRelayCommand<bool>(OnSave),
             Parameter = true,
             Enabled = false,
         };
         file.MenuItems.Add(_saveAsMenuItem);
         file.MenuItems.Add(MenuItemViewModel.Separator);
+
+        _recentItemsMenuItem = new MenuItemViewModel()
+        {
+            Header = "Recent Files",
+            Enabled = true,
+        };
+
+        foreach (Uri recentFile in _recentFiles.GetRecentlyOpenedFiles())
+        {
+            AddRecentItem(recentFile);
+        }
+
+        file.MenuItems.Add(_recentItemsMenuItem);
+        file.MenuItems.Add(MenuItemViewModel.Separator);
+
         file.MenuItems.Add(new MenuItemViewModel()
         {
             Header = "Exit",
@@ -169,6 +204,17 @@ public partial class TopMenuViewModel : ObservableObject,
         });
 
         return file;
+    }
+
+    private void AddRecentItem(Uri recentFile)
+    {
+        _recentItemsMenuItem.MenuItems.Add(new MenuItemViewModel()
+        {
+            Header = $"_{recentFile.LocalPath}",
+            Command = new RelayCommand<Uri>(OnRecentFileClicked),
+            Parameter = recentFile,
+            Enabled = true,
+        });
     }
 
     private MenuItemViewModel CreateViewMenu()
@@ -192,8 +238,58 @@ public partial class TopMenuViewModel : ObservableObject,
 
     private void View_OpenLogWindow()
     {
-        var logWindow = new LogWindow();
-        logWindow.Show();
+        _dialog.OpenLogWindow();
+    }
+
+    private MenuItemViewModel CreateSettingsMenu()
+    {
+        var settingsMenuItem = new MenuItemViewModel()
+        {
+            Header = "Settings",
+            Enabled = true,
+        };
+
+        var fsmOptions = App.Current.Services.GetRequiredService<IOptions<FSMOptions>>();
+        settingsMenuItem.MenuItems.Add(new MenuItemViewModel()
+        {
+            Header = "Always expand FSM/BT conditions",
+            Enabled = true,
+            Checked = fsmOptions.Value.AlwaysExpandConditions,
+            StaysOpenOnClick = true,
+            ToggleType = MenuItemToggleType.CheckBox,
+            Command = new RelayCommand(() =>
+            {
+                fsmOptions.Value.AlwaysExpandConditions = !fsmOptions.Value.AlwaysExpandConditions;
+            })
+        });
+
+        settingsMenuItem.MenuItems.Add(new MenuItemViewModel()
+        {
+            Header = "Display FSM Guids",
+            Enabled = true,
+            Checked = fsmOptions.Value.DisplayFSMGuids,
+            StaysOpenOnClick = true,
+            ToggleType = MenuItemToggleType.CheckBox,
+            Command = new RelayCommand(() =>
+            {
+                fsmOptions.Value.DisplayFSMGuids = !fsmOptions.Value.DisplayFSMGuids;
+            })
+        });
+
+        settingsMenuItem.MenuItems.Add(new MenuItemViewModel()
+        {
+            Header = "Display Layer Indices",
+            Enabled = true,
+            Checked = fsmOptions.Value.DisplayLayerIndices,
+            StaysOpenOnClick = true,
+            ToggleType = MenuItemToggleType.CheckBox,
+            Command = new RelayCommand(() =>
+            {
+                fsmOptions.Value.DisplayLayerIndices = !fsmOptions.Value.DisplayLayerIndices;
+            })
+        });
+
+        return settingsMenuItem;
     }
 
     private MenuItemViewModel CreateToolsMenu()
@@ -209,7 +305,7 @@ public partial class TopMenuViewModel : ObservableObject,
             Header = "String Hasher",
             Enabled = true,
             IconKind = "Material.Pound",
-            Command = new RelayCommand(StringHasherClicked),
+            Command = new AsyncRelayCommand(StringHasherClicked),
         };
         toolsMenuItem.MenuItems.Add(stringHasherMenuItem);
         toolsMenuItem.MenuItems.Add(MenuItemViewModel.Separator);
@@ -237,6 +333,13 @@ public partial class TopMenuViewModel : ObservableObject,
             IconKind = "Material.Settings",
         };
 
+        scripts.MenuItems.Add(new MenuItemViewModel()
+        {
+            Header = "Verify all Behavior Trees in folder",
+            Enabled = true,
+            IconKind = "Material.Settings",
+            Command = new AsyncRelayCommand(VerifyAllBTs),
+        });
         scripts.MenuItems.Add(new MenuItemViewModel()
         {
             Header = "Verify all FSMs in folder",
@@ -290,55 +393,44 @@ public partial class TopMenuViewModel : ObservableObject,
         }
     }
 
-    private string? _fsmPath;
-    public async Task VerifyAllFSMs()
+    public async Task VerifyAllBTs()
     {
-        var filesService = App.Current?.Services?.GetService<IFilesService>();
-        if (filesService is null)
-            return;
-
-        var folder = await filesService.OpenFolderAsync("Select extracted system/fsm folder...");
+        var folder = await _filesService.OpenFolderAsync("Select extracted system/behaviortree folder...");
         if (folder is null)
             return;
 
-        _fsmPath = folder.TryGetLocalPath();
-        if (_fsmPath is null)
+        string? localPath = folder.TryGetLocalPath();
+        if (localPath is null)
             return;
 
-        foreach (var file in Directory.GetFiles(_fsmPath, "*.msg", SearchOption.AllDirectories))
-        {
-            _logger?.LogInformation(file);
+        await _fsmBtVerifierService.VerifyAllBTs(localPath);
 
-            var parser = new FSMParser(App.Current.Services.GetRequiredService<ILoggerFactory>());
-            await parser.Parse(File.ReadAllBytes(file), file.EndsWith(".msg"), OnLocateFSMFile);
-            if (parser.HasErrors)
-            {
-                _logger?.LogWarning("FSM Parsed ({file}) with errors.", file);
-            }
-            else
-                _logger?.LogInformation("FSM Parsed ({file}).", file);
-        }
+        WeakReferenceMessenger.Default.Send(new SnackbarMessage($"Done, check log file.", TimeSpan.FromSeconds(5)));
     }
 
-    public async Task<string?> OnLocateFSMFile(string className, string fsmName)
+    public async Task VerifyAllFSMs()
     {
-        string file = $"{className}_{fsmName}_fsm_ingame.msg";
-        return $"{_fsmPath}/{className}/{file}";
-    }
-
-    public void StringHasherClicked()
-    {
-        var window = new StringHasherWindow();
-        window.Show();
-    }
-
-    public async void OnOpenFileClicked()
-    {
-        var filesService = App.Current?.Services?.GetService<IFilesService>();
-        if (filesService is null)
+        var folder = await _filesService.OpenFolderAsync("Select extracted system/fsm folder...");
+        if (folder is null)
             return;
 
-        var file = await filesService.OpenFileAsync("Open file...", filters:
+        string? localPath = folder.TryGetLocalPath();
+        if (localPath is null)
+            return;
+
+        await _fsmBtVerifierService.VerifyAllFSMs(localPath);
+
+        WeakReferenceMessenger.Default.Send(new SnackbarMessage($"Done, check log file.", TimeSpan.FromSeconds(5)));
+    }
+
+    public async Task StringHasherClicked()
+    {
+        await _dialog.ShowDialogAsync(new StringHasherViewModel());
+    }
+
+    public async Task OnOpenFileClicked()
+    {
+        var file = await _filesService.OpenFileAsync("Open file...", filters:
         [
             FilePickerFileTypes.All,
             new FilePickerFileType("FSM File")
@@ -358,22 +450,37 @@ public partial class TopMenuViewModel : ObservableObject,
         WeakReferenceMessenger.Default.Send(new FileOpenRequestMessage(new FileOpenResult(file.Path, stream)));
     }
 
-    public async void OnSave(bool isSaveAs)
+    public async Task OnSave(bool isSaveAs)
     {
         var document = WeakReferenceMessenger.Default.Send(new GetCurrentDocumentRequest());
         if (!document.HasReceivedResponse || document.Response is null || document.Response is not ISaveableDocument saveableDocument)
             return;
 
-        var filesService = (App.Current?.Services?.GetService<IFilesService>()) ?? throw new Exception("Could not fetch IFilesService");
-        Uri? outputFile = await saveableDocument.SaveDocument(filesService, isSaveAs);
+        Uri? outputFile = await saveableDocument.SaveDocument(_filesService, isSaveAs);
         if (outputFile is not null)
         {
             _logger?.LogInformation("Saved as {outputFile}", outputFile);
             WeakReferenceMessenger.Default.Send(new SetStatusBarTextRequest($"{DateTime.Now} - Saved as {outputFile}."));
             WeakReferenceMessenger.Default.Send(new SnackbarMessage($"Saved as {outputFile}.", TimeSpan.FromSeconds(5)));
 
+            _recentFiles.Add(outputFile);
+
             saveableDocument.LastFile = outputFile;
         }
+    }
+
+    public void OnRecentFileClicked(Uri fileUri)
+    {
+        if (!File.Exists(fileUri.LocalPath))
+        {
+            WeakReferenceMessenger.Default.Send(new SnackbarMessage($"File {fileUri.LocalPath} does not exist"));
+
+            _recentFiles.Remove(fileUri);
+            return;
+        }
+
+        using Stream stream = File.OpenRead(fileUri.LocalPath);
+        WeakReferenceMessenger.Default.Send(new FileOpenRequestMessage(new FileOpenResult(fileUri, stream)));
     }
 
     public void OnExit()

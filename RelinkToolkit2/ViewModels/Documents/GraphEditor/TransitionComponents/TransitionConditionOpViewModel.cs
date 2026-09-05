@@ -36,6 +36,8 @@ public partial class TransitionConditionOpViewModel : TransitionConditionElement
     /// </summary>
     public ObservableCollection<TransitionConditionElementViewModelBase> Elements { get; set; } = [];
 
+    private TransitionConditionOpViewModel() { }
+
     public TransitionConditionOpViewModel(FsmConnectionViewModel parentConnection, 
         TransitionConditionOpViewModel? parentOperand = null,
         TransitionOperandType operatorType = TransitionOperandType.None)

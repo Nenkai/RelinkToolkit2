@@ -6,13 +6,10 @@
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="200"
 			 xmlns:graphVMs="using:RelinkToolkit2.ViewModels.Documents.GraphEditor"
 			 xmlns:nodeVMs="using:RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes"
-			 xmlns:search="using:RelinkToolkit2.Views"
 			 xmlns:b="using:RelinkToolkit2.Behaviors"
 			 xmlns:controls="using:RelinkToolkit2.Controls"
-			 xmlns:local="using:RelinkToolkit2"
 			 xmlns:converters="using:RelinkToolkit2.Converters"
              x:Class="RelinkToolkit2.Views.Documents.GraphEditor.FsmNodeView"
-			 xmlns:sys="clr-namespace:System;assembly=netstandard"
 			 x:DataType="nodeVMs:FsmNodeViewModel"
 			 DataContextChanged="UserControl_DataContextChanged">
 
@@ -52,6 +49,7 @@
 	
 	<nodify:StateNode x:Name="Node"
 			IsConnected="True"
+			Background="{Binding BackgroundBrush}"
 			BorderBrush="{Binding BorderBrush}"
 			Content="{Binding}"
 			CornerRadius="{Binding CornerRadius}"
@@ -69,8 +67,8 @@
 							 We don't want the cursor types to change too much while moving around nodes.
 							 You can double click to edit the label. -->
 						<controls:EditableTextBlock IsEditing="{Binding IsRenaming}" Grid.Column="0" Cursor="SizeAll" Text="{Binding Title}" FontWeight="Bold" Margin="4,0,0,0"/>
-						<Label Grid.Column="1" Foreground="Gray" Content="•"/>
-						<Label Grid.Column="2" Content="{Binding LayerIndex, StringFormat='(Layer {0})'}}" FontSize="10" Foreground="Gray" VerticalContentAlignment="Center" Margin="-3,1,0,0"
+						<Label Grid.Column="1" IsVisible="{Binding LayerIndexVisible}" Foreground="Gray" Content="•"/>
+						<Label Grid.Column="2" IsVisible="{Binding LayerIndexVisible}" Content="{Binding LayerIndex, StringFormat='(Layer {0})'}}" FontSize="10" Foreground="Gray" VerticalContentAlignment="Center" Margin="-3,1,0,0"
 							   Loaded="Label_Loaded">
 							<Label.Resources>
 								<Animation x:Key="LayerChangedAnimation" x:SetterTargetType="Label" Duration="0:0:0.5" IterationCount="1">
@@ -87,13 +85,6 @@
 						</Label>
 
 						<StackPanel Orientation="Horizontal" Grid.Column="4">
-							<Panel IsVisible="{Binding IsBranch}" Background="Transparent" ToolTip.Tip="Purpose unknown. May not be needed.">
-								<Image Width="18" Height="18" IsVisible="{Binding IsBranch}">
-									<Image.Source>
-										<controls:VectorIconDrawingImage Brush="White" Drawing="{Binding Source='Material.SourceBranch', Converter={StaticResource vectorIconConverter}}"/>
-									</Image.Source>
-								</Image>
-							</Panel>
 							<Panel IsVisible="{Binding HasSelfTransition}" Background="Transparent" Cursor="Hand" PointerPressed="Panel_PointerPressed" ToolTip.Tip="Node transitions to itself (loop).">
 								<Image Width="18" Height="18" IsVisible="{Binding HasSelfTransition}">
 									<Image.Source>
@@ -105,7 +96,7 @@
 
 					</Grid>
 
-					<TextBlock Text="{Binding Guid}" Foreground="DimGray" FontSize="10" Margin="4,-1,0,0"/>
+					<TextBlock Text="{Binding Guid}" IsVisible="{Binding GuidVisible}" Foreground="DimGray" FontSize="10" Margin="4,-1,0,0"/>
 
 					<StackPanel Orientation="Vertical">
 						<!-- Caption/Path to external fsm -->

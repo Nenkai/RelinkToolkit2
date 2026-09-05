@@ -15,6 +15,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 
+using static RelinkToolkit2.ViewModels.Documents.GraphEditor.FsmEditorViewModel;
+
 namespace RelinkToolkit2.ViewModels.Documents.GraphEditor;
 
 /// <summary>
@@ -26,9 +28,17 @@ public partial class TransitionViewModel : ObservableObject
 
     public required FsmNodeViewModel Source { get; set; }
     public required FsmNodeViewModel Target { get; set; }
-    public bool IsOverrideTransition { get; set; }
+
+    [ObservableProperty]
+    public partial FsmNodeConnectionType ConnectionType { get; set; }
 
     public ObservableCollection<TransitionConditionOpViewModel> ConditionOperatorGroups { get; set; } = [];
+
+
+    private TransitionViewModel()
+    {
+
+    }
 
     public TransitionViewModel(FsmConnectionViewModel parentConnection)
     {

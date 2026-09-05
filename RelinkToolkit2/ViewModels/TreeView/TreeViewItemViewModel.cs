@@ -10,33 +10,33 @@ using System.Threading.Tasks;
 using Avalonia;
 using System.Windows.Input;
 
-namespace RelinkToolkit2.ViewModels;
+namespace RelinkToolkit2.ViewModels.TreeView;
 
 public partial class TreeViewItemViewModel : ObservableObject
 {
     [ObservableProperty]
-    private Guid _guid = Guid.CreateVersion7();
+    public partial Guid Guid { get; set; } = Guid.CreateVersion7();
 
     [ObservableProperty]
-    private string _caption;
+    public partial string Caption { get; set; }
 
     [ObservableProperty]
-    private string _treeViewName = "No Name";
+    public partial string TreeViewName { get; set; } = "No Name";
 
     [ObservableProperty]
-    private string? _iconKind;
+    public partial string? IconKind { get; set; }
 
     [ObservableProperty]
-    private bool _visible = true;
+    public partial bool Visible { get; set; } = true;
 
     [ObservableProperty]
-    private bool _isExpanded = false;
+    public partial bool IsExpanded { get; set; } = false;
 
     [ObservableProperty]
-    private bool _canDrop;
+    public partial bool CanDrop { get; set; }
 
     [ObservableProperty]
-    private ICommand? _doubleClickedCommand;
+    public partial ICommand? DoubleClickedCommand { get; set; }
 
     public TreeViewItemViewModel? Parent { get; set; }
 

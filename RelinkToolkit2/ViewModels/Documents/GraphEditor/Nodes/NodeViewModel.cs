@@ -32,21 +32,27 @@ namespace RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 public abstract partial class NodeViewModel : NodeViewModelBase
 {
     [ObservableProperty]
-    private Point _anchor;
+    public partial Point Anchor { get; set; }
 
     [ObservableProperty]
-    private IBrush _borderBrush = GraphColors.DefaultNode;
+    public partial IBrush BackgroundBrush { get; set; } = GraphColors.DefaultNodeBackground;
 
     [ObservableProperty]
-    private CornerRadius _cornerRadius = new(3);
+    public partial IBrush BorderBrush { get; set; } = GraphColors.DefaultNodeBorder;
 
     [ObservableProperty]
-    private uint _guid;
+    public partial CornerRadius CornerRadius { get; set; } = new(3);
+
+    [ObservableProperty]
+    public partial uint Guid { get; set; }
+
+    [ObservableProperty]
+    public partial bool GuidVisible { get; set; }
 
     /// <summary>
     /// Execution components.
     /// </summary>
-    public ObservableCollection<NodeComponentViewModel> Components { get; set; } = [];
+    public ObservableCollection<NodeComponentViewModel> Components { get; private set; } = [];
 
     public NodeViewModel()
     {
@@ -70,8 +76,5 @@ public abstract partial class NodeViewModel : NodeViewModelBase
 
         var editor = (FsmEditorViewModel)ParentEditor;
         editor.UnregisterFsmElementGuid(component.Component.Guid);
-
-        NodeViewModel parentNode = component.Parent;
-        parentNode.UpdateVisuals();
     }
 }

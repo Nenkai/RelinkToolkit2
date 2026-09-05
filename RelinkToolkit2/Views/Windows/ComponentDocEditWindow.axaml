@@ -1,0 +1,44 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="400"
+        xmlns:vm="using:RelinkToolkit2.ViewModels.Windows"
+        x:Class="RelinkToolkit2.Views.Windows.ComponentDocEditWindow"
+        x:DataType="vm:ComponentDocEditViewModel"
+        xmlns:md="https://github.com/whistyun/Markdown.Avalonia"
+        xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
+        Title="Component Documentation Edit Window"
+        Icon="/Assets/avalonia-logo.ico"
+        Width="900" Height="400"
+        WindowStartupLocation="CenterScreen"
+        FontFamily="Segoe UI">
+    <Window.DataContext>
+		<vm:ComponentDocEditViewModel/>
+	</Window.DataContext>
+
+  <Grid RowDefinitions="Auto,*,Auto" >
+      <TextBlock Grid.Row="0" Text="{Binding Key}"/>
+      <Grid Grid.Row="1" ColumnDefinitions="*,6,*">
+        <GroupBox Grid.Column="0" Margin="2" Header="Input (Markdown supported)" BorderThickness="0"> <!-- Note: GroupBox borders are bugged and the bottom keeps getting trimmed, so erase it -->
+		  <TextBox Name="InputTextBox" Text="{Binding Value}" AcceptsReturn="True" PlaceholderText="Enter any text here"/>
+        </GroupBox>
+        <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch"/>
+        <GroupBox Grid.Column="2" Margin="2" Header="Preview" BorderThickness="0">
+          <Border BorderThickness="1" BorderBrush="{Binding #InputTextBox.BorderBrush}"> <!-- Quickly reuse the same border as the textbox -->
+		      <md:MarkdownScrollViewer Markdown="{Binding Value}">
+                  <md:MarkdownScrollViewer.Styles>
+                      <Style Selector="ctxt|CTextBlock">
+                          <Setter Property="FontFamily" Value="Segoe UI"/>
+                      </Style>
+                  </md:MarkdownScrollViewer.Styles>
+              </md:MarkdownScrollViewer>
+          </Border>
+        </GroupBox>
+      </Grid>
+      <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto">
+          <Button Grid.Column="1" Width="100" Margin="4" Content="Cancel" Command="{Binding CancelCommand}"/>
+		  <Button Grid.Column="2" Width="100" Margin="4" Content="Save" Command="{Binding SaveCommand}"/>
+      </Grid>
+  </Grid>
+</Window>

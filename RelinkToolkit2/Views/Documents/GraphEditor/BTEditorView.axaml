@@ -57,34 +57,6 @@
 		</DataTemplate>
 	</UserControl.Resources>
 
-	<UserControl.Styles>
-		<Style x:DataType="menuVMs:MenuItemViewModel" Selector="MenuItem" >
-			<Setter Property="Header" Value="{Binding Header}" />
-			<Setter Property="FontWeight" Value="{Binding FontWeight}" />
-			<Setter Property="Command" Value="{Binding Command}" />
-			<Setter Property="CommandParameter" Value="{Binding Parameter}"/>
-			<Setter Property="IsEnabled" Value="{Binding Enabled}" />
-			<Setter Property="IsChecked" Value="{Binding Checked}" />
-			<Setter Property="ToggleType" Value="{Binding ToggleType}" />
-			<Setter Property="ItemsSource" Value="{Binding MenuItems}"/>
-			<Setter Property="IsHitTestVisible" Value="{Binding IsHitTestVisible}"/>
-			<Setter Property="HotKey" Value="{Binding HotKey}"/>
-		</Style>
-
-		<!-- Ensure to only apply an icon when there is no specific toggle type, otherwise there will be a gap. -->
-		<Style x:DataType="menuVMs:MenuItemViewModel" Selector="MenuItem[ToggleType=None]">
-			<Setter Property="Icon">
-				<Template>
-					<Image>
-						<Image.Source>
-							<controls:VectorIconDrawingImage Brush="{Binding IconBrush, Mode=TwoWay}" Drawing="{Binding IconKind, Converter={StaticResource vectorIconConverter}}"/>
-						</Image.Source>
-					</Image>
-				</Template>
-			</Setter>
-		</Style>
-	</UserControl.Styles>
-
 	<Design.DataContext>
 		<docVMs:BTEditorViewModel/>
 	</Design.DataContext>
@@ -109,7 +81,7 @@
 			<!--TODO: ^ Find out how to use Viewport* with Mode=TwoWay without shit breaking when panning/zooming. -->
 
 			<nodify:NodifyEditor.ContextFlyout>
-				<MenuFlyout ItemsSource="{Binding EditorContextMenuItems}"/>
+				<controls:ExtendableMenuFlyout ItemsSource="{Binding EditorContextMenuItems}"/>
 			</nodify:NodifyEditor.ContextFlyout>
 			
 			<nodify:NodifyEditor.ItemContainerTheme>

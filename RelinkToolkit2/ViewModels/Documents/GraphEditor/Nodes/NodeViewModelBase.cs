@@ -22,30 +22,41 @@ namespace RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 public partial class NodeViewModelBase : ObservableObject
 {
     /// <summary>
+    /// Default node name.
+    /// </summary>
+    public const string DefaultNodeName = "FSMNode";
+
+    /// <summary>
+    /// How much the collision bounds of layers extends past their visible bounds
+    /// 0.25 = 25% of the layer's size.
+    /// </summary>
+    public const double NodeBoundaryBoxExtendsRatio = 0.25;
+
+    /// <summary>
     /// Editor to which this node belongs to.
     /// </summary>
-    public required EditorDocumentBase ParentEditor { get; set; }
+    public required NodeEditorViewModelBase ParentEditor { get; set; }
 
     /// <summary>
     /// Location of the node (top left). For center, refer to <see cref="Center"/>
     /// </summary>
     [ObservableProperty]
-    private Point _location;
+    public partial Point Location { get; set; }
 
     /// <summary>
     /// Size of the node.
     /// </summary>
     [ObservableProperty]
-    private Size _size;
+    public partial Size Size { get; set; }
 
     /// <summary>
     /// Title/Name.
     /// </summary>
     [ObservableProperty]
-    private string? _title;
+    public partial string? Title { get; set; }
 
     [ObservableProperty]
-    private bool _isRenaming;
+    public partial bool IsRenaming { get; set; }
 
     /// <summary>
     /// Center location. For top right, refer to <see cref="Location"/>
@@ -57,7 +68,13 @@ public partial class NodeViewModelBase : ObservableObject
     /// </summary>
     public Rect BoundaryBox => new(Location, Size);
 
-    public Rect CollisionBox => BoundaryBox.Deflate(new Thickness(Size.Width * 0.25, Size.Height * 0.25));
+    public Rect CollisionBox => BoundaryBox.Deflate(new Thickness(Size.Width * NodeBoundaryBoxExtendsRatio, Size.Height * NodeBoundaryBoxExtendsRatio));
+
+    partial void OnIsRenamingChanged(bool value)
+    {
+        if (!value && string.IsNullOrWhiteSpace(Title))
+            Title = NodeViewModel.DefaultNodeName;
+    }
 
     public static bool AreIntersected(Rect r1, Rect r2)
     {

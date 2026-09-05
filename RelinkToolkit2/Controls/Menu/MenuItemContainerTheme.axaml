@@ -1,0 +1,66 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:menuVMs="using:RelinkToolkit2.ViewModels.Menu"
+                    xmlns:converters="using:RelinkToolkit2.Converters"
+                    xmlns:controls="using:RelinkToolkit2.Controls">
+
+    <converters:VectorIconConverter x:Key="vectorIconConverter"/>
+
+    <!-- Top level menu item theme -->
+    <ControlTheme x:Key="MenuItemViewModelTopLevelTheme"
+                  x:DataType="menuVMs:MenuItemViewModel"
+                  TargetType="MenuItem"
+                  BasedOn="{StaticResource SimpleTopLevelMenuItem}">
+
+        <Setter Property="Header" Value="{Binding Header}" />
+        <Setter Property="FontWeight" Value="{Binding FontWeight}" />
+        <Setter Property="Command" Value="{Binding Command}" />
+        <Setter Property="CommandParameter" Value="{Binding Parameter}"/>
+        <Setter Property="IsEnabled" Value="{Binding Enabled}" />
+        <Setter Property="ItemsSource" Value="{Binding MenuItems}"/>
+        <Setter Property="HotKey" Value="{Binding HotKey}"/>
+
+        <Setter Property="ItemContainerTheme"
+                Value="{DynamicResource MenuItemViewModelTheme}" />
+    </ControlTheme>
+
+
+    <!-- Sub-menu item theme -->
+    <ControlTheme x:Key="MenuItemViewModelTheme"
+                  x:DataType="menuVMs:MenuItemViewModel"
+                  TargetType="MenuItem"
+                  BasedOn="{StaticResource {x:Type MenuItem}}">
+
+        <Setter Property="Header" Value="{Binding Header}" />
+        <Setter Property="FontWeight" Value="{Binding FontWeight}" />
+        <Setter Property="Command" Value="{Binding Command}" />
+        <Setter Property="CommandParameter" Value="{Binding Parameter}"/>
+        <Setter Property="IsEnabled" Value="{Binding Enabled}" />
+        <Setter Property="IsChecked" Value="{Binding Checked}" />
+        <Setter Property="ToggleType" Value="{Binding ToggleType}" />
+        <Setter Property="ItemsSource" Value="{Binding MenuItems}"/>
+        <Setter Property="IsHitTestVisible" Value="{Binding IsHitTestVisible}"/>
+        <Setter Property="HotKey" Value="{Binding HotKey}"/>
+        <Setter Property="IsSubMenuOpen" Value="False"/>
+
+        <!-- Recursive -->
+        <Setter Property="ItemContainerTheme"
+                Value="{DynamicResource MenuItemViewModelTheme}" />
+
+        <Style Selector="^[ToggleType=None]">
+            <Setter Property="Icon">
+                <Template>
+                    <Image>
+                        <Image.Source>
+                            <controls:VectorIconDrawingImage
+                                Brush="{Binding IconBrush, Mode=TwoWay}"
+                                Drawing="{Binding IconKind,
+                                          Converter={StaticResource vectorIconConverter}}"/>
+                        </Image.Source>
+                    </Image>
+                </Template>
+            </Setter>
+        </Style>
+    </ControlTheme>
+
+</ResourceDictionary>

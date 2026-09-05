@@ -21,6 +21,9 @@ namespace RelinkToolkit2.Controls.PropertyGrid;
 
 public class eObjIdCellEditFactory : AbstractCellEditFactory
 {
+    // AOT
+    public override ICellEditFactory Clone() => new eObjIdCellEditFactory();
+
     public override Control? HandleNewProperty(PropertyCellContext context)
     {
         var propertyDescriptor = context.Property;

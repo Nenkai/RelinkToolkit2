@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Media;
 
@@ -18,7 +10,16 @@ using GBFRDataTools.FSM.Entities;
 
 using Nodify;
 
+using RelinkToolkit2.Messages.Fsm;
 using RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
+
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace RelinkToolkit2.ViewModels.Documents.GraphEditor;
 
@@ -28,38 +29,58 @@ namespace RelinkToolkit2.ViewModels.Documents.GraphEditor;
 public partial class GraphConnectionViewModel : ObservableObject
 {
     [ObservableProperty]
-    private Point _anchor;
+    public partial Point Anchor { get; set; }
 
     [ObservableProperty]
-    private ArrowHeadEnds _arrowHeadEnds = ArrowHeadEnds.End;
+    public partial ArrowHeadEnds ArrowHeadEnds { get; set; } = ArrowHeadEnds.End;
 
     [ObservableProperty]
-    private IBrush _arrowColor = GraphColors.NormalTransition;
+    public partial IBrush ArrowColor { get; set; } = GraphColors.NormalTransition;
 
     [ObservableProperty]
-    private bool _isAnimating = false;
+    public partial bool IsAnimating { get; set; } = false;
 
     [ObservableProperty]
-    private int _directionalArrowCount = 0;
+    public partial int DirectionalArrowCount { get; set; } = 0;
 
     [ObservableProperty]
-    private string? _title;
+    public partial string? Title { get; set; }
 
     [ObservableProperty]
-    private ConnectionDirection? _direction;
+    public partial ConnectionDirection? Direction { get; set; }
 
     [ObservableProperty]
-    public bool _isSelectable = true;
-
+    public partial bool IsSelectable { get; set; } = true;
     public required NodeViewModel Source { get; set; }
     public required NodeViewModel Target { get; set; }
 
     [ObservableProperty]
-    private AvaloniaList<double>? _strokeDashArray;
+    public partial AvaloniaList<double>? StrokeDashArray { get; set; }
+
+    /// <summary>
+    /// Transitions. May have up to 2 (source to target and, target to source, if applicable)
+    /// </summary>
+    public ObservableCollection<TransitionViewModel> Transitions { get; set; } = [];
 
     public GraphConnectionViewModel()
     {
         
+    }
+
+    [RelayCommand]
+    public void OnTransitionDeleted(TransitionViewModel transition)
+    {
+        bool hadSelfConnection = Transitions.Any(e => e.Source == e.Target);
+        if (transition.Source == transition.Target)
+            transition.Source.HasSelfTransition = false;
+
+        Transitions.Remove(transition);
+        transition.Source.Transitions.Remove(transition);
+
+        if (Transitions.Count == 0 || (hadSelfConnection && !Transitions.Any(e => e.Source == e.Target)))
+        {
+            WeakReferenceMessenger.Default.Send(new DeleteNodeConnectionRequest(this));
+        }
     }
 
     public virtual void UpdateConnection()
@@ -69,6 +90,9 @@ public partial class GraphConnectionViewModel : ObservableObject
 
     public override string ToString()
     {
-        return $"{Source.Guid} -> {Target.Guid}";
+        if (Transitions.Count == 2)
+            return $"{Source.Guid} <-> {Target.Guid}";
+        else
+            return $"{Source.Guid} -> {Target.Guid}";
     }
 }

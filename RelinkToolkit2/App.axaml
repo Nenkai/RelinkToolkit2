@@ -20,10 +20,19 @@
 			<!-- For docking -->
 			<ControlRecycling x:Key="ControlRecyclingKey" />
 			
+			<!-- Nodify Themes -->
 			<ResourceDictionary.MergedDictionaries>
 				<ResourceInclude Source="avares://Nodify/Themes/Generic.xaml" />
 				<ResourceInclude Source="avares://Nodify/Themes/Dark.xaml" />
+
+				<!-- MenuItem binding to MenuItemViewModel -->
+				<ResourceInclude Source="avares://RelinkToolkit2/Controls/Menu/MenuItemContainerTheme.axaml"/>
 			</ResourceDictionary.MergedDictionaries>
+
+			<!-- Apply control themes to the context menu (MenuFlyout doesn't work) -->
+			<ControlTheme x:Key="{x:Type controls:ExtendableContextMenu}" TargetType="controls:ExtendableContextMenu" BasedOn="{StaticResource {x:Type ContextMenu}}">
+			    <Setter Property="ItemContainerTheme" Value="{DynamicResource MenuItemViewModelTheme}" />
+			</ControlTheme>
 
 			<!-- Snackbar Background Brushes -->
 			<ResourceDictionary.ThemeDictionaries>
@@ -39,24 +48,15 @@
 
 			<!-- For EditableTextBlock -->
 			<ControlTheme x:Key="EditableTextBlockBaseStyle" TargetType="{x:Type controls:EditableTextBlock}">
-				<Setter Property="Background"
-						Value="Transparent" />
-				<Setter Property="BorderThickness"
-						Value="1" />
-				<Setter Property="BorderBrush"
-						Value="DodgerBlue" />
-				<Setter Property="MinHeight"
-						Value="{Binding FontSize, RelativeSource={RelativeSource Self}}" />
-				<Setter Property="Padding"
-						Value="0" />
-				<Setter Property="Foreground"
-						Value="White" />
-				<Setter Property="VerticalContentAlignment"
-						Value="Center" />
-				<Setter Property="HorizontalContentAlignment"
-						Value="Stretch" />
-				<Setter Property="Cursor"
-						Value="IBeam" />
+				<Setter Property="Background" Value="Transparent" />
+				<Setter Property="BorderThickness" Value="1" />
+				<Setter Property="BorderBrush" Value="DodgerBlue" />
+				<Setter Property="MinHeight" Value="{Binding FontSize, RelativeSource={RelativeSource Self}}" />
+				<Setter Property="Padding" Value="0" />
+				<Setter Property="Foreground" Value="White" />
+				<Setter Property="VerticalContentAlignment" Value="Center" />
+				<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+				<Setter Property="Cursor" Value="IBeam" />
 				<Setter Property="Template">
 					<Setter.Value>
 						<ControlTemplate TargetType="{x:Type controls:EditableTextBlock}">
@@ -111,13 +111,20 @@
 	</Application.Resources>
 	
     <Application.Styles>
+		<!-- Avalonia Theme -->
         <SimpleTheme/>
+
+		<!-- Dock Theme -->
 		<DockSimpleTheme />
+
+		<!-- Datagrid Theme -->
 		<StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Simple.xaml"/>
 		
+		<!-- Logging -->
 		<StyleInclude Source="avares://RelinkToolkit2/Controls/Logging/Styles/BasicTheme.axaml"/>
 		<StyleInclude Source="avares://RelinkToolkit2/Controls/Logging/Styles/LogView.axaml"/>
 
+		<!-- Property Grid custom controls -->
 		<StyleInclude Source="avares://RelinkToolkit2/Controls/PropertyGrid/Views/Vector2View.axaml"/>
 		<StyleInclude Source="avares://RelinkToolkit2/Controls/PropertyGrid/Views/Vector3View.axaml"/>
 		<StyleInclude Source="avares://RelinkToolkit2/Controls/PropertyGrid/Views/Vector4View.axaml"/>
@@ -126,14 +133,14 @@
 		<StyleInclude Source="avares://RelinkToolkit2/Assets/Icons/Bootstrap.xaml"/>
 		<StyleInclude Source="avares://RelinkToolkit2/Assets/Icons/Material.xaml"/>
 
+		<!-- Dialog Host -->
 		<dialogHostAvalonia:DialogHostStyles/>
-
         <Style Selector="dialogs|Snackbar">
 			<Setter Property="Background"
 				Value="{DynamicResource CustomSnackbarBrush}"/>
 	    </Style>
 
-		<!-- Dock -->
+		<!-- Dock Controls -->
 		<Style Selector="DockControl">
 			<Setter Property="(ControlRecyclingDataTemplate.ControlRecycling)" Value="{StaticResource ControlRecyclingKey}" />
 		</Style>
@@ -147,9 +154,7 @@
 						  Width="16"
 						  Height="16"
 						  Margin="0" />
-						<TextBlock Text="{Binding Title}"
-								   VerticalAlignment="Center"
-								   Padding="4,0,0,0" />
+						<TextBlock Text="{Binding Title}" VerticalAlignment="Center" Padding="4,0,0,0" />
 					</StackPanel>
 				</DataTemplate>
 			</Setter>

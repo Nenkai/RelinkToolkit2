@@ -10,10 +10,17 @@ namespace RelinkToolkit2;
 
 public class GraphColors
 {
-    public static IBrush EndingNode => Brushes.DarkRed;
-    public static IBrush DefaultNode => Brushes.Black;
+    public static IBrush DefaultNodeBackground => Brushes.Black;
+    public static IBrush DefaultNodeBorder => Brushes.Black;
     public static IBrush DefaultNodeWithComponents => Brushes.DimGray;
+
     public static IBrush NodeLayerRoot => Brushes.Green;
+
+    public static IBrush EndNodeBackground => Brushes.DarkRed;
+    public static IBrush EndNodeBorder => Brushes.DarkRed;
+
+    public static IBrush BranchNode => new SolidColorBrush(Color.FromRgb(0xD3, 0x7A, 0x00), 1.0d);
+
     public static IBrush NormalTransition => Brushes.DodgerBlue;
     public static IBrush OverrideTransition => Brushes.OrangeRed;
 

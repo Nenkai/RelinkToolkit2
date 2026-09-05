@@ -1,0 +1,80 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:VMs="using:RelinkToolkit2.ViewModels.Tools.Properties"
+             xmlns:pgViews="using:RelinkToolkit2.Controls.PropertyGrid.Views"
+             xmlns:controls="using:RelinkToolkit2.Controls"
+             xmlns:design="clr-namespace:RelinkToolkit2"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="800"
+             x:Class="RelinkToolkit2.Views.Tools.Properties.FsmNodePropertiesEditorView"
+             x:DataType="VMs:FsmNodePropertiesEditorViewModel">
+    <Design.DataContext>
+		<x:Static Member="design:DesignData.FsmNodePropertiesEditorViewModel" />
+    </Design.DataContext>
+    <DockPanel Name="PropertiesPanel" IsVisible="{Binding Node, Converter={x:Static ObjectConverters.IsNotNull}}" Margin="4">
+        <StackPanel DockPanel.Dock="Top">
+	        <TextBlock DockPanel.Dock="Top" FontWeight="Bold" FontSize="12" Text="{Binding Node.Title, StringFormat='{}{0} Properties'}" Margin="4"/>
+            <StackPanel Orientation="Horizontal">
+	  	      <TextBlock Text="Guid" Margin="4"/>
+                <NumericUpDown Value="{Binding Node.Guid}" Padding="0" IsReadOnly="True" IsEnabled="False" ShowButtonSpinner="False"/>
+            </StackPanel>
+            <CheckBox Content="Is Branch (execute on same tick)" Margin="4" IsChecked="{Binding Node.IsBranch}"/>
+    
+            <Button Content="Bring into View" Margin="2" Command="{Binding BringNodeIntoViewCommand}" CommandParameter="{Binding Node}" HorizontalAlignment="Left"/>
+    
+            <Separator Margin="0,6,0,10"/>
+            <Expander IsVisible="{Binding Node.CanHaveComponents}" IsExpanded="True">
+	  	        <Expander.Header>
+	  	    	  <TextBlock Text="{Binding Node.Components.Count, StringFormat='{}{0} action(s)'}" FontWeight="Bold"/>
+                </Expander.Header>
+                <Expander.ContentTransition>
+		    	    <CrossFade Duration="0:0:0.0" />
+		    	</Expander.ContentTransition>
+                <StackPanel Orientation="Vertical">
+                    <ItemsControl ItemsSource="{Binding Node.Components}">
+	  	              <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="*,Auto,Auto">
+                                    <Button Grid.Column="0" Content="{Binding Name}" Margin="2" 
+                                            Command="{Binding #PropertiesPanel.((VMs:FsmNodePropertiesEditorViewModel)DataContext).ComponentSelectedCommand}" CommandParameter="{Binding}"/>
+                                    <Button Grid.Column="1" Width="30" Margin="2" 
+                                            Command="{Binding #PropertiesPanel.((VMs:FsmNodePropertiesEditorViewModel)DataContext).ComponentDocumentationCommand}" CommandParameter="{Binding}">
+                                      <Image Width="12" Height="12">
+	                                      <Image.Source>
+	                                          <controls:VectorIconDrawingImage Drawing="{DynamicResource Material.CommentEdit}"/>
+	                                      </Image.Source>
+	                                  </Image>
+                                    </Button>
+                                    <Button Grid.Column="2" Width="30" Margin="2" 
+                                            Command="{Binding #PropertiesPanel.((VMs:FsmNodePropertiesEditorViewModel)DataContext).ComponentDeletedCommand}" CommandParameter="{Binding}">
+                                      <Image Width="12" Height="12">
+	                                      <Image.Source>
+	                                          <controls:VectorIconDrawingImage Drawing="{DynamicResource Material.Delete}"/>
+	                                      </Image.Source>
+	                                  </Image>
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+    
+                    <Button Cursor="Hand" Margin="2" Click="Button_AddComponent">
+	                    <StackPanel Orientation="Horizontal">
+	                        <Image Width="12" Height="12" Margin="0,0,4,0">
+	                            <Image.Source>
+	                                <controls:VectorIconDrawingImage Drawing="{DynamicResource Material.Plus}"/>
+	                            </Image.Source>
+	                        </Image>
+	                        <TextBlock Text="Add Action" FontWeight="SemiBold"/>
+	                    </StackPanel>
+	                </Button>
+                </StackPanel>
+            </Expander>
+            <Separator Margin="0,6,0,6" IsVisible="{Binding Node.CanHaveComponents}"/>
+        </StackPanel>
+
+        <pgViews:DocumentablePropertyGridView IsVisible="{Binding #PropertiesPanel.((VMs:FsmNodePropertiesEditorViewModel)DataContext).Node.CanHaveComponents}" DataContext="{Binding PropertyGrid}"/>
+    </DockPanel>
+
+</UserControl>

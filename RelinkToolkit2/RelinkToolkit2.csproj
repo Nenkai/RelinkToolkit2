@@ -9,6 +9,8 @@
     <AvaloniaXamlIlDebuggerLaunch>False</AvaloniaXamlIlDebuggerLaunch>
     <AssemblyVersion>0.4.0</AssemblyVersion>
     <FileVersion>0.4.0</FileVersion>
+
+	<JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,19 +27,24 @@
     <PackageReference Include="AvaloniaDialogs" Version="3.7.1" />
     <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-    <PackageReference Include="Dock.Avalonia" Version="12.1.0.4" />
-    <PackageReference Include="Dock.Avalonia.Themes.Simple" Version="12.1.0.4" />
-    <PackageReference Include="Dock.Model.Avalonia" Version="12.1.0.4" />
-    <PackageReference Include="Dock.Model.Mvvm" Version="12.1.0.4" />
+    <PackageReference Include="Dock.Avalonia" Version="12.1.0.6" />
+    <PackageReference Include="Dock.Avalonia.Themes.Simple" Version="12.1.0.6" />
+    <PackageReference Include="Dock.Model.Avalonia" Version="12.1.0.6" />
+    <PackageReference Include="Dock.Model.Mvvm" Version="12.1.0.6" />
+    <PackageReference Include="Markdown.Avalonia" Version="12.0.0-a3" />
     <PackageReference Include="MessageBox.Avalonia" Version="12.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.11" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.11" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.11" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.11" />
-
-	  <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.11" />
     <PackageReference Include="Microsoft.Msagl" Version="1.1.6" />
     <PackageReference Include="NLog" Version="6.2.0" />
     <PackageReference Include="NLog.Extensions.Logging" Version="6.2.0" />
+    <PackageReference Include="StaticViewLocator" Version="0.6.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Xaml.Behaviors" Version="12.0.7" />
   </ItemGroup>
 	
@@ -60,7 +67,13 @@
     <Compile Update="Controls\PropertyGrid\Views\Vector4View.axaml.cs">
       <DependentUpon>Vector4View.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\ComponentSearchView.axaml.cs">
+    <Compile Update="Controls\PropertyGrid\Views\DocumentablePropertyGridView.axaml.cs">
+      <DependentUpon>DocumentablePropertyGridView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Tools\Properties\BtNodePropertiesEditorView.axaml.cs">
+      <DependentUpon>BtNodePropertiesEditorView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Search\ComponentSearchView.axaml.cs">
       <DependentUpon>ComponentSearchView.axaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Documents\GraphEditor\BTEditorView.axaml.cs">
@@ -72,18 +85,18 @@
     <Compile Update="Views\Documents\GenericEntityEditorView.axaml.cs">
       <DependentUpon>GenericEntityEditorView.axaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\Tools\LogWindow.axaml.cs">
-      <DependentUpon>LogWindow.axaml</DependentUpon>
-    </Compile>
   </ItemGroup>
 	
   <ItemGroup>
+    <None Update="Data\component_doc.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="NLog.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 	
   <ItemGroup>
-    <Folder Include="Data\" />
+    <Folder Include="Messages\IO\" />
   </ItemGroup>
 </Project>

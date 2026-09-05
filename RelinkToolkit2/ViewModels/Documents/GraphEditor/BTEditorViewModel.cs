@@ -1,14 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Numerics;
-using System.Security.Cryptography;
-using System.Threading.Tasks;
-
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
@@ -28,9 +18,21 @@ using Microsoft.Extensions.Logging;
 
 using RelinkToolkit2.Messages.Fsm;
 using RelinkToolkit2.Services;
+using RelinkToolkit2.Services.Configuration.Models;
 using RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 using RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents;
 using RelinkToolkit2.ViewModels.Menu;
+using RelinkToolkit2.ViewModels.Tools.Properties;
+
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Numerics;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace RelinkToolkit2.ViewModels.Documents.GraphEditor;
 
@@ -53,25 +55,25 @@ public partial class BTEditorViewModel : NodeEditorViewModelBase, /* ISaveableDo
     public ObservableCollection<GraphConnectionViewModel> Connections { get; } = [];
 
     [ObservableProperty]
-    private PendingConnectionViewModel _pendingConnection = new();
+    public partial PendingConnectionViewModel PendingConnection { get; set; } = new();
 
     /// <summary>
     /// Currently selected node.
     /// </summary>
     [ObservableProperty]
-    private BTNodeViewModel? _selectedNode;
+    public partial BTNodeViewModel? SelectedNode { get; set; }
 
     /// <summary>
     /// Currently selected connection.
     /// </summary>
     [ObservableProperty]
-    private FsmConnectionViewModel? _selectedConnection;
+    public partial FsmConnectionViewModel? SelectedConnection { get; set; }
 
     /// <summary>
     /// Currently selected nodes.
     /// </summary>
     [ObservableProperty]
-    private ObservableCollection<BTNodeViewModel> _selectedNodes = [];
+    public partial ObservableCollection<BTNodeViewModel> SelectedNodes { get; set; } = [];
 
     private string? _currentBtName;
 
@@ -83,9 +85,10 @@ public partial class BTEditorViewModel : NodeEditorViewModelBase, /* ISaveableDo
     /// </summary>
     public ObservableCollection<MenuItemViewModel> EditorContextMenuItems { get; set; } = [];
 
-    public BTEditorViewModel()
+    public BTEditorViewModel(IDialogService dialogService, ComponentDocumentationService componentDocumentation, ILogger<BTEditorViewModel> logger)
+        : base(dialogService, componentDocumentation)
     {
-        _logger = App.Current.Services.GetService<ILogger<BTEditorViewModel>>();
+        _logger = logger;
 
         // We are essentially swapping out gestures here.
         // We want group layer click to select the whole layer. not just the group.
@@ -99,7 +102,6 @@ public partial class BTEditorViewModel : NodeEditorViewModelBase, /* ISaveableDo
                 ParentEditor = this,
                 Title = "Test1",
                 Guid = 123456789,
-                IsLayerRootNode = true,
                 Location = new Point(-200, 0),
             };
             node.UpdateVisuals();
@@ -145,6 +147,23 @@ public partial class BTEditorViewModel : NodeEditorViewModelBase, /* ISaveableDo
             Enabled = false,
             Command = new RelayCommand(AddNewNode),
         });
+    }
+
+    public override void OnActive()
+    {
+        base.OnActive();
+
+        DockFactory dockFactory = (DockFactory)Factory!;
+        BtNodePropertiesEditorViewModel nodeProperties = App.Current!.Services!.GetRequiredService<BtNodePropertiesEditorViewModel>();
+        dockFactory?.ShowInPropertiesPane(nodeProperties);
+    }
+
+    public override void OnInactive()
+    {
+        base.OnInactive();
+
+        DockFactory dockFactory = (DockFactory)Factory!;
+        dockFactory.RemovePropertyTool(BtNodePropertiesEditorViewModel.GlobalId);
     }
 
     /// <summary>
@@ -207,10 +226,7 @@ public partial class BTEditorViewModel : NodeEditorViewModelBase, /* ISaveableDo
     /// <param name="value"></param>
     partial void OnSelectedNodeChanged(BTNodeViewModel? value)
     {
-        // HACK: This exists because clicking away from a flyout for a node doesn't dismiss the flyout for some reason..
-        // Request the view (yikes!) to do so.
-        if (value is null)
-            WeakReferenceMessenger.Default.Send<DismissSearchComponentMenuRequest>();
+        NodeClicked(value);
     }
 
     /// <summary>
@@ -227,7 +243,7 @@ public partial class BTEditorViewModel : NodeEditorViewModelBase, /* ISaveableDo
                                   $"{Title}_behavior_tree_ingame.json", LastFile);
             if (file is null)
                 return null;
-
+            
             outputPath = file.TryGetLocalPath();
         }
 
@@ -248,9 +264,9 @@ public partial class BTEditorViewModel : NodeEditorViewModelBase, /* ISaveableDo
             newTitle = newTitle.Replace("_behavior_tree_ingame", string.Empty);
 
         _currentBtName = newTitle;
+
         this.Title = _currentBtName;
         SolutionTreeViewItem.TreeViewName = _currentBtName;
-
         return outputUri;
     }
 
@@ -268,18 +284,18 @@ public partial class BTEditorViewModel : NodeEditorViewModelBase, /* ISaveableDo
         return true;
     }
 
-
-
     /// <summary>
     /// Adds a new node to the graph, using the current mouse location.
     /// </summary>
     public void AddNewNode()
     {
-        var node = new BTNodeViewModel() { ParentEditor = this };
-        node.Guid = GetNewGuid();
-        node.Location = MouseLocation;
-        node.IsRenaming = true;
-        node.Title = "FSMNode";
+        var node = new BTNodeViewModel
+        {
+            ParentEditor = this,
+            Guid = GetNewGuid(),
+            Location = MouseLocation,
+            IsRenaming = true,
+        };
 
         AddNode(node);
     }
@@ -308,7 +324,7 @@ public partial class BTEditorViewModel : NodeEditorViewModelBase, /* ISaveableDo
     /// Removes a connection from the graph.
     /// </summary>
     /// <param name="connection"></param>
-    public void RemoveConnection(GraphConnectionViewModel connection)
+    public override void RemoveConnection(GraphConnectionViewModel connection)
     {
         Connections.Remove(connection);
     }
@@ -381,7 +397,7 @@ public partial class BTEditorViewModel : NodeEditorViewModelBase, /* ISaveableDo
                 break;
 
             case SelectorNode:
-                nodeViewModel.BorderBrush = GraphColors.DefaultNode;
+                nodeViewModel.BorderBrush = GraphColors.DefaultNodeBorder;
                 break;
 
             case FSMNodeForBT fsmNodeForBt:
@@ -408,7 +424,7 @@ public partial class BTEditorViewModel : NodeEditorViewModelBase, /* ISaveableDo
                 break;
 
             default:
-                nodeViewModel.BorderBrush = GraphColors.DefaultNode;
+                nodeViewModel.BorderBrush = GraphColors.DefaultNodeBorder;
                 break;
         }
 

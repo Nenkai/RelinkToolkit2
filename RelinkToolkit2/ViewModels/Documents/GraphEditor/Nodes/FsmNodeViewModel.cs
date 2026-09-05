@@ -40,13 +40,25 @@ public partial class FsmNodeViewModel : FsmNodeViewModelBase //, IDropTarget
     public partial string? FsmSource { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanSetAsEndNode), nameof(CanHaveComponents))]
     public partial bool IsBranch { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanHaveSelfTransition))]
     public partial bool HasSelfTransition { get; set; }
 
-    public string? FsmFolderName { get; set; }
-    public string? FsmName { get; set; }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanSetAsEndNode), nameof(CanEditName), nameof(CanHaveSelfTransition), nameof(CanHaveComponents))]
+    public partial bool IsEndNode { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanSetAsEndNode), nameof(CanHaveComponents))]
+    public partial string? FsmFolderName { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanSetAsEndNode), nameof(CanHaveComponents))]
+    public partial string? FsmName { get; set; }
+
     public uint NameHash { get; set; }
 
     /// <summary>
@@ -60,16 +72,46 @@ public partial class FsmNodeViewModel : FsmNodeViewModelBase //, IDropTarget
     /// </summary>
     [JsonIgnore]
     public ObservableCollection<TransitionViewModel> Transitions { get; set; } = [];
-    
+
     /// <summary>
     /// Whether this node is the root of the layer it belongs to.
     /// </summary>
-    public bool IsLayerRootNode { get; set; }
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanSetAsEndNode), nameof(CanDeleteNode))]
+    public partial bool IsLayerRootNode { get; set; }
 
-    public bool IsEndNode { get; set; }
+    public bool CanSetAsEndNode => !IsEndNode && !IsLayerRootNode && Components.Count == 0 && Transitions.Count == 0 && !HasBaseFSMLink();
+
+    public bool CanDeleteNode => !IsLayerRootNode || (IsLayerRootNode && ParentGroup.Nodes.Count == 1);
+
+    public bool CanEditName => !IsEndNode;
+
+    public bool CanHaveSelfTransition => !HasSelfTransition && !IsEndNode;
+
+    /// <summary>
+    /// Returns whether this node is allowed to have components
+    /// </summary>
+    /// <returns></returns>
+    public bool CanHaveComponents => 
+            !IsEndNode && // End nodes don't physically exist therefore they cannot have components
+            !HasBaseFSMLink() && // Nodes that call fsm files don't seem to have components
+            !IsLayerRootNode; // Root nodes cannot have components it seems
 
     public FsmNodeViewModel()
     {
+        Title = NodeViewModel.DefaultNodeName;
+
+        Components.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(CanSetAsEndNode));
+            OnPropertyChanged(nameof(CanHaveComponents));
+        };
+
+        Transitions.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(CanSetAsEndNode));
+        };
+
         if (Design.IsDesignMode)
         {
             Title = "Test Node";
@@ -104,6 +146,9 @@ public partial class FsmNodeViewModel : FsmNodeViewModelBase //, IDropTarget
             ParentGroup = ParentGroup,
             IsEndNode = IsEndNode,
             IsBranch = IsBranch,
+
+            GuidVisible = GuidVisible,
+            LayerIndexVisible = LayerIndexVisible,
         };
 
         foreach (NodeComponentViewModel srcComponent in Components)
@@ -124,22 +169,6 @@ public partial class FsmNodeViewModel : FsmNodeViewModelBase //, IDropTarget
     public bool HasBaseFSMLink()
     {
         return !string.IsNullOrWhiteSpace(FsmName) && !string.IsNullOrWhiteSpace(FsmFolderName);
-    }
-
-    public bool CanSetAsEndNode()
-    {
-        return !IsEndNode && !IsLayerRootNode && Components.Count == 0 && Transitions.Count == 0 && !HasBaseFSMLink();
-    }
-
-    /// <summary>
-    /// Returns whether this node is allowed to have components
-    /// </summary>
-    /// <returns></returns>
-    public bool CanHaveComponents()
-    {
-        return !IsEndNode && // End nodes don't physically exist therefore they cannot have components
-            !HasBaseFSMLink() && // Nodes that call fsm files don't seem to have components
-            !IsLayerRootNode; // Root nodes cannot have components it seems
     }
 
     public void AddComponent(BehaviorTreeComponent btComponent)
@@ -168,9 +197,10 @@ public partial class FsmNodeViewModel : FsmNodeViewModelBase //, IDropTarget
 
     public void SetRootNodeState(bool isRootNode)
     {
-        IsLayerRootNode = isRootNode;
+        if (IsEndNode)
+            IsEndNode = false;
 
-        UpdateVisuals();
+        IsLayerRootNode = isRootNode;
     }
 
     public override void UpdateVisuals()
@@ -180,20 +210,31 @@ public partial class FsmNodeViewModel : FsmNodeViewModelBase //, IDropTarget
         else
             CornerRadius = new CornerRadius(0);
 
+        // Background
+        if (IsEndNode)
+            BackgroundBrush = GraphColors.EndNodeBackground;
+        else
+            BackgroundBrush = GraphColors.DefaultNodeBackground;
+
+        // Border
         if (IsLayerRootNode)
         {
             BorderBrush = GraphColors.NodeLayerRoot;
         }
+        else if (IsBranch)
+        {
+            BorderBrush = GraphColors.BranchNode;
+        }
         else if (IsEndNode)
         {
-            BorderBrush = GraphColors.EndingNode;
+            BorderBrush = GraphColors.EndNodeBorder;
         }
         else
         {
             if (Components.Count > 0)
                 BorderBrush = GraphColors.DefaultNodeWithComponents;
             else
-                BorderBrush = GraphColors.DefaultNode;
+                BorderBrush = GraphColors.DefaultNodeBorder;
         }
     }
 
@@ -204,6 +245,29 @@ public partial class FsmNodeViewModel : FsmNodeViewModelBase //, IDropTarget
             return;
 
         DeleteComponent(nodeComponentVM);
+    }
+
+    [RelayCommand]
+    partial void OnIsBranchChanged(bool value)
+    {
+        UpdateVisuals();
+    }
+
+    [RelayCommand]
+    partial void OnIsLayerRootNodeChanged(bool value)
+    {
+        UpdateVisuals();
+    }
+
+    [RelayCommand]
+    partial void OnIsEndNodeChanged(bool value)
+    {
+        if (value)
+            Title = string.Empty;
+        else
+            Title = NodeViewModel.DefaultNodeName;
+
+        UpdateVisuals();
     }
 
     [RelayCommand]

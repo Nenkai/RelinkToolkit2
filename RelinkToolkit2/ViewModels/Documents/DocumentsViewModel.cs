@@ -1,24 +1,21 @@
-﻿using Avalonia.Threading;
+﻿using System;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
+
+using Avalonia.Threading;
 
 using CommunityToolkit.Mvvm.Messaging;
 
-using Dock.Model.Controls;
 using Dock.Model.Mvvm.Controls;
 
 using RelinkToolkit2.Messages.Documents;
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RelinkToolkit2.ViewModels.Documents;
 
 public class DocumentsViewModel : DocumentDock
 {
-    public Dictionary<string, EditorDocumentBase> _openDocuments = [];
+    private readonly Dictionary<string, EditorDocumentBase> _openDocuments = [];
+
     public EditorDocumentBase? LastDocument { get; private set; }
 
     public DocumentsViewModel()
@@ -58,10 +55,8 @@ public class DocumentsViewModel : DocumentDock
 
     public void OnNewDocumentOpen(EditorDocumentBase newDocument)
     {
-        LastDocument?.UnregisterMessageListeners();
+        LastDocument?.OnInactive();
         LastDocument = newDocument;
-
-        newDocument.RegisterMessageListeners();
 
         WeakReferenceMessenger.Default.Send(new ActiveDocumentChangedMessage(newDocument));
     }
@@ -71,7 +66,7 @@ public class DocumentsViewModel : DocumentDock
         if (_openDocuments.TryGetValue(id, out EditorDocumentBase? doc))
         {
             _openDocuments.Remove(id);
-            doc?.UnregisterMessageListeners();
+            doc?.OnInactive();
 
             if (doc is not null && doc == LastDocument)
             {

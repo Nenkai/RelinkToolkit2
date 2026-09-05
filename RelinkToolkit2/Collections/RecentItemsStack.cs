@@ -43,9 +43,22 @@ public class RecentItemsStack<T> : IEnumerable<T> where T : notnull
         }
     }
 
+    public bool Remove(T item)
+    {
+        if (_map.TryGetValue(item, out var existingNode))
+        {
+            _list.Remove(existingNode);
+            return true;
+        }
+
+        return false;
+    }
+
     public T Pop()
     {
-        if (_list.Count == 0) throw new InvalidOperationException("Stack is empty.");
+        if (_list.Count == 0) 
+            throw new InvalidOperationException("Stack is empty.");
+
         var value = _list.First!.Value;
         _list.RemoveFirst();
         _map.Remove(value);

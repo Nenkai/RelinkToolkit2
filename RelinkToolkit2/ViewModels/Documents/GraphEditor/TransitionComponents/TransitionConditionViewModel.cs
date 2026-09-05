@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -33,6 +34,8 @@ public partial class TransitionConditionViewModel : TransitionConditionElementVi
 
     [ObservableProperty]
     private ConditionComponent _conditionComponent;
+
+    private TransitionConditionViewModel() { }
 
     public TransitionConditionViewModel(ConditionComponent conditionComponent, TransitionConditionOpViewModel? parentOperand = null)
     {

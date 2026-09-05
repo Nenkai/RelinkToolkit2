@@ -15,7 +15,7 @@ public partial class StatusBarViewModel : ObservableObject,
     IRecipient<SetStatusBarTextRequest>
 {
     [ObservableProperty]
-    public string? _message = "Welcome to RelinkToolkit2";
+    public partial string? Message { get; set; } = "Welcome to RelinkToolkit2";
 
     public StatusBarViewModel()
     {

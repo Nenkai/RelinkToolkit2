@@ -1,32 +1,34 @@
-﻿using System;
+﻿using Avalonia.Platform.Storage;
+
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+
+using GBFRDataTools.Entities;
+using GBFRDataTools.Entities.Player;
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
+using RelinkToolkit2.Controls.PropertyGrid.ViewModel;
+using RelinkToolkit2.Services;
+using RelinkToolkit2.ViewModels.Documents.Interfaces;
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-
-using Avalonia.Platform.Storage;
-
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
-
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-
-using GBFRDataTools.Entities;
-using GBFRDataTools.Entities.Player;
-
-using RelinkToolkit2.Services;
-using RelinkToolkit2.ViewModels.Documents.Interfaces;
 
 namespace RelinkToolkit2.ViewModels.Documents;
 
 public partial class GenericEntityEditorViewModel : EditorDocumentBase, ISaveableDocument
 {
-    private ILogger? _logger;
+    private readonly ILogger? _logger;
 
     /// <summary>
     /// Last name this file was saved as.
@@ -36,20 +38,20 @@ public partial class GenericEntityEditorViewModel : EditorDocumentBase, ISaveabl
     public bool ShouldPromptAsFirstSave { get; set; } = true;
 
     [ObservableProperty]
-    private int _selectedIndex;
+    public partial int SelectedIndex { get; set; }
 
     [ObservableProperty]
-    private object? _selectedObject;
+    public partial object? SelectedObject { get; set; }
 
-    public PropertyGridViewModel PropertyGridViewModel { get; set; }
+    public DocumentablePropertyGridViewModel PropertyGrid { get; set; }
 
     public ObservableCollection<GenericEntityEntryViewModel> Objects { get; set; } = [];
 
-    public GenericEntityEditorViewModel()
+    public GenericEntityEditorViewModel(ILogger<GenericEntityEditorViewModel> logger, 
+        IDialogService dialogService, ComponentDocumentationService componentDocumentation)
     {
-        PropertyGridViewModel = new(App.Current?.Services.GetService<ComponentDocumentationService>());
-
-        _logger = App.Current?.Services?.GetService<ILogger<GenericEntityEditorViewModel>>();
+        _logger = logger;
+        PropertyGrid = new DocumentablePropertyGridViewModel(dialogService, componentDocumentation);
     }
 
     partial void OnSelectedIndexChanged(int value)
@@ -78,18 +80,8 @@ public partial class GenericEntityEditorViewModel : EditorDocumentBase, ISaveabl
         if (Objects.Count > 0)
         {
             SelectedIndex = 0;
-            PropertyGridViewModel.SelectedObject = Objects[0].Object;
+            PropertyGrid.SetObject(Objects[0].Object);
         }
-    }
-
-    public override void RegisterMessageListeners()
-    {
-        WeakReferenceMessenger.Default.RegisterAll(this);
-    }
-
-    public override void UnregisterMessageListeners()
-    {
-        WeakReferenceMessenger.Default.UnregisterAll(this);
     }
 
     public async Task<Uri?> SaveDocument(IFilesService filesService, bool isSaveAs = false)

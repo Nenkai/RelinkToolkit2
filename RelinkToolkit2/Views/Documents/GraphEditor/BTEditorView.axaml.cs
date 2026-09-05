@@ -4,14 +4,11 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
-using Avalonia.Platform.Storage;
+using Avalonia.Styling;
 
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 
-using DynamicData;
-
-using GBFRDataTools.Entities;
 using GBFRDataTools.FSM.Components;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -21,25 +18,18 @@ using Microsoft.Msagl.Core.Routing;
 
 using Microsoft.Msagl.Layout.Layered;
 
-using Nodify;
-
+using RelinkToolkit2.Controls;
 using RelinkToolkit2.Messages.Fsm;
 using RelinkToolkit2.Services;
-using RelinkToolkit2.ViewModels.Documents;
 using RelinkToolkit2.ViewModels.Documents.GraphEditor;
 using RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 using RelinkToolkit2.ViewModels.Menu;
 using RelinkToolkit2.ViewModels.Search;
+using RelinkToolkit2.Views.Search;
 
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace RelinkToolkit2.Views.Documents.GraphEditor;
 
@@ -83,8 +73,9 @@ public partial class BTEditorView : UserControl,
         if (control is null)
             return;
 
-        var flyout = new MenuFlyout
+        var flyout = new ExtendableMenuFlyout
         {
+            ItemContainerTheme = (ControlTheme)Application.Current!.Resources["MenuItemViewModelTopLevelTheme"]!,
             ItemsSource = message.Items
         };
         flyout.ShowAt(control, showAtPointer: true);
@@ -100,8 +91,10 @@ public partial class BTEditorView : UserControl,
     {
         ObservableCollection<MenuItemViewModel> items = CreateNodeContextMenu((BTNodeView)message.NodeView, (BTNodeViewModel)message.Component.Parent, message.Component);
 
-        var flyout = new MenuFlyout();
-        flyout.ItemsSource = items;
+        var flyout = new ExtendableMenuFlyout
+        {
+            ItemsSource = items
+        };
         flyout.ShowAt(message.NodeView, showAtPointer: true);
 
         message.Reply(true);
@@ -208,16 +201,16 @@ public partial class BTEditorView : UserControl,
 
             ObservableCollection<MenuItemViewModel> items = CreateNodeContextMenu(nodeView, nodeVM);
 
-            var flyout = new MenuFlyout();
-            flyout.ItemsSource = items;
+            var flyout = new ExtendableMenuFlyout
+            {
+                ItemsSource = items
+            };
             flyout.ShowAt(nodeView, showAtPointer: true);
         }
     }
 
     private ObservableCollection<MenuItemViewModel> CreateNodeContextMenu(BTNodeView nodeView, BTNodeViewModel nodeVM, NodeComponentViewModel? componentVM = null)
     {
-        bool canDeleteNode = !nodeVM.IsLayerRootNode;
-
         ObservableCollection<MenuItemViewModel> items =
         [
             new MenuItemViewModel()

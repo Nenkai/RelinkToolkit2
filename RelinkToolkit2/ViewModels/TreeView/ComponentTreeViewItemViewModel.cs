@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RelinkToolkit2.ViewModels;
+namespace RelinkToolkit2.ViewModels.TreeView;
 
 public partial class ComponentTreeViewItemViewModel : TreeViewItemViewModel
 {

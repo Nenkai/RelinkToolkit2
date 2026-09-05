@@ -17,7 +17,7 @@ namespace RelinkToolkit2.ViewModels.TreeView;
 
 public partial class FSMTreeViewItemViewModel : TreeViewItemViewModel
 {
-    public required FsmEditorViewModel FsmEditor { get; set; }
+    public required FsmEditorViewModel FsmDocument { get; set; }
 
     public FSMTreeViewItemViewModel()
     {
@@ -27,6 +27,6 @@ public partial class FSMTreeViewItemViewModel : TreeViewItemViewModel
 
     public void OnDoubleClicked()
     {
-        WeakReferenceMessenger.Default.Send(new OpenDocumentRequest(FsmEditor));
+        WeakReferenceMessenger.Default.Send(new OpenDocumentRequest(FsmDocument));
     }
 }

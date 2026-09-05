@@ -28,14 +28,15 @@ using RelinkToolkit2.ViewModels.Documents;
 using RelinkToolkit2.ViewModels.Documents.GraphEditor;
 using RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 using RelinkToolkit2.ViewModels.TreeView;
-using RelinkToolkit2.Views.Tools;
 
 using System;
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Dock.Model.Core;
+using RelinkToolkit2.ViewModels.Properties;
+using RelinkToolkit2.ViewModels.Tools;
 
 namespace RelinkToolkit2.ViewModels;
 
@@ -46,16 +47,18 @@ public partial class MainViewModel : ObservableObject,
 {
     private readonly ILoggerFactory? _loggerFactory;
     private readonly ILogger? _logger;
-    private readonly DialogService _dialogService;
+    private readonly IDialogService _dialog;
+    private readonly RecentFilesService _recentFiles;
 
     public TopMenuViewModel TopMenuViewModel { get; }
     public DocumentsViewModel DocumentsViewModel { get; }
     public SolutionExplorerViewModel SolutionExplorerViewModel { get; }
     public StatusBarViewModel StatusBarViewModel { get; }
+
     private readonly DockFactory? _factory;
 
     [ObservableProperty]
-    private IRootDock? _layout;
+    public partial IRootDock? Layout { get; set; }
 
     public MainViewModel(TopMenuViewModel topMenuViewModel,
         DocumentsViewModel documentsViewModel, 
@@ -64,8 +67,9 @@ public partial class MainViewModel : ObservableObject,
         DockFactory dockFactory,
 
         ILoggerFactory loggerFactory,
-        DialogService dialogService,
-        ILogger<MainViewModel> logger)
+        IDialogService dialogService,
+        ILogger<MainViewModel> logger,
+        RecentFilesService recentFiles)
     {
         TopMenuViewModel = topMenuViewModel;
         DocumentsViewModel = documentsViewModel;
@@ -75,14 +79,11 @@ public partial class MainViewModel : ObservableObject,
         _factory = dockFactory;
         _loggerFactory = loggerFactory;
         _logger = logger;
-        _dialogService = dialogService;
+        _dialog = dialogService;
+        _recentFiles = recentFiles;
 
-        Layout = dockFactory.CreateLayout();
-        if (Layout is not null)
-        {
-            _logger?.LogInformation("Initializing dock layout");
-            dockFactory.InitLayout(Layout);
-        }
+        Layout = dockFactory.LoadOrCreateLayout();
+        dockFactory.InitLayout(Layout);
 
         WeakReferenceMessenger.Default.RegisterAll(this);
     }
@@ -132,53 +133,62 @@ public partial class MainViewModel : ObservableObject,
     {
         _logger?.LogInformation("Load file request: {}", fileResult);
 
+        bool opened;
         string fileName = fileResult.OriginalString;
         if (fileName.Contains("fsm_ingame"))
         {
-            await ProcessFSM(fileResult);
+            opened = await ProcessFSM(fileResult);
         }
         else if (fileName.Contains("behavior_tree_ingame"))
         {
-            await ProcessBT(fileResult);
+            opened = await ProcessBT(fileResult);
         }
         else if (fileName.Contains("baseinfo"))
         {
-            await ProcessBaseInfo(fileResult);
+            opened = await ProcessBaseInfo(fileResult);
         }
         else
         {
-            string path = fileResult.LocalPath;
+            opened = await OpenGenericFile(fileResult, fileResult.LocalPath);
+        }
 
-            try
-            {
-
-                var entity = GenericEntitySerializer.Parse(File.ReadAllBytes(path), path.EndsWith(".msg"));
-                GenericEntityEditorViewModel editorViewModel = new()
-                {
-                    Id = Path.GetFileNameWithoutExtension(path),
-                    Title = Path.GetFileNameWithoutExtension(path),
-                    Documents = DocumentsViewModel,
-                };
-                editorViewModel.SetObjects(entity);
-
-                DocumentsViewModel.AddDocument(editorViewModel);
-                editorViewModel.LastFile = fileResult;
-            }
-            catch (Exception ex)
-            {
-                var box = MessageBoxManager.GetMessageBoxStandard("Error", $"Failed to load file.\n{ex.Message}", icon: MsBox.Avalonia.Enums.Icon.Error);
-                await _dialogService.ShowMessageBoxDialogAsync(box);
-                return;
-            }
+        if (opened)
+        {
+            _recentFiles.Add(fileResult);
         }
     }
 
-    private async Task ProcessFSM(Uri uri)
+    private async Task<bool> OpenGenericFile(Uri fileResult, string path)
+    {
+        try
+        {
+
+            var entity = GenericEntitySerializer.Parse(File.ReadAllBytes(path), path.EndsWith(".msg"));
+
+            GenericEntityEditorViewModel editorViewModel = App.Current.Services.GetRequiredService<GenericEntityEditorViewModel>();
+            editorViewModel.Id = Path.GetFileNameWithoutExtension(path);
+            editorViewModel.Title = Path.GetFileNameWithoutExtension(path);
+            editorViewModel.Documents = DocumentsViewModel;
+            editorViewModel.SetObjects(entity);
+
+            DocumentsViewModel.AddDocument(editorViewModel);
+            editorViewModel.LastFile = fileResult;
+        }
+        catch (Exception ex)
+        {
+            var box = MessageBoxManager.GetMessageBoxStandard("Error", $"Failed to load file.\n{ex.Message}", icon: MsBox.Avalonia.Enums.Icon.Error);
+            await _dialog.ShowMessageBoxDialogAsync(box);
+            return false;
+        }
+
+        return true;
+    }
+
+    private async Task<bool> ProcessFSM(Uri uri)
     {
         FSMParser parser;
         try
         {
-
             parser = new FSMParser(_loggerFactory);
             await parser.Parse(File.ReadAllBytes(uri.LocalPath), uri.LocalPath.EndsWith(".msg"), OnLocateFSMFile);
             if (parser.HasErrors)
@@ -193,8 +203,8 @@ public partial class MainViewModel : ObservableObject,
         catch (Exception ex)
         {
             var box = MessageBoxManager.GetMessageBoxStandard("Error", $"Failed to load FSM file.\n{ex.Message}", icon: MsBox.Avalonia.Enums.Icon.Error);
-            await _dialogService.ShowMessageBoxDialogAsync(box);
-            return;
+            await _dialog.ShowMessageBoxDialogAsync(box);
+            return false;
         }
 
         string fsmName = Path.GetFileNameWithoutExtension(uri.LocalPath).Replace("_fsm_ingame", string.Empty);
@@ -207,15 +217,15 @@ public partial class MainViewModel : ObservableObject,
             if (spl.Length < 3 || !uint.TryParse(spl[1], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out questId))
             {
                 var box = MessageBoxManager.GetMessageBoxStandard("Error", $"Failed to parse quest id from quest fsm file name '{fsmName}'\nMake sure the file name is correct.", icon: MsBox.Avalonia.Enums.Icon.Error);
-                await _dialogService.ShowMessageBoxDialogAsync(box);
-                return;
+                await _dialog.ShowMessageBoxDialogAsync(box);
+                return false;
             }
 
             if (!uint.TryParse(spl[2], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out progressIndex))
             {
                 var box = MessageBoxManager.GetMessageBoxStandard("Error", $"Failed to parse progress index from quest fsm file name '{fsmName}'\nMake sure the file name is correct.", icon: MsBox.Avalonia.Enums.Icon.Error);
-                await _dialogService.ShowMessageBoxDialogAsync(box);
-                return;
+                await _dialog.ShowMessageBoxDialogAsync(box);
+                return false;
             }
         }
 
@@ -223,7 +233,7 @@ public partial class MainViewModel : ObservableObject,
 
         FsmEditorViewModel? editorViewModel = await AddNewFSMDocument(editorIdentifier, fsmName, parser);
         if (editorViewModel is null)
-            return;
+            return false;
 
         editorViewModel.LastFile = uri;
 
@@ -260,7 +270,7 @@ public partial class MainViewModel : ObservableObject,
         var fsmTreeItem = new FSMTreeViewItemViewModel()
         {
             TreeViewName = fsmName,
-            FsmEditor = editorViewModel,
+            FsmDocument = editorViewModel,
             IsExpanded = true,
         };
         editorViewModel.SolutionTreeViewItem = fsmTreeItem;
@@ -285,8 +295,10 @@ public partial class MainViewModel : ObservableObject,
         if (parser.BaseFSMParser is not null)
         {
             var box = MessageBoxManager.GetMessageBoxStandard("Warning", $"This FSM uses a template/base FSM and saving is not supported, do not save it.", icon: MsBox.Avalonia.Enums.Icon.Warning);
-            await _dialogService.ShowMessageBoxDialogAsync(box);
+            await _dialog.ShowMessageBoxDialogAsync(box);
         }
+
+        return true;
     }
 
     public async Task<string?> OnLocateFSMFile(string className, string fsmName)
@@ -334,11 +346,10 @@ public partial class MainViewModel : ObservableObject,
             ],
         });
 
-        var res = await _dialogService.ShowMessageBoxDialogAsync(box);
+        var res = await _dialog.ShowMessageBoxDialogAsync(box);
         if (res == "Open Logs")
         {
-            var logWindow = new LogWindow();
-            logWindow.Show();
+            _dialog.OpenLogWindow();
         }
     }
 
@@ -417,14 +428,14 @@ public partial class MainViewModel : ObservableObject,
                             SolutionExplorerViewModel.AddItem(new FSMTreeViewItemViewModel()
                             {
                                 TreeViewName = $"[{i}] {fsmDataRefInfo.Name}",
-                                FsmEditor = editorViewModel,
+                                FsmDocument = editorViewModel,
                             }, parentId: fsmRoot.Guid);
                         }
                     }
                     catch (Exception ex)
                     {
                         var box = MessageBoxManager.GetMessageBoxStandard("Error", $"Failed to load FSM file.\n{ex.Message}", icon: MsBox.Avalonia.Enums.Icon.Error);
-                        await _dialogService.ShowMessageBoxDialogAsync(box);
+                        await _dialog.ShowMessageBoxDialogAsync(box);
                         return false;
                     }
                 }
@@ -434,7 +445,7 @@ public partial class MainViewModel : ObservableObject,
         return true;
     }
 
-    private async Task ProcessBT(Uri uri)
+    private async Task<bool> ProcessBT(Uri uri)
     {
         BTParser parser;
         try
@@ -450,8 +461,8 @@ public partial class MainViewModel : ObservableObject,
         catch (Exception ex)
         {
             var box = MessageBoxManager.GetMessageBoxStandard("Error", $"Failed to load FSM file.\n{ex.Message}", icon: MsBox.Avalonia.Enums.Icon.Error);
-            await _dialogService.ShowMessageBoxDialogAsync(box);
-            return;
+            await _dialog.ShowMessageBoxDialogAsync(box);
+            return false;
         }
 
         string fsmName = Path.GetFileNameWithoutExtension(uri.LocalPath).Replace("_fsm_ingame", string.Empty);
@@ -459,7 +470,8 @@ public partial class MainViewModel : ObservableObject,
 
         BTEditorViewModel? editorViewModel = AddNewBTDocument(fsmId, fsmName, parser);
         if (editorViewModel is null)
-            return;
+            return false;
+
         editorViewModel.LastFile = uri;
 
         var fsmTreeItem = new BTTreeViewItemViewModel()
@@ -470,6 +482,7 @@ public partial class MainViewModel : ObservableObject,
         };
         editorViewModel.SolutionTreeViewItem = fsmTreeItem;
         SolutionExplorerViewModel.AddItem(fsmTreeItem);
+        return true;
     }
 
     public void NewBTDocument()
@@ -499,7 +512,7 @@ public partial class MainViewModel : ObservableObject,
         var fsmTreeItem = new FSMTreeViewItemViewModel()
         {
             TreeViewName = fsmName,
-            FsmEditor = editorViewModel,
+            FsmDocument = editorViewModel,
             IsExpanded = true,
         };
         editorViewModel.SolutionTreeViewItem = fsmTreeItem;
@@ -515,18 +528,16 @@ public partial class MainViewModel : ObservableObject,
     /// <returns>Editor view model. <see cref="null"/> if it wasn't loaded.</returns>
     private async Task<FsmEditorViewModel?> AddNewFSMDocument(string identifier, string name, FSMParser? fsmParser = null)
     {
-        FsmEditorViewModel fsmEditorViewModel = new()
-        {
-            Id = identifier,
-            Title = name,
-            Documents = DocumentsViewModel,
-        };
+        var fsmEditor = App.Current!.Services!.GetRequiredService<FsmEditorViewModel>();
+        fsmEditor.Id = identifier;
+        fsmEditor.Title = name;
+        fsmEditor.Documents = DocumentsViewModel;
 
-        if (!await fsmEditorViewModel.InitGraph(name, fsmParser))
+        if (!await fsmEditor.InitGraph(name, fsmParser))
             return null;
 
-        DocumentsViewModel.AddDocument(fsmEditorViewModel);
-        return fsmEditorViewModel;
+        DocumentsViewModel.AddDocument(fsmEditor);
+        return fsmEditor;
     }
 
     /// <summary>
@@ -538,12 +549,10 @@ public partial class MainViewModel : ObservableObject,
     /// <returns>Editor view model. <see cref="null"/> if it wasn't loaded.</returns>
     private BTEditorViewModel? AddNewBTDocument(string identifier, string name, BTParser? btParser = null)
     {
-        BTEditorViewModel btEditorViewModel = new()
-        {
-            Id = identifier,
-            Title = name,
-            Documents = DocumentsViewModel,
-        };
+        BTEditorViewModel btEditorViewModel = App.Current!.Services!.GetRequiredService<BTEditorViewModel>();
+        btEditorViewModel.Id = identifier;
+        btEditorViewModel.Title = name;
+        btEditorViewModel.Documents = DocumentsViewModel;
 
         if (!btEditorViewModel.InitGraph(name, btParser))
             return null;

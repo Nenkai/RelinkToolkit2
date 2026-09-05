@@ -31,13 +31,13 @@ public class LogItemViewModel : ReactiveObject
         set => this.RaiseAndSetIfChanged(ref _area, value);
     }
 
-    public Exception Exception
+    public Exception? Exception
     {
         get => _exception;
         set => this.RaiseAndSetIfChanged(ref _exception, value);
     }
 
-    public object State
+    public object? State
     {
         get => _state;
         set => this.RaiseAndSetIfChanged(ref _state, value);
@@ -68,7 +68,7 @@ public class LogItemViewModel : ReactiveObject
         set => this.RaiseAndSetIfChanged(ref _foreground, value);
     }
 
-    public LogItemViewModel(string name, LogLevel logLevel, EventId eventId, object state, Exception exception, string message, string area) 
+    public LogItemViewModel(string name, LogLevel logLevel, EventId eventId, object? state, Exception? exception, string message, string area) 
     {
         LogLevel = logLevel;
         EventId = eventId;
@@ -138,8 +138,8 @@ public class LogItemViewModel : ReactiveObject
     private StreamGeometry _iconPath;
     private DateTime _created;
     private string _message;
-    private object _state;
-    private Exception _exception;
+    private object? _state;
+    private Exception? _exception;
     private EventId _eventId;
     private LogLevel _logLevel;
     private string _area;

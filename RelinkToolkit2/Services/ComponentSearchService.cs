@@ -7,7 +7,11 @@ using GBFRDataTools.FSM.Components.Conditions;
 
 using Gma.DataStructures.StringSearch;
 
+using Microsoft.Extensions.Options;
+
 using RelinkToolkit2.Collections;
+using RelinkToolkit2.Services.Configuration;
+using RelinkToolkit2.Services.Configuration.Models;
 using RelinkToolkit2.ViewModels.Search;
 
 using System;
@@ -24,12 +28,22 @@ namespace RelinkToolkit2.Services;
 public class ComponentSearchService
 {
     private readonly ComponentDocumentationService _componentDocumentation;
+    private readonly IOptions<FSMOptions> _fsmOptions;
 
+    /// <summary>
+    /// Page caches for each type of searching type
+    /// </summary>
     public Dictionary<ComponentSearchCategoryType, ComponentSearchPageCache> _caches = [];
 
-    public ComponentSearchService(ComponentDocumentationService componentDocumentation)
+    /// <summary>
+    /// List of all distinct components
+    /// </summary>
+    private readonly Dictionary<string, ComponentSearchItemViewModel> _componentTable = [];
+
+    public ComponentSearchService(IOptions<FSMOptions> fsmOptions, ComponentDocumentationService componentDocumentation)
     {
         _componentDocumentation = componentDocumentation;
+        _fsmOptions = fsmOptions;
     }
 
     /// <summary>
@@ -50,6 +64,17 @@ public class ComponentSearchService
             _caches[searchCategoryType] = mainPageCache;
 
             mainPageCache.Root.SortPage();
+
+            // Fetch from config/recent items
+            _fsmOptions.Value.RecentComponentTypes.TryAdd(searchCategoryType.ToString(), []);
+            IEnumerable<string> recentItemsFromConfig = _fsmOptions.Value.RecentComponentTypes[searchCategoryType.ToString()].Reverse<string>();
+            foreach (string itemName in recentItemsFromConfig)
+            {
+                if (_componentTable.TryGetValue(itemName, out ComponentSearchItemViewModel? componentItem))
+                {
+                    mainPageCache.RecentItems.Push(componentItem);
+                }
+            }
         }
 
         // Clone it (different context)
@@ -111,14 +136,15 @@ public class ComponentSearchService
 
             if (compType.Namespace.StartsWith(typeNamespace))
             {
-                string key = _componentDocumentation.BuildKey(compType);
+                string key = ComponentDocumentationService.BuildTypeKey(compType);
                 string desc = _componentDocumentation.GetComponentString(key) ?? string.Empty;
                 string tag = compType.GetCustomAttribute<GameSupportAttribute>()?.Text ?? string.Empty;
                 string hoverText = GetHoverText(compType);
 
                 if (compType.Namespace == typeNamespace)
                 {
-                    mainPage.AddComponent(compType.Name, compType, desc, tag: tag, hoverText: hoverText, onSelectedCallback: OnSelected);
+                    ComponentSearchItemViewModel itemComponent = mainPage.AddComponent(compType.Name, compType, desc, tag: tag, hoverText: hoverText, onSelectedCallback: OnSelected);
+                    _componentTable.TryAdd(itemComponent.Name, itemComponent);
                 }
                 else
                 {
@@ -134,26 +160,29 @@ public class ComponentSearchService
                             string? folder = subSplit[i];
                             pageName += folder;
 
-                            if (!currentPage.TryGetByName(folder, out ComponentSearchItemViewModel? component))
+                            if (!currentPage.TryGetByName(folder, out ComponentSearchItemViewModel? newPage))
                             {
-                                component = new ComponentSearchItemViewModel() { Name = folder };
-                                currentPage.AddComponent(component);
+                                newPage = new ComponentSearchItemViewModel() { Name = folder };
+                                currentPage.AddComponent(newPage);
 
                                 ComponentSearchPageViewModel subPage = new()
                                 {
                                     Title = pageName,
                                 };
 
-                                component.SetPage(subPage);
+                                newPage.SetPage(subPage);
                                 currentPage = subPage;
                             }
                             else
                             {
-                                currentPage = ((ComponentSearchPageViewModel)component.Data!);
+                                currentPage = ((ComponentSearchPageViewModel)newPage.Data!);
                             }
 
                             if (i == subSplit.Length - 1)
-                                currentPage.AddComponent(compType.Name, compType, desc, tag: tag, hoverText: hoverText, onSelectedCallback: OnSelected);
+                            {
+                                ComponentSearchItemViewModel itemComponent = currentPage.AddComponent(compType.Name, compType, desc, tag: tag, hoverText: hoverText, onSelectedCallback: OnSelected);
+                                _componentTable.TryAdd(itemComponent.Name, itemComponent);
+                            }
                             else
                                 pageName += " > ";
                         }
@@ -193,7 +222,12 @@ public class ComponentSearchService
 
     public void OnSelected(ComponentSearchViewModel searchVM, ComponentSearchItemViewModel itemVM)
     {
-        _caches[searchVM.SearchCategoryType].RecentItems.Push(itemVM);
+        RecentItemsStack<ComponentSearchItemViewModel> recentItems = _caches[searchVM.SearchCategoryType].RecentItems;
+        recentItems.Push(itemVM);
+
+        // Update config
+        var list = recentItems.Select(e => e.Name.ToString()).ToList();
+        _fsmOptions.Value.RecentComponentTypes[searchVM.SearchCategoryType.ToString()] = list;
 
         searchVM?.OnSelected?.Invoke(searchVM, itemVM);
     }
@@ -201,7 +235,7 @@ public class ComponentSearchService
     public class ComponentSearchPageCache
     {
         public required ComponentSearchPageViewModel Root { get; set; }
-        public RecentItemsStack<ComponentSearchItemViewModel> RecentItems { get; set; } = new(20);
+        public RecentItemsStack<ComponentSearchItemViewModel> RecentItems { get; set; } = new(30);
     }
 }
 

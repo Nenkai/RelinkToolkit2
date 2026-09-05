@@ -86,7 +86,7 @@ public class NodeComponentDropHandler : DropHandlerBase
         if (sourceComponent.Parent == targetNodeVm)
             return false;
 
-        if (targetNodeVm is FsmNodeViewModel fsmNode && !fsmNode.CanHaveComponents())
+        if (targetNodeVm is FsmNodeViewModel fsmNode && !fsmNode.CanHaveComponents)
             return false;
 
         if (stateNode.GetVisualAt(e.GetPosition(stateNode)) is not Control targetControl)

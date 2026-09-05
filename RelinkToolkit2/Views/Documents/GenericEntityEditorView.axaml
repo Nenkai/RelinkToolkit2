@@ -2,17 +2,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-			 xmlns:nodify="https://miroiu.github.io/nodify"
-			 xmlns:local="clr-namespace:RelinkToolkit2;assembly=RelinkToolkit2"
 			 xmlns:views="using:RelinkToolkit2.Views"
+			 xmlns:pgViews="using:RelinkToolkit2.Controls.PropertyGrid.Views"
 			 xmlns:docVMs="using:RelinkToolkit2.ViewModels.Documents"
-			 xmlns:collections="clr-namespace:System.Collections;assembly=System.Runtime"
 			 xmlns:converters="using:RelinkToolkit2.Converters"
-			 xmlns:controls="using:RelinkToolkit2.Controls"
-			 xmlns:b="using:RelinkToolkit2.Behaviors"
-			 xmlns:i="using:Avalonia.Xaml.Interactivity"
-             xmlns:ia="using:Avalonia.Xaml.Interactions.Core"
-			 xmlns:pgc="using:Avalonia.PropertyGrid.Controls"
              mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="650"
              x:Class="RelinkToolkit2.Views.Documents.GenericEntityEditorView"
 			 x:DataType="docVMs:GenericEntityEditorViewModel">
@@ -34,6 +27,6 @@
 			</ComboBox.ItemTemplate>
 		</ComboBox>
 		<Separator Margin="-20,4,0,0"/>
-		<views:PropertyGridView DataContext="{Binding PropertyGridViewModel}"/>
+		<pgViews:DocumentablePropertyGridView DataContext="{Binding PropertyGrid}"/>
 	</DockPanel>
 </UserControl>

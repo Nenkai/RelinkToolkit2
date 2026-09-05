@@ -1,0 +1,66 @@
+﻿<UserControl x:Class="RelinkToolkit2.Views.Tools.ToolboxView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:converters="using:RelinkToolkit2.Converters"
+             xmlns:VMs="using:RelinkToolkit2.ViewModels.Tools"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="400"
+			 x:DataType="VMs:ToolboxViewModel">
+    <Design.DataContext>
+        <VMs:ToolboxViewModel/>
+    </Design.DataContext>
+
+	<UserControl.Styles>
+		<Style Selector="TreeView.NodesDragAndDrop">
+			<Setter Property="(Interaction.Behaviors)">
+				<BehaviorCollectionTemplate>
+					<BehaviorCollection>
+						<ContextDropBehavior Handler="{StaticResource NodesTreeViewDropHandler}" />
+					</BehaviorCollection>
+				</BehaviorCollectionTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="TreeView.NodesDragAndDrop TreeViewItem">
+			<Setter Property="IsExpanded" Value="True" />
+			<Setter Property="(Interaction.Behaviors)">
+				<BehaviorCollectionTemplate>
+					<BehaviorCollection>
+						<ContextDragBehavior />
+					</BehaviorCollection>
+				</BehaviorCollectionTemplate>
+			</Setter>
+		</Style>
+	</UserControl.Styles>
+	
+	<UserControl.Resources>
+		<converters:VectorIconConverter x:Key="vectorIconConverter"/>
+	</UserControl.Resources>
+
+	<!--
+    <Grid>
+        <TreeView Name="treeView" ItemsSource="{Binding DisplayedItems}" Classes="NodesDragAndDrop">
+			<TreeView.ItemTemplate>
+				<TreeDataTemplate ItemsSource="{Binding DisplayedItems}" x:DataType="viewmodels:TreeViewItemViewModel">
+					<StackPanel Orientation="Horizontal" IsVisible="{Binding Visible}">
+						<Image Width="14" Height="14">
+							<Image.Source>
+								<controls:VectorIconDrawingImage Drawing="{Binding IconKind, Converter={StaticResource vectorIconConverter}}"/>
+							</Image.Source>
+						</Image>
+						<TextBlock Text="{Binding TreeViewName}" Padding="4,0,0,0"/>
+				    </StackPanel>
+				</TreeDataTemplate>
+			</TreeView.ItemTemplate>
+			<TreeView.Styles>
+				<Style Selector="TreeViewItem" x:DataType="viewmodels:TreeViewItemViewModel">
+					<Setter Property="MinHeight" Value="24" />
+					<Setter Property="IsExpanded" Value="{Binding IsExpanded}"/>
+				</Style>
+			</TreeView.Styles>
+        </TreeView>
+    </Grid>
+	-->
+</UserControl>

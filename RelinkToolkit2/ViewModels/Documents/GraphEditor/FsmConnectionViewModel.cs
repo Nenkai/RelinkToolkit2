@@ -28,14 +28,6 @@ namespace RelinkToolkit2.ViewModels.Documents.GraphEditor;
 /// </summary>
 public partial class FsmConnectionViewModel : GraphConnectionViewModel
 {
-    [ObservableProperty]
-    public bool _isSelectable = true;
-
-    /// <summary>
-    /// Transitions. May have up to 2 (source to target and, target to source, if applicable)
-    /// </summary>
-    public ObservableCollection<TransitionViewModel> Transitions { get; set; } = [];
-
     public FsmConnectionViewModel()
     {
         Transitions.CollectionChanged += Transitions_CollectionChanged;
@@ -76,56 +68,48 @@ public partial class FsmConnectionViewModel : GraphConnectionViewModel
 
     public override void UpdateConnection()
     {
-        if (Source == Target)
+
+        ArrowHeadEnds = ArrowHeadEnds.None;
+        if (Transitions.Count == 0 || Transitions.All(e => e is null))
         {
             Title = string.Empty;
-            ArrowHeadEnds = ArrowHeadEnds.None;
+            return;
         }
-        else if (Transitions.Count == 0)
+
+        string title = "";
+        bool hasBothWays = Transitions.Any(e => e.Source == Target) && Transitions.Any(e => e.Target == Source);
+
+        // Same Layer?
+        if (Transitions[0].Source.LayerIndex == Transitions[0].Target.LayerIndex)
         {
-            Title = string.Empty;
-        }
-        else if (Transitions.Count == 1)
-        {
-            int condCount = Transitions[0].ConditionOperatorGroups.Count(e => e.Elements.Count > 0);
-            if (condCount > 0)
+            ArrowHeadEnds = ArrowHeadEnds.End;
+
+            // Both Directions?
+            if (hasBothWays)
             {
-                Title = "w/ Conditions";
+                title += "Dual";
+                ArrowHeadEnds = ArrowHeadEnds.Both;
             }
-            else
-                Title = string.Empty;
-
-            if (Transitions[0].Source.LayerIndex == Transitions[0].Target.LayerIndex)
-                ArrowHeadEnds = ArrowHeadEnds.End;
         }
-        else if (Transitions.Count == 2)
+
+        bool hasConditions = Transitions.Any(trans => trans.ConditionOperatorGroups.Any(e => e.Elements.Count > 0));
+        if (hasConditions)
         {
-            ArrowHeadEnds = ArrowHeadEnds.Both;
-            Title = "w/ Conditions (both ways)";
+            if (!string.IsNullOrWhiteSpace(title))
+                title += " + ";
+
+            title += "Conditions";
         }
-    }
 
-    [RelayCommand]
-    public void OnTransitionDeleted(TransitionViewModel transition)
-    {
-        bool hadSelfConnection = Transitions.Any(e => e.Source == e.Target);
-        if (transition.Source == transition.Target)
-            transition.Source.HasSelfTransition = false;
-
-        Transitions.Remove(transition);
-        transition.Source.Transitions.Remove(transition);
-
-        if (Transitions.Count == 0 || (hadSelfConnection && !Transitions.Any(e => e.Source == e.Target)))
+        // More than one transition from a node to another, same direction? (i.e, normal + override)
+        if (Transitions.Count(e => e.Source == Source) >= 2 || Transitions.Count(e => e.Target == Target) >= 2)
         {
-            WeakReferenceMessenger.Default.Send(new DeleteNodeConnectionRequest(this));
-        }
-    }
+            if (!string.IsNullOrWhiteSpace(title))
+                title += " + ";
 
-    public override string ToString()
-    {
-        if (Transitions.Count == 2)
-            return $"{Source.Guid} <-> {Target.Guid}";
-        else
-            return $"{Source.Guid} -> {Target.Guid}";
+            title += "Multiple";
+        }
+
+        Title = title;
     }
 }

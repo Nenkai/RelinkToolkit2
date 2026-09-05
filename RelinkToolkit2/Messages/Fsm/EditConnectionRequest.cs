@@ -15,9 +15,9 @@ namespace RelinkToolkit2.Messages.Fsm;
 /// </summary>
 public class EditConnectionRequest : RequestMessage<bool>
 {
-    public FsmConnectionViewModel Connection { get; set; }
+    public GraphConnectionViewModel? Connection { get; set; }
 
-    public EditConnectionRequest(FsmConnectionViewModel value)
+    public EditConnectionRequest(GraphConnectionViewModel value)
     {
         Connection = value;
     }

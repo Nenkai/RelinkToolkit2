@@ -18,6 +18,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
+using System.Xml.Serialization;
 
 namespace RelinkToolkit2.Services;
 
@@ -25,9 +26,9 @@ public class ComponentDocumentationService : IHostedService
 {
     private readonly ILogger _logger;
 
-    public const string DOC_FILE_NAME = "component_doc.xml";
+    public static readonly string DOC_FILE_NAME = Path.Combine("Data", "component_doc.xml");
 
-    public Dictionary<string, Component> Components { get; set; } = [];
+    public Dictionary<string, DocumentedType> Components { get; set; } = [];
 
     public ComponentDocumentationService(ILogger<ComponentDocumentationService> logger)
     {
@@ -45,24 +46,74 @@ public class ComponentDocumentationService : IHostedService
         Components.Clear();
     }
 
+    /// <summary>
+    /// Returns a key for the specified property descriptor
+    /// </summary>
+    /// <param name="propertyDescriptor"></param>
+    /// <returns></returns>
     public string BuildPropertyKey(PropertyDescriptor propertyDescriptor)
     {
-        return $"{BuildKey(propertyDescriptor.ComponentType)}.{propertyDescriptor.Name}";
+        return $"{BuildTypeKey(propertyDescriptor.ComponentType)}.{propertyDescriptor.Name}";
     }
 
-    public string BuildKey(Type type)
+    /// <summary>
+    /// Returns a key for the specified type
+    /// </summary>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    public static string BuildTypeKey(Type type)
     {
-        string key = "";
+        var names = new List<string>();
 
-        while (type.IsNested)
+        Type? currentType = type;
+        while (currentType is not null)
         {
-            key += $".{type.Name}";
-            type = type.DeclaringType;
+            names.Add(currentType.Name);
+            currentType = currentType.DeclaringType;
         }
 
-        key = $"{type.Name}{key}";
+        var sb = new StringBuilder();
+        for (int i = names.Count - 1; i >= 0; i--)
+        {
+            if (sb.Length > 0)
+                sb.Append('.');
+            sb.Append(names[i]);
+        }
 
-        return key;
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Adds or updates a description for a component with the specified key.
+    /// </summary>
+    /// <param name="key">Component key</param>
+    /// <param name="value">Description text</param>
+    public void SetComponentString(string key, string value)
+    {
+        if (string.IsNullOrEmpty(key))
+            throw new ArgumentException("Key must not be null or empty.", nameof(key));
+
+        DocumentedType component = GetOrCreateComponentByPath(key.AsSpan());
+        component.Description = value;
+    }
+
+    /// <summary>
+    /// Adds or updates a description for the property with the specified key
+    /// </summary>
+    /// <param name="key">Property key (component path + "." + property name).</param>
+    /// <param name="value">Description text to set.</param>
+    public void SetPropertyString(string key, string? value)
+    {
+        ReadOnlySpan<char> span = key.AsSpan();
+        int lastDot = span.LastIndexOf('.');
+        if (lastDot < 0)
+            throw new ArgumentException("Key must be in the form 'Component.Path.PropertyName'.", nameof(key));
+
+        ReadOnlySpan<char> componentPath = span[..lastDot];
+        ReadOnlySpan<char> propertyName = span[(lastDot + 1)..];
+
+        DocumentedType component = GetOrCreateComponentByPath(componentPath);
+        component.Properties[propertyName.ToString()] = value;
     }
 
     /// <summary>
@@ -72,11 +123,8 @@ public class ComponentDocumentationService : IHostedService
     /// <returns>null if not found.</returns>
     public string? GetComponentString(string key)
     {
-        Component? component = GetContainingComponent(key);
-        if (component is null)
-            return null;
-
-        return component.Description;
+        DocumentedType? component = FindComponentByPath(key.AsSpan());
+        return component?.Description;
     }
 
     /// <summary>
@@ -86,60 +134,91 @@ public class ComponentDocumentationService : IHostedService
     /// <returns>null if not found.</returns>
     public string? GetPropertyString(string key)
     {
-        Component? component = GetContainingComponent(key);
+        ReadOnlySpan<char> span = key.AsSpan();
+        int lastDot = span.LastIndexOf('.');
+        if (lastDot < 0)
+            return null;
+
+        ReadOnlySpan<char> componentPath = span[..lastDot];
+        ReadOnlySpan<char> propertyName = span[(lastDot + 1)..];
+
+        DocumentedType? component = FindComponentByPath(componentPath);
         if (component is null)
             return null;
 
-        foreach (var spl in key.AsSpan().Split("."))
-        {
-            ReadOnlySpan<char> range = key.AsSpan(spl);
-
-            if (spl.End.Value == key.Length)
-            {
-                var props = component.Properties.GetAlternateLookup<ReadOnlySpan<char>>();
-                if (props.TryGetValue(range, out string? desc))
-                    return desc;
-
-                return null;
-            }
-        }
+        var props = component.Properties.GetAlternateLookup<ReadOnlySpan<char>>();
+        if (props.TryGetValue(propertyName, out string? desc))
+            return desc;
 
         return null;
     }
 
-    private Component? GetContainingComponent(string key)
+    private DocumentedType? FindComponentByPath(ReadOnlySpan<char> path)
     {
         var alternate = Components.GetAlternateLookup<ReadOnlySpan<char>>();
 
-        Component? component = null;
-        foreach (var spl in key.AsSpan().Split("."))
+        DocumentedType? component = null;
+        foreach (var range in path.Split('.'))
         {
-            ReadOnlySpan<char> range = key.AsSpan(spl);
+            ReadOnlySpan<char> segment = path[range];
 
-            if (spl.End.Value == key.Length)
+            if (component is null)
             {
-                if (component is not null)
-                {
-                    return component;
-                }
-                else if (alternate.TryGetValue(key, out Component? elem))
-                {
-                    return elem;
-                }
-
-                return null;
+                if (!alternate.TryGetValue(segment, out component))
+                    return null;
             }
             else
             {
-                alternate.TryGetValue(range, out component);
+                component = FindChildComponent(component, segment);
                 if (component is null)
                     return null;
             }
         }
 
-        return null;
+        return component;
     }
 
+    private DocumentedType GetOrCreateComponentByPath(ReadOnlySpan<char> path)
+    {
+        DocumentedType? component = null;
+
+        foreach (var range in path.Split('.'))
+        {
+            ReadOnlySpan<char> segment = path[range];
+
+            if (component is null)
+            {
+                var alternate = Components.GetAlternateLookup<ReadOnlySpan<char>>();
+                if (!alternate.TryGetValue(segment, out component))
+                {
+                    string name = segment.ToString();
+                    component = new DocumentedType { Name = name };
+                    Components[name] = component;
+                }
+            }
+            else
+            {
+                component.ChildComponents ??= [];
+
+                DocumentedType? child = FindChildComponent(component, segment);
+                if (child is null)
+                {
+                    child = new DocumentedType { Name = segment.ToString() };
+                    component.ChildComponents[child.Name] = child;
+                }
+
+                component = child;
+            }
+        }
+
+        return component!;
+    }
+
+    private static DocumentedType? FindChildComponent(DocumentedType parent, ReadOnlySpan<char> name)
+    {
+        var alternate = parent.ChildComponents.GetAlternateLookup<ReadOnlySpan<char>>();
+        return alternate.TryGetValue(name, out DocumentedType? child) ? child : null;
+    }
 
     public void LoadDocumentFile()
     {
@@ -151,83 +230,101 @@ public class ComponentDocumentationService : IHostedService
 
         Components.Clear();
 
-        var doc = XDocument.Load(DOC_FILE_NAME);
-        var root = doc.Root; // <Types>
-
-        if (root is null)
-            return;
-
-        var components = new Dictionary<string, Component>();
-        foreach (XElement? typeElement in root.Elements("Component"))
+        try
         {
-            var component = DebugReadType(typeElement);
-            if (component is not null)
-                components[component.Name] = component;
-        }
+            using var fs = File.OpenText(DOC_FILE_NAME);
+            XmlSerializer ser = new XmlSerializer(typeof(TypeDocumentationRoot));
+            TypeDocumentationRoot root = (TypeDocumentationRoot)ser.Deserialize(fs);
 
-        Components = components;
+            foreach (TypeDocumentation type in root.Components)
+            {
+                DocumentedType component = VisitType(type);
+                Components.Add(type.Name, component);
+            }
+
+            static DocumentedType VisitType(TypeDocumentation typeDoc)
+            {
+                var component = new DocumentedType
+                {
+                    Name = typeDoc.Name,
+                    Description = typeDoc.Description
+                };
+
+                foreach (TypePropertyDocumentation prop in typeDoc.Properties)
+                {
+                    component.Properties[prop.Name] = prop.Description;
+                }
+
+                foreach (TypeDocumentation child in typeDoc.ChildTypes)
+                {
+                    var subComponent = VisitType(child);
+                    component.ChildComponents[subComponent.Name] = subComponent;
+                }
+
+                return component;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to load documentation file at {}", DOC_FILE_NAME);
+            throw;
+        }
 
         _logger.LogInformation("Loaded FSM component documentation with {} element(s).", Components.Count);
     }
 
-
-
-    private Component? DebugReadType(XElement typeElement)
+    public void SaveDocumentFile()
     {
-        XAttribute? componentNameAttribute = typeElement.Attribute("Name");
-        if (componentNameAttribute is null)
+        var root = new TypeDocumentationRoot
         {
-            _logger.LogWarning("Component has missing or invalid 'Name' attribute.");
-            return null;
-        }
-
-        var component = new Component
-        {
-            Name = componentNameAttribute.Value
+            Components = new(Components.Count)
         };
 
-        XElement? descriptionElement = typeElement.Element("Description");
-        if (descriptionElement is not null)
-            component.Description = descriptionElement.Value;
-
-        var propertiesElement = typeElement.Element("Properties");
-        if (propertiesElement != null)
+        foreach (DocumentedType component in Components.Values)
         {
-            foreach (XElement? propElement in propertiesElement.Elements("Property"))
-            {
-                XAttribute? nameAttribute = propElement.Attribute("Name");
-                if (nameAttribute is null)
-                {
-                    _logger.LogWarning("Property documentation for component {} has invalid or missing 'Name' attribute.", component.Name);
-                    continue;
-                }
-
-                XElement? propertyDescriptionElement = propElement.Element("Description");
-                if (propertyDescriptionElement is null)
-                {
-                    _logger.LogWarning("Property documentation for component {} has invalid or missing 'Description' element.", component.Name);
-                    continue;
-                }
-
-                string name = nameAttribute.Value;
-                string description = propertyDescriptionElement.Value;
-                component.Properties[name] = description;
-            }
+            var rootTypeDoc = CreateTypeDocumentation(component);
+            root.Components.Add(rootTypeDoc);
         }
 
-        XElement? childComponentsElement = typeElement.Element("ChildComponents");
-        if (childComponentsElement != null)
-        {
-            component.ChildComponents = [];
-            foreach (XElement? childElement in childComponentsElement.Elements("Type"))
-            {
-                Component? childType = DebugReadType(childElement);
-                if (childType is not null)
-                    component.ChildComponents.Add(childType);
-            }
-        }
+        XmlSerializer serializer = new(typeof(TypeDocumentationRoot));
 
-        return component;
+        string? dirName = Path.GetDirectoryName(Path.GetFullPath(DOC_FILE_NAME));
+        if (!Directory.Exists(dirName))
+            Directory.CreateDirectory(dirName);
+
+        using var fs = File.Create(DOC_FILE_NAME);
+        serializer.Serialize(fs, root);
+
+        _logger?.LogInformation("Saved FSM component documentation with {} element(s).", Components.Count);
+
+        static TypeDocumentation CreateTypeDocumentation(DocumentedType component)
+        {
+            var typeDoc = new TypeDocumentation
+            {
+                Name = component.Name,
+                Description = component.Description,
+                Properties = new(component.Properties.Count),
+                ChildTypes = new(component.ChildComponents.Count)
+            };
+
+            foreach (var property in component.Properties)
+            {
+                var propDoc = new TypePropertyDocumentation
+                {
+                    Name = property.Key,
+                    Description = property.Value
+                };
+                typeDoc.Properties.Add(propDoc);
+            }
+
+            foreach (DocumentedType child in component.ChildComponents.Values)
+            {
+                var childTypeDoc = CreateTypeDocumentation(child);
+                typeDoc.ChildTypes.Add(childTypeDoc);
+            }
+
+            return typeDoc;
+        }
     }
 
     #region Debug Dumping
@@ -258,14 +355,14 @@ public class ComponentDocumentationService : IHostedService
 
         void ProcessType(string prefix, Type type)
         {
-            Component? component;
+            DocumentedType? component;
 
             var componentDescription = type.GetCustomAttribute<DescriptionAttribute>();
             if (componentDescription is not null  && !string.IsNullOrWhiteSpace(componentDescription.Description))
             {
                 if (!Components.TryGetValue($"{prefix}{type.Name}", out component))
                 {
-                    component = new Component() { Name = type.Name };
+                    component = new DocumentedType() { Name = type.Name };
                     Components[type.Name] = component;
                 }
 
@@ -279,7 +376,7 @@ public class ComponentDocumentationService : IHostedService
                 {
                     if (!Components.TryGetValue($"{prefix}{type.Name}", out component))
                     {
-                        component = new Component() { Name = type.Name };
+                        component = new DocumentedType() { Name = type.Name };
                         Components[type.Name] = component;
                     }
 
@@ -292,63 +389,15 @@ public class ComponentDocumentationService : IHostedService
                 ProcessType($"{prefix}{type.Name}.", i);
             }
         }
-
-        DebugWriteXml(DOC_FILE_NAME);
     }
 
-    private void DebugWriteXml(string fileName)
-    {
-        using var xmlWriter = XmlWriter.Create(fileName, new XmlWriterSettings()
-        {
-            Indent = true,
-        });
-        xmlWriter.WriteStartDocument();
-
-        xmlWriter.WriteStartElement("Types");
-        foreach (var component in Components)
-            DebugWriteType(xmlWriter, component.Value);
-        xmlWriter.WriteEndElement();
-
-        xmlWriter.WriteEndDocument();
-    }
-
-    private static void DebugWriteType(XmlWriter xmlWriter, Component component)
-    {
-        xmlWriter.WriteStartElement("Component");
-        xmlWriter.WriteAttributeString("Name", component.Name);
-
-        if (!string.IsNullOrWhiteSpace(component.Description))
-            xmlWriter.WriteElementString("Description", component.Description);
-
-        xmlWriter.WriteStartElement("Properties");
-        {
-            foreach (var prop in component.Properties)
-            {
-                xmlWriter.WriteStartElement("Property");
-                xmlWriter.WriteAttributeString("Name", prop.Key);
-                xmlWriter.WriteElementString("Description", prop.Value);
-                xmlWriter.WriteEndElement();
-            }
-        }
-        xmlWriter.WriteEndElement();
-
-        if (component.ChildComponents?.Count > 0)
-        {
-            xmlWriter.WriteStartElement("ChildComponents");
-            foreach (var childType in component.ChildComponents)
-                DebugWriteType(xmlWriter, childType);
-            xmlWriter.WriteEndElement();
-        }
-
-        xmlWriter.WriteEndElement();
-    }
     #endregion
 
-    public class Component
+    public class DocumentedType
     {
         public required string Name { get; set; }
         public string? Description { get; set; }
-        public Dictionary<string, string> Properties { get; set; } = [];
-        public List<Component>? ChildComponents { get; set; }
+        public Dictionary<string, string?> Properties { get; set; } = [];
+        public Dictionary<string, DocumentedType> ChildComponents { get; set; } = [];
     }
 }

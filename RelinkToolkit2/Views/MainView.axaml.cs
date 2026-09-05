@@ -1,11 +1,14 @@
-﻿using Avalonia.Controls;
+﻿using System.Collections.Generic;
 
-using RelinkToolkit2.ViewModels;
-using Microsoft.Extensions.DependencyInjection;
-using RelinkToolkit2.Services;
-using Avalonia.Platform.Storage;
+using Avalonia.Controls;
 using Avalonia.Input;
-using System.Collections.Generic;
+using Avalonia.Platform.Storage;
+
+using Microsoft.Extensions.DependencyInjection;
+
+using RelinkToolkit2.Services;
+using RelinkToolkit2.ViewModels;
+using RelinkToolkit2.ViewModels.Windows;
 
 namespace RelinkToolkit2.Views;
 

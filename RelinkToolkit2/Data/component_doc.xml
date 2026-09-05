@@ -1,0 +1,3660 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Types xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Component Name="UniqueId">
+    <ChildTypes />
+    <Properties>
+      <Property Name="ObjectId">
+        <Description>Object id within layout aka placement aka scene file.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="FSMUnderLayerEndCondition">
+    <Description>Returns whether a child layer created by the previous node is completed by an IsEndTransition transition.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="TimeWait">
+    <Description>Waits for the specified amount of time and returns true when elapsed.</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="Time">
+        <Description>Time to wait in seconds.</Description>
+      </Property>
+      <Property Name="FsmLabel">
+        <Description>Fsm label/variable for this timer.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Event">
+    <Description>Checks for a specific UI event returned by an action.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="IsJoinLobby">
+    <Description>Returns whether a lobby has been joined and currently is in the lobby.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="IsSyncFlag">
+    <Description>Seems to go hand in hand with SetNetworkSyncFlag</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="MotionData">
+    <ChildTypes />
+    <Properties>
+      <Property Name="HashValue">
+        <Description>CRC32 hash of MotionId.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="SoundMixBalanceEndEventCondition">
+    <ChildTypes />
+    <Properties>
+      <Property Name="EventType">
+        <Description>Cutscene/Event Type</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="SoundMixBalanceInAnyEventCondition">
+    <ChildTypes />
+    <Properties>
+      <Property Name="EventType">
+        <Description>Cutscene/Event Type</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="SoundMixBalanceLatestCallEventCondition">
+    <ChildTypes />
+    <Properties>
+      <Property Name="EventType">
+        <Description>Cutscene/Event Type</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="CheckPartyCharacter">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsAllCheck">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="CheckPrepareEvents">
+    <Description>Check cutscene preparation event state. 
+OnEventCondition and EndEventCondition are related.
+
+Note: there's up to 8 events max at once internally.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="CheckTimer">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsBasedQuestLimitTimer">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="EndDispDialog">
+    <ChildTypes />
+    <Properties>
+      <Property Name="CheckResult">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="PlayerStatusEffectCheckCondition">
+    <Description>Checks if the player is affected by a current status/debuff</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="CheckStatusEffectType">
+        <Description>Status (debuff, etc) id</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="MotionTimeLoopCondition">
+    <Description>Unknown but animation related.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="DebugPadCondition">
+    <Description>Always returns false in retail builds (stripped)</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="InputKeyDebugCondition">
+    <Description>Always returns false in retail builds (stripped)</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="EndEventCondition">
+    <Description>Returns whether a specific cutscene event has ended (note: there's up to 8 events max at once internally)</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="OnEventCondition">
+    <Description>Returns whether a cutscene event is ongoing (note: there's up to 8 events max at once internally)</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="BlackBoardBoolCondition">
+    <Description>Returns whether the specified blackboard bool variable is true.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="BlackBoardFloatCondition">
+    <Description>Returns whether the specified blackboard float variable passes a binary operation.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="BlackBoardIntCondition">
+    <Description>Returns whether the specified blackboard int variable passes a binary operation.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="BlackBoardVectorCondition">
+    <Description>Returns whether the specified blackboard bool variable is true.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="ShotParentAILevelCondition">
+    <ChildTypes />
+    <Properties>
+      <Property Name="CheckLevel">
+        <Description>Level to check for.
+NOTE: Level 6 may have custom handling.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="ActionEndCondition">
+    <Description>Returns whether any or all actions assigned to a node are complete.</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsAllEnd">
+        <Description>Whether to check for all actions rather than any.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="TypeCondition">
+    <Description>Checks the current entity's layout type, assigned by the layout file (layout2) for the current room/stage.
+(example: ba260c entry in the layout2 file, field18 ('type')).</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="AIManualPlayerAttackInputCondition">
+    <Description>Returns whether the player inputs an attack input.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="AIManualPlayerInputCondition">
+    <Description>Returns whether the player inputs any action.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="AIBattleDistanceCondition">
+    <Description>Returns whether the AI satisfies a distance condition to the specified object.</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="Distance">
+        <Description>Distance to check.
+IGNORED if UseBlackBoardValue is specified.</Description>
+      </Property>
+      <Property Name="Type">
+        <Description>Type of value to check against.</Description>
+      </Property>
+      <Property Name="UseBlackBoardValue">
+        <Description>Whether to use a blackboard variable as the distance. OVERRIDES Distance.</Description>
+      </Property>
+      <Property Name="BoolName">
+        <Description>Variable to use as distance, when UseBlackBoardValue is enabled.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="AIBattleIndexCondition">
+    <Description>Returns whether if the current AI matches the party slot specified in 'Index'.</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsMVPEventPosIndex">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="AIBattleObjectAliveCondition">
+    <Description>Returns whether the entity the AI is targetting is alive.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="AIBattleSelectCondition">
+    <Description>Returns whether the value decided by AIBattleSelectComboAction matches value specified</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="AIBattleSequenceCondition">
+    <Description>Returns whether specific motion flags are active for an AI</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="Em0500TargetRangeCondition">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsUseRangeXZ">
+        <Description>Use variable 'Em_TargetRangeXZ' (0xE6BDBE8D) instead of 'Em_TargetRange' (0x3CF1B2DA)</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em3100TargetRangeCondition">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsUseRangeXZ">
+        <Description>Use variable 'Em_TargetRangeXZ' (0xE6BDBE8D) instead of 'Em_TargetRange' (0x3CF1B2DA)</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="EmAILevelCondition">
+    <ChildTypes />
+    <Properties>
+      <Property Name="CheckLevel">
+        <Description>Level to check for.
+NOTE: Level 6 may have custom handling.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="EmLinkTimeCondition">
+    <Description>Returns whether link time is active.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="EmTargetRangeCondition">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsUseRangeXZ">
+        <Description>Use variable 'Em_TargetRangeXZ' (0xE6BDBE8D) instead of 'Em_TargetRange' (0x3CF1B2DA)</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em8400MiniCloneBoolCondition">
+    <Description>Returns whether the specified blackboard bool variable is true.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="DebugPrintAction">
+    <Description>Prints text on screen. STRIPPED IN RELEASE BUILDS! Use 'Relink Modding Overlay' to reimplement this.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="EnableSkinView">
+    <ChildTypes />
+    <Properties>
+      <Property Name="EnableWeaponEffectOff">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="SetOptionWindowType">
+    <Description>Unknown.
+Returns events:
+- ToNext - Ok</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="StoryDialog">
+    <Description>Note: Uses dialog DLG_CUT_SKIP.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="ViewClose">
+    <Description>Closes a ui view/controller by name, aka ui viewb file based on controller name.
+It should have been opened using ViewClose first.
+
+Note: List of views appears to be mostly hardcoded on the executable as hash of the name.
+Example: LoadingIcon maps to ControllerLoadingIcon.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="ViewOpen">
+    <Description>Opens a ui view/controller by name, aka ui viewb file based on controller name.
+Note: List of views appears to be mostly hardcoded on the executable as hash of the name.
+Example: LoadingIcon maps to ControllerLoadingIcon.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="TrialMode">
+    <ChildTypes />
+    <Properties>
+      <Property Name="Mode_str">
+        <Description>Name of mode enum value</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="ResultItemOverPopup">
+    <Description>Uses dialog id DLG_RES_MAXOVER_CODE (84E17E1E) or 0x253E4303 or 0xA4650D1B or 0x467A7C9E</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="LoadAsset">
+    <ChildTypes />
+    <Properties>
+      <Property Name="Categories">
+        <Description>Matches categories in asset_load_setting.json.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="SetPreLoadUnloadMovieFile">
+    <Description>Preloads/Unloads worldmap_quest_all_1.bk2</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="PauseCommuAutoFixedPhraseSendMessage">
+    <ChildTypes />
+    <Properties>
+      <Property Name="ModeEnum">
+        <Description>Seems to follow CORE_AUTOTALK_TEXT strings</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="SetIsPauseMenuTop">
+    <ChildTypes />
+    <Properties>
+      <Property Name="StartOnly">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="OptionApplyTempKeepValues">
+    <ChildTypes />
+    <Properties>
+      <Property Name="ItemId">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="RequestUpdateOnlineID">
+    <ChildTypes />
+    <Properties>
+      <Property Name="Type">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="SetNetworkSyncFlag">
+    <Description>Seems to go hand in hand with IsSyncFlag</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="FlowSleep">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsAutoWakeUp">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="SetFateEpisodeFlag">
+    <Description>Sets fate episode state. Can be acquired with FateEpisodeState.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="FacilityFastTravel">
+    <Description>Note: hardcoded phase numbers</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="DialogCheckAssistMode">
+    <Description>Note: Uses dialog hash 65C87B5D</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="Dialog">
+    <Description>Opens a dialog with a simple message.</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="DialogID">
+        <Description>Dialog to use. Refers to dialog table in the database.</Description>
+      </Property>
+      <Property Name="OpenSeOff">
+        <Description>Whether to open with sound effects.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="DialogInfomationByID">
+    <ChildTypes />
+    <Properties>
+      <Property Name="OpenSeOff">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="FooterType">
+    <Description>Note: Seems to use PauseFooter</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="FooterLabel">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="BootCheckInitialSettings">
+    <Description>Returns event:
+- ToNext: if successful
+- ToInitialSettings: </Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="BootCheckSystemFile">
+    <Description>Check system files (must be called after BootLoadSystemFile) and returns an event.
+- ToNext - Ok
+- ToError - Errored
+- ToVersionError - Version Error
+- ToCreateSystemFile - System file must be created</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="BootLoadSystemFile">
+    <Description>Starts loading system files. Result must be checked using BootCheckSystemFile.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="BootSaveSystemFile">
+    <Description>Returns event:
+- ToNext: If successful</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="SummonTriggerOnHitCountAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="Status">
+        <Description>Depends on category.</Description>
+      </Property>
+      <Property Name="Debuff">
+        <Description>Used if DebuffCategory = Debuff.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="WwiseBgmControl">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsPhotoModeSkip">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="AddPlayerSpecialArtsPoint">
+    <Description>Adds SBA percentage.</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="Val1">
+        <Description>Party Member #1</Description>
+      </Property>
+      <Property Name="Val2">
+        <Description>Party Member #2</Description>
+      </Property>
+      <Property Name="Val3">
+        <Description>Party Member #3</Description>
+      </Property>
+      <Property Name="Val4">
+        <Description>Party Member #4</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="BeginEventControlAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsInGameEventMode">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="BeginSection">
+    <Description>Starts a new phase section.</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsDirectFormationSlot">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="FormationSlotId">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="CallConsecutiveEvent">
+    <ChildTypes />
+    <Properties>
+      <Property Name="WorldOffsetUniqueIdHash">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="CallEvent">
+    <ChildTypes />
+    <Properties>
+      <Property Name="OffsetUniqueIdHash">
+        <Description>Renamed in Endless Ragnarok to 'WorldOffsetUniqueIdHash'</Description>
+      </Property>
+      <Property Name="WorldOffsetUniqueIdHash">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="CheckLinkedRewards">
+    <ChildTypes />
+    <Properties>
+      <Property Name="RewardType">
+        <Description>Split into groups: 0-3, 4-8, 9, 10, 11</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="ClearEndlessModeQuest">
+    <ChildTypes />
+    <Properties>
+      <Property Name="EntityUniqueIdHash">
+        <Description>Hash of a placement uuid.</Description>
+      </Property>
+      <Property Name="PointUniqueIdHash">
+        <Description>Hash of a placement uuid.</Description>
+      </Property>
+      <Property Name="BossEndPointIdHashs">
+        <Description>Hash of a placement uuid.</Description>
+      </Property>
+      <Property Name="PortalUniqueIdHash">
+        <Description>Hash of a placement uuid.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="ClearQuest">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsSaveRequest">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="IsRecoveryNextMainQuest">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="ClearWithoutDrop">
+    <ChildTypes />
+    <Properties>
+      <Property Name="EntityUniqueIdHash">
+        <Description>Hash of a placement uuid.</Description>
+      </Property>
+      <Property Name="PointUniqueIdHash">
+        <Description>Hash of a placement uuid.</Description>
+      </Property>
+      <Property Name="BossEndPointIdHashs">
+        <Description>Hash of a placement uuid.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="ControlPlayerInput">
+    <Description>Allow/restrict controller input such as movement, attacking and camera.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="EnableEffectEmitter">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsMultiSelect">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="AdditionalUpperUuids">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="AdditionalLowerUuids">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="IsEffectTrigger">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="IsIncludePrefab">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="FadeOutAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="FadeTime">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="GetCharaTicket">
+    <ChildTypes />
+    <Properties>
+      <Property Name="TicketIndex">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="OnBossDeadAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="DeadEventFSMName">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="OpenDialog">
+    <ChildTypes />
+    <Properties>
+      <Property Name="CheckAtResult">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="PickTalkEvent">
+    <ChildTypes />
+    <Properties>
+      <Property Name="GroupIDs">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="PstDropReward">
+    <Description>Prologue Stage Drop Reward</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="SendSignal">
+    <ChildTypes />
+    <Properties>
+      <Property Name="SignalField">
+        <Description>[0] = signal type? idk
+[1] = 0 = placement object? otherwise cutscene type
+[2] = If
+      - Placement Object =&gt; Uuid of placement/layout object
+      - Cutscene type =&gt; Cutscene id
+[3] = If
+      - PlacementObject: status option of said object</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="SetCharacterSpoiler">
+    <ChildTypes />
+    <Properties>
+      <Property Name="EnableFlag">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="SetFixedPointCamera">
+    <ChildTypes />
+    <Properties>
+      <Property Name="ResetVelocity">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="SetWatchCamera">
+    <ChildTypes />
+    <Properties>
+      <Property Name="ZoneObjectId">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="BlendMotionPlayAction">
+    <Description>Plays motion/animation assigned</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="MotionPlayAction">
+    <Description>Plays motion/animation assigned</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsAdjustTimeToEnd">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="EndTimeToAdjust">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="ResetWaitFace">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="CollisionLineHitCondition">
+    <ChildTypes />
+    <Properties>
+      <Property Name="HitTypeIndex">
+        <Description>No more than 11.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="BlackBoardBoolAction">
+    <Description>Sets (or registers) a bool blackboard variable to the specified value.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="BlackBoardFloatAction">
+    <Description>Sets (or registers) a float blackboard variable to the specified value.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="BlackBoardIntAction">
+    <Description>Sets (or registers) a int blackboard variable to the specified value.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="RegisterBlackBoardBoolAction">
+    <Description>Registers a bool blackboard variable to the specified value for initialization purposes.
+If called again for an existing value it will not do anything.
+
+Not currently required to establish a variable, setting it with a regular blackboard action works fine. 
+Establishing a variable in either manner will allow the variable to be called by the entity that called the FSM. 
+
+Ex. Katalina calls and establishes a variable. Tweyen AI will not be able to reference it, but Katalina will be able to reference it in EVERY fsm she calls.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="RegisterBlackBoardFloatAction">
+    <Description>Registers a float blackboard variable to the specified value for initialization purposes.
+If called again for an existing value it will not do anything.
+
+Not currently required to establish a variable, setting it with a regular blackboard action works fine. 
+Establishing a variable in either manner will allow the variable to be called by the entity that called the FSM. 
+
+Ex. Katalina calls and establishes a variable. Tweyen AI will not be able to reference it, but Katalina will be able to reference it in EVERY fsm she calls.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="RegisterBlackBoardIntAction">
+    <Description>Registers a int blackboard variable to the specified value for initialization purposes.
+If called again for an existing value it will not do anything.
+
+Not currently required to establish a variable, setting it with a regular blackboard action works fine. 
+Establishing a variable in either manner will allow the variable to be called by the entity that called the FSM. 
+
+Ex. Katalina calls and establishes a variable. Tweyen AI will not be able to reference it, but Katalina will be able to reference it in EVERY fsm she calls.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="RegisterBlackBoardVec4Action">
+    <Description>Registers a vector4 blackboard variable to the specified value for initialization purposes.
+If called again for an existing value it will not do anything.
+
+Not currently required to establish a variable, setting it with a regular blackboard action works fine. 
+Establishing a variable in either manner will allow the variable to be called by the entity that called the FSM. 
+
+Ex. Katalina calls and establishes a variable. Tweyen AI will not be able to reference it, but Katalina will be able to reference it in EVERY fsm she calls.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="AddTransformAction">
+    <Description>Applies position/rotation change to the current entity.</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="AddPosition">
+        <Description>Adds the vector to this entity's position.
+No effect if all 0.</Description>
+      </Property>
+      <Property Name="AddRotation">
+        <Description>Adds the vector to this entity's rotation.
+No effect if all 0.</Description>
+      </Property>
+      <Property Name="SlowRatePosition">
+        <Description>Uses slow rate position rather than AddPosition.</Description>
+      </Property>
+      <Property Name="LocalMovement">
+        <Description>Added in Endless Ragnarok. Whether to use local space rather than world space</Description>
+      </Property>
+      <Property Name="IsUseBlackBoardValue">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="ValueName">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="BehaviorCallVoiceAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="DelayTime">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="FallAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsSetOffsetY">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="OffsetY">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="SetModelTransAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsSeqOff">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="IsStartExecution">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="SetRotAction">
+    <Description>Sets entity rotation</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="TimerAction">
+    <Description>Starts a timer that can be checked using ActionEndCondition</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsUseBlackBoardTime">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="BbTimeName">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="BbTimeHashValue">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="IsUseFrameCount">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="FrameCount">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="ActiveStatusEffectAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="TargetType">
+        <Description>Unknown, 0 or 1</Description>
+      </Property>
+      <Property Name="StatusType">
+        <Description>Buff/Status Id</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="AreaEffectAttackAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="DegreeZ">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="OverWriteParamType">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="BreakRate">
+        <Description>Stun</Description>
+      </Property>
+      <Property Name="SpArtsRate">
+        <Description>SBA</Description>
+      </Property>
+      <Property Name="KnockbackRate">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="AreaEffectVFXAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsVisibilityOptionSupport">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="IsSummon">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="CallObjectVFXAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsUseEntitySlowRate">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="IsSetParentAnimationCallEffect">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="ShotAttackAction">
+    <Description>Creates an active hitbox for a projectile fsm.
+Only functions on FSMs that are given the "shot" classification. if used in an fsm that is classified as an areaattack, will not function</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="OverWriteParamType">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="AttackRate">
+        <Description>Amount of the character's attack stat to apply to DMG calculations on a per hit basis. 
+Refer to enemy_status.tbl for enemy attack stats.</Description>
+      </Property>
+      <Property Name="SpArtsRate">
+        <Description>Amount of SBA gauge to gain for the attack on a per hit basis. 
+Affected by Uplift and in-game multipliers</Description>
+      </Property>
+      <Property Name="HitStopSecond">
+        <Description>Amount of time, in seconds, for the game to create "Hitstop" when the attack lands.</Description>
+      </Property>
+      <Property Name="LifeSecond">
+        <Description>Amount of time, in seconds, that a hitbox will remain active for. 
+Not sure if an FSM can call multiple hitboxes at the same time, or if the most recent will override.</Description>
+      </Property>
+      <Property Name="MultiHitIntervalSecond">
+        <Description>Amount of time, in seconds, that a hitbox will take to hit again. 
+Subject to MultiHitLimit for maximum number of hits. </Description>
+      </Property>
+      <Property Name="IsHitOnce">
+        <Description>Only allows the active hitbox to hit once. 
+This counts per FSM, so any previous hits called in any specific FSM will count towards this total. 
+Certain hitboxes with certain flags may still create "hits", but do not count to this total.</Description>
+      </Property>
+      <Property Name="IsMoveToHitPos">
+        <Description>Requires Testing, asummed to move the FSM origin to the location where this active hitbox overlaps with a targettable hitbox. 
+Not sure how it handles hitting multiple enemies at the same time.</Description>
+      </Property>
+      <Property Name="IsClearHitList">
+        <Description>Whether to clear all hit count calculations. If false, any hits called by this action will count towards the first called "MultiHitLimit" with a valid number.</Description>
+      </Property>
+      <Property Name="MultiHitLimit">
+        <Description>Creates an FSM-wide hit count maximum. Any actions with "IsClearHitList" set to true will void previous calls. Actions set to "IsHitOnce" do not count to the total.</Description>
+      </Property>
+      <Property Name="DebuffList">
+        <Description>Debuffs to be applied by this hitbox on a per hit basis.</Description>
+      </Property>
+      <Property Name="AppropriStartDist">
+        <Description>NEEDS TESTING 
+Start of the Appropriate Attack Range, in which a normal AttackRate, Specified above, is applied instead of the alternate, specified in NotAppropriDistAtkRate</Description>
+      </Property>
+      <Property Name="AppropriEndDist">
+        <Description>NEEDS TESTING 
+Distance at which, once passed, an alternate AttackRate is applied instead</Description>
+      </Property>
+      <Property Name="NotAppropriDistAtkRate">
+        <Description>NEEDS TESTING 
+Amount of attack to deal instead, if the targettable hitbox is more than the distance specified in "AppropriEndDistance" away from player(?) fsm origin(?), maybe requires "IsTakeOverAppropriDist" to be true?</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="ShotAttackIgnoreScaleAction">
+    <Description>Creates an active hitbox for a projectile fsm.
+Only functions on FSMs that are given the "shot" classification. if used in an fsm that is classified as an areaattack, will not function</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="OverWriteParamType">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="AttackRate">
+        <Description>Amount of the character's attack stat to apply to DMG calculations on a per hit basis. 
+Refer to enemy_status.tbl for enemy attack stats.</Description>
+      </Property>
+      <Property Name="SpArtsRate">
+        <Description>Amount of SBA gauge to gain for the attack on a per hit basis. 
+Affected by Uplift and in-game multipliers</Description>
+      </Property>
+      <Property Name="HitStopSecond">
+        <Description>Amount of time, in seconds, for the game to create "Hitstop" when the attack lands.</Description>
+      </Property>
+      <Property Name="LifeSecond">
+        <Description>Amount of time, in seconds, that a hitbox will remain active for. 
+Not sure if an FSM can call multiple hitboxes at the same time, or if the most recent will override.</Description>
+      </Property>
+      <Property Name="MultiHitIntervalSecond">
+        <Description>Amount of time, in seconds, that a hitbox will take to hit again. 
+Subject to MultiHitLimit for maximum number of hits. </Description>
+      </Property>
+      <Property Name="IsHitOnce">
+        <Description>Only allows the active hitbox to hit once. 
+This counts per FSM, so any previous hits called in any specific FSM will count towards this total. 
+Certain hitboxes with certain flags may still create "hits", but do not count to this total.</Description>
+      </Property>
+      <Property Name="IsMoveToHitPos">
+        <Description>Requires Testing, asummed to move the FSM origin to the location where this active hitbox overlaps with a targettable hitbox. 
+Not sure how it handles hitting multiple enemies at the same time.</Description>
+      </Property>
+      <Property Name="IsClearHitList">
+        <Description>Whether to clear all hit count calculations. If false, any hits called by this action will count towards the first called "MultiHitLimit" with a valid number.</Description>
+      </Property>
+      <Property Name="MultiHitLimit">
+        <Description>Creates an FSM-wide hit count maximum. Any actions with "IsClearHitList" set to true will void previous calls. Actions set to "IsHitOnce" do not count to the total.</Description>
+      </Property>
+      <Property Name="DebuffList">
+        <Description>Debuffs to be applied by this hitbox on a per hit basis.</Description>
+      </Property>
+      <Property Name="AppropriStartDist">
+        <Description>NEEDS TESTING 
+Start of the Appropriate Attack Range, in which a normal AttackRate, Specified above, is applied instead of the alternate, specified in NotAppropriDistAtkRate</Description>
+      </Property>
+      <Property Name="AppropriEndDist">
+        <Description>NEEDS TESTING 
+Distance at which, once passed, an alternate AttackRate is applied instead</Description>
+      </Property>
+      <Property Name="NotAppropriDistAtkRate">
+        <Description>NEEDS TESTING 
+Amount of attack to deal instead, if the targettable hitbox is more than the distance specified in "AppropriEndDistance" away from player(?) fsm origin(?), maybe requires "IsTakeOverAppropriDist" to be true?</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="ShotAttackScaleAction">
+    <Description>Creates an active hitbox for a projectile fsm.
+Only functions on FSMs that are given the "shot" classification. if used in an fsm that is classified as an areaattack, will not function</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="OverWriteParamType">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="AttackRate">
+        <Description>Amount of the character's attack stat to apply to DMG calculations on a per hit basis. 
+Refer to enemy_status.tbl for enemy attack stats.</Description>
+      </Property>
+      <Property Name="SpArtsRate">
+        <Description>Amount of SBA gauge to gain for the attack on a per hit basis. 
+Affected by Uplift and in-game multipliers</Description>
+      </Property>
+      <Property Name="HitStopSecond">
+        <Description>Amount of time, in seconds, for the game to create "Hitstop" when the attack lands.</Description>
+      </Property>
+      <Property Name="LifeSecond">
+        <Description>Amount of time, in seconds, that a hitbox will remain active for. 
+Not sure if an FSM can call multiple hitboxes at the same time, or if the most recent will override.</Description>
+      </Property>
+      <Property Name="MultiHitIntervalSecond">
+        <Description>Amount of time, in seconds, that a hitbox will take to hit again. 
+Subject to MultiHitLimit for maximum number of hits. </Description>
+      </Property>
+      <Property Name="IsHitOnce">
+        <Description>Only allows the active hitbox to hit once. 
+This counts per FSM, so any previous hits called in any specific FSM will count towards this total. 
+Certain hitboxes with certain flags may still create "hits", but do not count to this total.</Description>
+      </Property>
+      <Property Name="IsMoveToHitPos">
+        <Description>Requires Testing, asummed to move the FSM origin to the location where this active hitbox overlaps with a targettable hitbox. 
+Not sure how it handles hitting multiple enemies at the same time.</Description>
+      </Property>
+      <Property Name="IsClearHitList">
+        <Description>Whether to clear all hit count calculations. If false, any hits called by this action will count towards the first called "MultiHitLimit" with a valid number.</Description>
+      </Property>
+      <Property Name="MultiHitLimit">
+        <Description>Creates an FSM-wide hit count maximum. Any actions with "IsClearHitList" set to true will void previous calls. Actions set to "IsHitOnce" do not count to the total.</Description>
+      </Property>
+      <Property Name="DebuffList">
+        <Description>Debuffs to be applied by this hitbox on a per hit basis.</Description>
+      </Property>
+      <Property Name="AppropriStartDist">
+        <Description>NEEDS TESTING 
+Start of the Appropriate Attack Range, in which a normal AttackRate, Specified above, is applied instead of the alternate, specified in NotAppropriDistAtkRate</Description>
+      </Property>
+      <Property Name="AppropriEndDist">
+        <Description>NEEDS TESTING 
+Distance at which, once passed, an alternate AttackRate is applied instead</Description>
+      </Property>
+      <Property Name="NotAppropriDistAtkRate">
+        <Description>NEEDS TESTING 
+Amount of attack to deal instead, if the targettable hitbox is more than the distance specified in "AppropriEndDistance" away from player(?) fsm origin(?), maybe requires "IsTakeOverAppropriDist" to be true?</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="ShotAttackSignAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsVanishOnActionEnd">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="IsAdjustGroundPos">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="ShotMoveHomingAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsGimbalLockSafety">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="ShotVfxAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="OnlyYRotForHitEffect">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="IsUseOffsetPosSE">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="IsSetCallParent">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="IsKillEffect">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="IsSummon">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="AIBattleAbilityAction">
+    <Description>Simulates an ability input from the player. 
+Requires an ability off cooldown to function. 
+
+Calls ability requested by AIBattleRequestAbilityAction. 'AbilitySlot' is defunct</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="AbilitySlot">
+        <Description>Appears to be unused. No references in code as of 1.3.</Description>
+      </Property>
+      <Property Name="IsAllUseStack">
+        <Description>Appears to be unused. No references in code as of 1.3.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="AIBattleAttackAction">
+    <Description>Simulates an input from the player for the purpose of attacking
+Summary: AttackType + Timer + (Is Charge or IsRapid)</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="Timer">
+        <Description>Interval in seconds that this action is active for. 
+Once timer finishes, ActionEndCondition will return true. Timer is active regardless of IsCharge or IsRapid states.</Description>
+      </Property>
+      <Property Name="IsCharge">
+        <Description>For actions that support variable charge times, will hold the charge until the timer ends. 
+Certain actions force full charge behavior regardless of if this variable is true.</Description>
+      </Property>
+      <Property Name="IsRapid">
+        <Description>Simulates pressing the AttackType selected at the frame interval specified in RapidIntervalFrame for the timer duration</Description>
+      </Property>
+      <Property Name="IsCallRelease">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="IsHold">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="AIBattleAvoidAction">
+    <Description>Simulates a dodge input from the player.
+Direction affected by AIMoveAction.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="AIBattleLinkAttackAction">
+    <Description>Simulates a link attack input from the player. 
+Requires a link attack window to be active.</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsRapid">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="RapidEndTime">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="RapidIntervalTime">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="AIBattleMoveAction">
+    <Description>Simulates a movement action (6.0 units forward?)</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="AIBattleRequestAbilityAction">
+    <Description>Requests an ability by flagbit.
+AIBattleAbilityAction will perform the ability prepared by this action when called.</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="AbilityFlagBit">
+        <Description>Refers to ActionInfo -&gt; actionCategory_ in player action files.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="AIBattleRescueAction">
+    <Description>Simulates a revive input from the player.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="AIBattleSelectComboAction">
+    <Description>Randomly chooses one of the numbers established in a array, or chooses based off of distance conditions</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="AIBattleSpecialArtsAction">
+    <Description>Simulates a SBA action from the player. 
+Requires full sba gauge.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="AIBattleStickAction">
+    <Description>Allows moving an AI into any direction (stick movement).</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsUseBlackBoardValue">
+        <Description>Whether to use a blackboard variable instead of specified value.</Description>
+      </Property>
+      <Property Name="BoolName">
+        <Description>Blackboard variable name</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="AIBattleUseIdAction">
+    <Description>Performs an action by ID. Can also perform abilities by flagbits.
+Checks for abilities equipped and requires them to be off cooldown.
+Does not simulate player inputs, will force stop previous action to call current action.
+Summary: if "IsUseAbility" is true, "AbilityFlagBit" bits enabled, otherwise "SetActionId"</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsUseAbility">
+        <Description>Enables AbilityFlagBit (abilityFlagBit_).</Description>
+      </Property>
+      <Property Name="IsCheckDist">
+        <Description>References "dist_" in the data for the action found in the character's action file.</Description>
+      </Property>
+      <Property Name="IsAllStackUse">
+        <Description>Uses all stacks/charges of the ability.</Description>
+      </Property>
+      <Property Name="IsAllChargeUse">
+        <Description>Uses the ability for the longest period possible if the ability allows held inputs.</Description>
+      </Property>
+      <Property Name="AbilityFlagBit">
+        <Description>Refers to ActionInfo -&gt; actionCategory_ in player action files.</Description>
+      </Property>
+      <Property Name="IsCheckOnlySetAction">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="AIBattleWaitAction">
+    <Description>Inputs slow left/right movements for a period of time while looking at the enemy the AI is targeting.</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="MoveRandomTimeMin">
+        <Description>Min time range to add on top of FrontMoveTime</Description>
+      </Property>
+      <Property Name="MoveRandomTimeMax">
+        <Description>Max time range to add on top of FrontMoveTime</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="AIMoveAction">
+    <Description>Moves the AI towards a point, with a variety of behavior types. Simulates player inputs, relying on actions ending to move properly
+Summary: if "UseBlackBoardValue", "Type" + "BoolName", otherwise "Type" + "Dist"</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="Type">
+        <Description>Movement type. 
+0: To Player Character
+1: Towards Targeted Point
+2: Towards ~15 Units from Targeted Point
+    If too close, will walk away, if too far, will walk towards
+    Smaller "Dist" is further from target
+3: Towards Map Origin
+4: Towards Targeted Point at Time of Call</Description>
+      </Property>
+      <Property Name="Dist">
+        <Description>Distance to travel.</Description>
+      </Property>
+      <Property Name="IsNoChangeAnimSpd">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="IsUseDashInBattle">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="AIPrepareWeaponAction">
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="DispComment">
+    <Description>Debug only, stripped in release builds</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="EtNpcEscapeAction">
+    <Description>Ends ALL actions/animations the AI is currently doing, returning them to an idle state</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="EmCustomJumpAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="RotateToLandPos">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="EmDamageReaction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="BehaviorTypeHash">
+        <Description>Unique identifier (?)</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="EmDeadAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsUseExplodeAnimEndVfx">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="StartSec">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="InterpSec">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="EmExitAppearAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="AfterType">
+        <Description>Something to do with 'Em_AppearType' (0x4B7A35FC)</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="EmMotionPlayAction">
+    <Description>Plays motion/animation assigned</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsAdjustTimeToEnd">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="EndTimeToAdjust">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="ResetWaitFace">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="EmMovePassAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="Param0">
+        <Description>Not used by the game</Description>
+      </Property>
+      <Property Name="Param1">
+        <Description>Not used by the game</Description>
+      </Property>
+      <Property Name="Param2">
+        <Description>Not used by the game</Description>
+      </Property>
+      <Property Name="Param3">
+        <Description>Not used by the game</Description>
+      </Property>
+      <Property Name="Param4">
+        <Description>Not used by the game</Description>
+      </Property>
+      <Property Name="Param5">
+        <Description>Not used by the game</Description>
+      </Property>
+      <Property Name="Param6">
+        <Description>Not used by the game</Description>
+      </Property>
+      <Property Name="Param7">
+        <Description>Not used by the game</Description>
+      </Property>
+      <Property Name="IsEndRot">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="EmResetCoolTimeAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsNoResult">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="CommitIsEnable">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="EmWaitCombinationAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsInitAnimSet">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="IsLoopAnimIdle">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="IsTurnDir">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em1802BeamAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="AttackSec">
+        <Description>Not used by the game</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em1802EasingScaleAction">
+    <Description>Creates an active hitbox for a projectile fsm.
+Only functions on FSMs that are given the "shot" classification. if used in an fsm that is classified as an areaattack, will not function</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="OverWriteParamType">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="AttackRate">
+        <Description>Amount of the character's attack stat to apply to DMG calculations on a per hit basis. 
+Refer to enemy_status.tbl for enemy attack stats.</Description>
+      </Property>
+      <Property Name="SpArtsRate">
+        <Description>Amount of SBA gauge to gain for the attack on a per hit basis. 
+Affected by Uplift and in-game multipliers</Description>
+      </Property>
+      <Property Name="HitStopSecond">
+        <Description>Amount of time, in seconds, for the game to create "Hitstop" when the attack lands.</Description>
+      </Property>
+      <Property Name="LifeSecond">
+        <Description>Amount of time, in seconds, that a hitbox will remain active for. 
+Not sure if an FSM can call multiple hitboxes at the same time, or if the most recent will override.</Description>
+      </Property>
+      <Property Name="MultiHitIntervalSecond">
+        <Description>Amount of time, in seconds, that a hitbox will take to hit again. 
+Subject to MultiHitLimit for maximum number of hits. </Description>
+      </Property>
+      <Property Name="IsHitOnce">
+        <Description>Only allows the active hitbox to hit once. 
+This counts per FSM, so any previous hits called in any specific FSM will count towards this total. 
+Certain hitboxes with certain flags may still create "hits", but do not count to this total.</Description>
+      </Property>
+      <Property Name="IsMoveToHitPos">
+        <Description>Requires Testing, asummed to move the FSM origin to the location where this active hitbox overlaps with a targettable hitbox. 
+Not sure how it handles hitting multiple enemies at the same time.</Description>
+      </Property>
+      <Property Name="IsClearHitList">
+        <Description>Whether to clear all hit count calculations. If false, any hits called by this action will count towards the first called "MultiHitLimit" with a valid number.</Description>
+      </Property>
+      <Property Name="MultiHitLimit">
+        <Description>Creates an FSM-wide hit count maximum. Any actions with "IsClearHitList" set to true will void previous calls. Actions set to "IsHitOnce" do not count to the total.</Description>
+      </Property>
+      <Property Name="DebuffList">
+        <Description>Debuffs to be applied by this hitbox on a per hit basis.</Description>
+      </Property>
+      <Property Name="AppropriStartDist">
+        <Description>NEEDS TESTING 
+Start of the Appropriate Attack Range, in which a normal AttackRate, Specified above, is applied instead of the alternate, specified in NotAppropriDistAtkRate</Description>
+      </Property>
+      <Property Name="AppropriEndDist">
+        <Description>NEEDS TESTING 
+Distance at which, once passed, an alternate AttackRate is applied instead</Description>
+      </Property>
+      <Property Name="NotAppropriDistAtkRate">
+        <Description>NEEDS TESTING 
+Amount of attack to deal instead, if the targettable hitbox is more than the distance specified in "AppropriEndDistance" away from player(?) fsm origin(?), maybe requires "IsTakeOverAppropriDist" to be true?</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em1802TailRotatingIceShotAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="AttackSec">
+        <Description>Not used by the game</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em1801TailAttackAction">
+    <Description>Vrazarek Firewyrm will flash red, before performing a spin, whipping the area with his tail. 
+Spawns magma around him, based on the interval specified with "CreateMagmaIntervalTime".</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="Em1801MagmaRockSignAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsVanishOnActionEnd">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="IsAdjustGroundPos">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em1801MeteorAction">
+    <Description>Vrazarek Firewyrm will activate BloodThirst before jumping up into the air and hovering above the battlefield.</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="ActivateMagmaTime">
+        <Description>If pools of lava are currently on the field, will cause them to explode using this interval for the entire duration of the action.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em1801MagmaEruptionAction">
+    <Description>Vrazarek Firewyrm will flash red, before performing a spin, whipping the area with his tail. 
+Spawns magma around him, based on the interval specified with "CreateMagmaIntervalTime".</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="Em1800StepAction">
+    <Description>Dragon (Base) will perform an exagerated step away from nearby enemies.</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsResetStep">
+        <Description>Whether the step will bring the dragon towards the middle of the map.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em0200RegisterShareRiderBlackBoardBoolAction">
+    <Description>Registers a bool blackboard variable to the specified value for initialization purposes.
+If called again for an existing value it will not do anything.
+
+Not currently required to establish a variable, setting it with a regular blackboard action works fine. 
+Establishing a variable in either manner will allow the variable to be called by the entity that called the FSM. 
+
+Ex. Katalina calls and establishes a variable. Tweyen AI will not be able to reference it, but Katalina will be able to reference it in EVERY fsm she calls.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="Em0200RegisterShareRiderBlackBoardFloatAction">
+    <Description>Registers a float blackboard variable to the specified value for initialization purposes.
+If called again for an existing value it will not do anything.
+
+Not currently required to establish a variable, setting it with a regular blackboard action works fine. 
+Establishing a variable in either manner will allow the variable to be called by the entity that called the FSM. 
+
+Ex. Katalina calls and establishes a variable. Tweyen AI will not be able to reference it, but Katalina will be able to reference it in EVERY fsm she calls.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="Em0200RegisterShareRiderBlackBoardIntAction">
+    <Description>Registers a int blackboard variable to the specified value for initialization purposes.
+If called again for an existing value it will not do anything.
+
+Not currently required to establish a variable, setting it with a regular blackboard action works fine. 
+Establishing a variable in either manner will allow the variable to be called by the entity that called the FSM. 
+
+Ex. Katalina calls and establishes a variable. Tweyen AI will not be able to reference it, but Katalina will be able to reference it in EVERY fsm she calls.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="Em7100BackHandBlowAction">
+    <Description>Plays motion/animation assigned</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsAdjustTimeToEnd">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="EndTimeToAdjust">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="ResetWaitFace">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em8300AtkOverDriveBeamExpandAction">
+    <Description>Creates an active hitbox for a projectile fsm.
+Only functions on FSMs that are given the "shot" classification. if used in an fsm that is classified as an areaattack, will not function</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="OverWriteParamType">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="AttackRate">
+        <Description>Amount of the character's attack stat to apply to DMG calculations on a per hit basis. 
+Refer to enemy_status.tbl for enemy attack stats.</Description>
+      </Property>
+      <Property Name="SpArtsRate">
+        <Description>Amount of SBA gauge to gain for the attack on a per hit basis. 
+Affected by Uplift and in-game multipliers</Description>
+      </Property>
+      <Property Name="HitStopSecond">
+        <Description>Amount of time, in seconds, for the game to create "Hitstop" when the attack lands.</Description>
+      </Property>
+      <Property Name="LifeSecond">
+        <Description>Amount of time, in seconds, that a hitbox will remain active for. 
+Not sure if an FSM can call multiple hitboxes at the same time, or if the most recent will override.</Description>
+      </Property>
+      <Property Name="MultiHitIntervalSecond">
+        <Description>Amount of time, in seconds, that a hitbox will take to hit again. 
+Subject to MultiHitLimit for maximum number of hits. </Description>
+      </Property>
+      <Property Name="IsHitOnce">
+        <Description>Only allows the active hitbox to hit once. 
+This counts per FSM, so any previous hits called in any specific FSM will count towards this total. 
+Certain hitboxes with certain flags may still create "hits", but do not count to this total.</Description>
+      </Property>
+      <Property Name="IsMoveToHitPos">
+        <Description>Requires Testing, asummed to move the FSM origin to the location where this active hitbox overlaps with a targettable hitbox. 
+Not sure how it handles hitting multiple enemies at the same time.</Description>
+      </Property>
+      <Property Name="IsClearHitList">
+        <Description>Whether to clear all hit count calculations. If false, any hits called by this action will count towards the first called "MultiHitLimit" with a valid number.</Description>
+      </Property>
+      <Property Name="MultiHitLimit">
+        <Description>Creates an FSM-wide hit count maximum. Any actions with "IsClearHitList" set to true will void previous calls. Actions set to "IsHitOnce" do not count to the total.</Description>
+      </Property>
+      <Property Name="DebuffList">
+        <Description>Debuffs to be applied by this hitbox on a per hit basis.</Description>
+      </Property>
+      <Property Name="AppropriStartDist">
+        <Description>NEEDS TESTING 
+Start of the Appropriate Attack Range, in which a normal AttackRate, Specified above, is applied instead of the alternate, specified in NotAppropriDistAtkRate</Description>
+      </Property>
+      <Property Name="AppropriEndDist">
+        <Description>NEEDS TESTING 
+Distance at which, once passed, an alternate AttackRate is applied instead</Description>
+      </Property>
+      <Property Name="NotAppropriDistAtkRate">
+        <Description>NEEDS TESTING 
+Amount of attack to deal instead, if the targettable hitbox is more than the distance specified in "AppropriEndDistance" away from player(?) fsm origin(?), maybe requires "IsTakeOverAppropriDist" to be true?</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em8300AtkTowerShotSignAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsVanishOnActionEnd">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="IsAdjustGroundPos">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em1900SpecialBreakAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="ChaosMinWaitTime">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="ChaosBreakAddTime">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="EmSlimeBaseEscapeAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="EscapeTimeSecMax">
+        <Description>Not used by the game</Description>
+      </Property>
+      <Property Name="EscapeTimeSecMin">
+        <Description>Not used by the game</Description>
+      </Property>
+      <Property Name="EscapeTimeSecDecreaseNum">
+        <Description>Not used by the game</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="EmSlimeBaseRunAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="EscapeAngle">
+        <Description>Not used by the game</Description>
+      </Property>
+      <Property Name="MoveAngle">
+        <Description>Not used by the game</Description>
+      </Property>
+      <Property Name="MoveTime">
+        <Description>Not used by the game</Description>
+      </Property>
+      <Property Name="CheckMoveHitDist">
+        <Description>Not used by the game</Description>
+      </Property>
+      <Property Name="BoundMax">
+        <Description>Not used by the game</Description>
+      </Property>
+      <Property Name="LastMoveTime">
+        <Description>Not used by the game</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em0100JumpAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="JumpRot">
+        <Description>Game does not appear to read this</Description>
+      </Property>
+      <Property Name="JumpSpeed">
+        <Description>Game does not appear to read this</Description>
+      </Property>
+      <Property Name="MotionIdNameJump">
+        <Description>Game does not appear to read this</Description>
+      </Property>
+      <Property Name="MotionIdNameFallLoop">
+        <Description>Game does not appear to read this</Description>
+      </Property>
+      <Property Name="MotionIdNameLanding">
+        <Description>Game does not appear to read this</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em0102AreaEffectAttackAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="DegreeZ">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="OverWriteParamType">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="BreakRate">
+        <Description>Stun</Description>
+      </Property>
+      <Property Name="SpArtsRate">
+        <Description>SBA</Description>
+      </Property>
+      <Property Name="KnockbackRate">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="EmLargeSkeletonSlashShotAttackAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsStep">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em8000ExAttackFallSwordShotAttackSignAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsVanishOnActionEnd">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="IsAdjustGroundPos">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em8000FallSworsdShotAttackSignAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsVanishOnActionEnd">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="IsAdjustGroundPos">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em8000JumpAction">
+    <Description>Added in Endless Ragnarok</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="Em8000SlashAttackShotAction">
+    <Description>Creates an active hitbox for a projectile fsm.
+Only functions on FSMs that are given the "shot" classification. if used in an fsm that is classified as an areaattack, will not function</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="OverWriteParamType">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="AttackRate">
+        <Description>Amount of the character's attack stat to apply to DMG calculations on a per hit basis. 
+Refer to enemy_status.tbl for enemy attack stats.</Description>
+      </Property>
+      <Property Name="SpArtsRate">
+        <Description>Amount of SBA gauge to gain for the attack on a per hit basis. 
+Affected by Uplift and in-game multipliers</Description>
+      </Property>
+      <Property Name="HitStopSecond">
+        <Description>Amount of time, in seconds, for the game to create "Hitstop" when the attack lands.</Description>
+      </Property>
+      <Property Name="LifeSecond">
+        <Description>Amount of time, in seconds, that a hitbox will remain active for. 
+Not sure if an FSM can call multiple hitboxes at the same time, or if the most recent will override.</Description>
+      </Property>
+      <Property Name="MultiHitIntervalSecond">
+        <Description>Amount of time, in seconds, that a hitbox will take to hit again. 
+Subject to MultiHitLimit for maximum number of hits. </Description>
+      </Property>
+      <Property Name="IsHitOnce">
+        <Description>Only allows the active hitbox to hit once. 
+This counts per FSM, so any previous hits called in any specific FSM will count towards this total. 
+Certain hitboxes with certain flags may still create "hits", but do not count to this total.</Description>
+      </Property>
+      <Property Name="IsMoveToHitPos">
+        <Description>Requires Testing, asummed to move the FSM origin to the location where this active hitbox overlaps with a targettable hitbox. 
+Not sure how it handles hitting multiple enemies at the same time.</Description>
+      </Property>
+      <Property Name="IsClearHitList">
+        <Description>Whether to clear all hit count calculations. If false, any hits called by this action will count towards the first called "MultiHitLimit" with a valid number.</Description>
+      </Property>
+      <Property Name="MultiHitLimit">
+        <Description>Creates an FSM-wide hit count maximum. Any actions with "IsClearHitList" set to true will void previous calls. Actions set to "IsHitOnce" do not count to the total.</Description>
+      </Property>
+      <Property Name="DebuffList">
+        <Description>Debuffs to be applied by this hitbox on a per hit basis.</Description>
+      </Property>
+      <Property Name="AppropriStartDist">
+        <Description>NEEDS TESTING 
+Start of the Appropriate Attack Range, in which a normal AttackRate, Specified above, is applied instead of the alternate, specified in NotAppropriDistAtkRate</Description>
+      </Property>
+      <Property Name="AppropriEndDist">
+        <Description>NEEDS TESTING 
+Distance at which, once passed, an alternate AttackRate is applied instead</Description>
+      </Property>
+      <Property Name="NotAppropriDistAtkRate">
+        <Description>NEEDS TESTING 
+Amount of attack to deal instead, if the targettable hitbox is more than the distance specified in "AppropriEndDistance" away from player(?) fsm origin(?), maybe requires "IsTakeOverAppropriDist" to be true?</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em8000VortexAreaShotAttackAction">
+    <Description>Creates an active hitbox for a projectile fsm.
+Only functions on FSMs that are given the "shot" classification. if used in an fsm that is classified as an areaattack, will not function</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="OverWriteParamType">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="AttackRate">
+        <Description>Amount of the character's attack stat to apply to DMG calculations on a per hit basis. 
+Refer to enemy_status.tbl for enemy attack stats.</Description>
+      </Property>
+      <Property Name="SpArtsRate">
+        <Description>Amount of SBA gauge to gain for the attack on a per hit basis. 
+Affected by Uplift and in-game multipliers</Description>
+      </Property>
+      <Property Name="HitStopSecond">
+        <Description>Amount of time, in seconds, for the game to create "Hitstop" when the attack lands.</Description>
+      </Property>
+      <Property Name="LifeSecond">
+        <Description>Amount of time, in seconds, that a hitbox will remain active for. 
+Not sure if an FSM can call multiple hitboxes at the same time, or if the most recent will override.</Description>
+      </Property>
+      <Property Name="MultiHitIntervalSecond">
+        <Description>Amount of time, in seconds, that a hitbox will take to hit again. 
+Subject to MultiHitLimit for maximum number of hits. </Description>
+      </Property>
+      <Property Name="IsHitOnce">
+        <Description>Only allows the active hitbox to hit once. 
+This counts per FSM, so any previous hits called in any specific FSM will count towards this total. 
+Certain hitboxes with certain flags may still create "hits", but do not count to this total.</Description>
+      </Property>
+      <Property Name="IsMoveToHitPos">
+        <Description>Requires Testing, asummed to move the FSM origin to the location where this active hitbox overlaps with a targettable hitbox. 
+Not sure how it handles hitting multiple enemies at the same time.</Description>
+      </Property>
+      <Property Name="IsClearHitList">
+        <Description>Whether to clear all hit count calculations. If false, any hits called by this action will count towards the first called "MultiHitLimit" with a valid number.</Description>
+      </Property>
+      <Property Name="MultiHitLimit">
+        <Description>Creates an FSM-wide hit count maximum. Any actions with "IsClearHitList" set to true will void previous calls. Actions set to "IsHitOnce" do not count to the total.</Description>
+      </Property>
+      <Property Name="DebuffList">
+        <Description>Debuffs to be applied by this hitbox on a per hit basis.</Description>
+      </Property>
+      <Property Name="AppropriStartDist">
+        <Description>NEEDS TESTING 
+Start of the Appropriate Attack Range, in which a normal AttackRate, Specified above, is applied instead of the alternate, specified in NotAppropriDistAtkRate</Description>
+      </Property>
+      <Property Name="AppropriEndDist">
+        <Description>NEEDS TESTING 
+Distance at which, once passed, an alternate AttackRate is applied instead</Description>
+      </Property>
+      <Property Name="NotAppropriDistAtkRate">
+        <Description>NEEDS TESTING 
+Amount of attack to deal instead, if the targettable hitbox is more than the distance specified in "AppropriEndDistance" away from player(?) fsm origin(?), maybe requires "IsTakeOverAppropriDist" to be true?</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em8000VortexAreaShotAttackSignAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsVanishOnActionEnd">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="IsAdjustGroundPos">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="EmSwordGodSlashAttackShotAction">
+    <Description>Creates an active hitbox for a projectile fsm.
+Only functions on FSMs that are given the "shot" classification. if used in an fsm that is classified as an areaattack, will not function</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="OverWriteParamType">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="AttackRate">
+        <Description>Amount of the character's attack stat to apply to DMG calculations on a per hit basis. 
+Refer to enemy_status.tbl for enemy attack stats.</Description>
+      </Property>
+      <Property Name="SpArtsRate">
+        <Description>Amount of SBA gauge to gain for the attack on a per hit basis. 
+Affected by Uplift and in-game multipliers</Description>
+      </Property>
+      <Property Name="HitStopSecond">
+        <Description>Amount of time, in seconds, for the game to create "Hitstop" when the attack lands.</Description>
+      </Property>
+      <Property Name="LifeSecond">
+        <Description>Amount of time, in seconds, that a hitbox will remain active for. 
+Not sure if an FSM can call multiple hitboxes at the same time, or if the most recent will override.</Description>
+      </Property>
+      <Property Name="MultiHitIntervalSecond">
+        <Description>Amount of time, in seconds, that a hitbox will take to hit again. 
+Subject to MultiHitLimit for maximum number of hits. </Description>
+      </Property>
+      <Property Name="IsHitOnce">
+        <Description>Only allows the active hitbox to hit once. 
+This counts per FSM, so any previous hits called in any specific FSM will count towards this total. 
+Certain hitboxes with certain flags may still create "hits", but do not count to this total.</Description>
+      </Property>
+      <Property Name="IsMoveToHitPos">
+        <Description>Requires Testing, asummed to move the FSM origin to the location where this active hitbox overlaps with a targettable hitbox. 
+Not sure how it handles hitting multiple enemies at the same time.</Description>
+      </Property>
+      <Property Name="IsClearHitList">
+        <Description>Whether to clear all hit count calculations. If false, any hits called by this action will count towards the first called "MultiHitLimit" with a valid number.</Description>
+      </Property>
+      <Property Name="MultiHitLimit">
+        <Description>Creates an FSM-wide hit count maximum. Any actions with "IsClearHitList" set to true will void previous calls. Actions set to "IsHitOnce" do not count to the total.</Description>
+      </Property>
+      <Property Name="DebuffList">
+        <Description>Debuffs to be applied by this hitbox on a per hit basis.</Description>
+      </Property>
+      <Property Name="AppropriStartDist">
+        <Description>NEEDS TESTING 
+Start of the Appropriate Attack Range, in which a normal AttackRate, Specified above, is applied instead of the alternate, specified in NotAppropriDistAtkRate</Description>
+      </Property>
+      <Property Name="AppropriEndDist">
+        <Description>NEEDS TESTING 
+Distance at which, once passed, an alternate AttackRate is applied instead</Description>
+      </Property>
+      <Property Name="NotAppropriDistAtkRate">
+        <Description>NEEDS TESTING 
+Amount of attack to deal instead, if the targettable hitbox is more than the distance specified in "AppropriEndDistance" away from player(?) fsm origin(?), maybe requires "IsTakeOverAppropriDist" to be true?</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em0500JumpRushAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="HomingAngle">
+        <Description>Unused by the game</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em0500RockCrushSignAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsVanishOnActionEnd">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="IsAdjustGroundPos">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em3100ShotAttackScaleAction">
+    <Description>Creates an active hitbox for a projectile fsm.
+Only functions on FSMs that are given the "shot" classification. if used in an fsm that is classified as an areaattack, will not function</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="ShotType">
+        <Description>Valid: 5, 16, 18, 21</Description>
+      </Property>
+      <Property Name="OverWriteParamType">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="AttackRate">
+        <Description>Amount of the character's attack stat to apply to DMG calculations on a per hit basis. 
+Refer to enemy_status.tbl for enemy attack stats.</Description>
+      </Property>
+      <Property Name="SpArtsRate">
+        <Description>Amount of SBA gauge to gain for the attack on a per hit basis. 
+Affected by Uplift and in-game multipliers</Description>
+      </Property>
+      <Property Name="HitStopSecond">
+        <Description>Amount of time, in seconds, for the game to create "Hitstop" when the attack lands.</Description>
+      </Property>
+      <Property Name="LifeSecond">
+        <Description>Amount of time, in seconds, that a hitbox will remain active for. 
+Not sure if an FSM can call multiple hitboxes at the same time, or if the most recent will override.</Description>
+      </Property>
+      <Property Name="MultiHitIntervalSecond">
+        <Description>Amount of time, in seconds, that a hitbox will take to hit again. 
+Subject to MultiHitLimit for maximum number of hits. </Description>
+      </Property>
+      <Property Name="IsHitOnce">
+        <Description>Only allows the active hitbox to hit once. 
+This counts per FSM, so any previous hits called in any specific FSM will count towards this total. 
+Certain hitboxes with certain flags may still create "hits", but do not count to this total.</Description>
+      </Property>
+      <Property Name="IsMoveToHitPos">
+        <Description>Requires Testing, asummed to move the FSM origin to the location where this active hitbox overlaps with a targettable hitbox. 
+Not sure how it handles hitting multiple enemies at the same time.</Description>
+      </Property>
+      <Property Name="IsClearHitList">
+        <Description>Whether to clear all hit count calculations. If false, any hits called by this action will count towards the first called "MultiHitLimit" with a valid number.</Description>
+      </Property>
+      <Property Name="MultiHitLimit">
+        <Description>Creates an FSM-wide hit count maximum. Any actions with "IsClearHitList" set to true will void previous calls. Actions set to "IsHitOnce" do not count to the total.</Description>
+      </Property>
+      <Property Name="DebuffList">
+        <Description>Debuffs to be applied by this hitbox on a per hit basis.</Description>
+      </Property>
+      <Property Name="AppropriStartDist">
+        <Description>NEEDS TESTING 
+Start of the Appropriate Attack Range, in which a normal AttackRate, Specified above, is applied instead of the alternate, specified in NotAppropriDistAtkRate</Description>
+      </Property>
+      <Property Name="AppropriEndDist">
+        <Description>NEEDS TESTING 
+Distance at which, once passed, an alternate AttackRate is applied instead</Description>
+      </Property>
+      <Property Name="NotAppropriDistAtkRate">
+        <Description>NEEDS TESTING 
+Amount of attack to deal instead, if the targettable hitbox is more than the distance specified in "AppropriEndDistance" away from player(?) fsm origin(?), maybe requires "IsTakeOverAppropriDist" to be true?</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em7001DamageDownAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsPhase1AttributeDown">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em7001DamageMotionPlayAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsFixedPosY">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em7001DarkFloorExplosionAction">
+    <Description>Creates an active hitbox for a projectile fsm.
+Only functions on FSMs that are given the "shot" classification. if used in an fsm that is classified as an areaattack, will not function</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="OverWriteParamType">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="AttackRate">
+        <Description>Amount of the character's attack stat to apply to DMG calculations on a per hit basis. 
+Refer to enemy_status.tbl for enemy attack stats.</Description>
+      </Property>
+      <Property Name="SpArtsRate">
+        <Description>Amount of SBA gauge to gain for the attack on a per hit basis. 
+Affected by Uplift and in-game multipliers</Description>
+      </Property>
+      <Property Name="HitStopSecond">
+        <Description>Amount of time, in seconds, for the game to create "Hitstop" when the attack lands.</Description>
+      </Property>
+      <Property Name="LifeSecond">
+        <Description>Amount of time, in seconds, that a hitbox will remain active for. 
+Not sure if an FSM can call multiple hitboxes at the same time, or if the most recent will override.</Description>
+      </Property>
+      <Property Name="MultiHitIntervalSecond">
+        <Description>Amount of time, in seconds, that a hitbox will take to hit again. 
+Subject to MultiHitLimit for maximum number of hits. </Description>
+      </Property>
+      <Property Name="IsHitOnce">
+        <Description>Only allows the active hitbox to hit once. 
+This counts per FSM, so any previous hits called in any specific FSM will count towards this total. 
+Certain hitboxes with certain flags may still create "hits", but do not count to this total.</Description>
+      </Property>
+      <Property Name="IsMoveToHitPos">
+        <Description>Requires Testing, asummed to move the FSM origin to the location where this active hitbox overlaps with a targettable hitbox. 
+Not sure how it handles hitting multiple enemies at the same time.</Description>
+      </Property>
+      <Property Name="IsClearHitList">
+        <Description>Whether to clear all hit count calculations. If false, any hits called by this action will count towards the first called "MultiHitLimit" with a valid number.</Description>
+      </Property>
+      <Property Name="MultiHitLimit">
+        <Description>Creates an FSM-wide hit count maximum. Any actions with "IsClearHitList" set to true will void previous calls. Actions set to "IsHitOnce" do not count to the total.</Description>
+      </Property>
+      <Property Name="DebuffList">
+        <Description>Debuffs to be applied by this hitbox on a per hit basis.</Description>
+      </Property>
+      <Property Name="AppropriStartDist">
+        <Description>NEEDS TESTING 
+Start of the Appropriate Attack Range, in which a normal AttackRate, Specified above, is applied instead of the alternate, specified in NotAppropriDistAtkRate</Description>
+      </Property>
+      <Property Name="AppropriEndDist">
+        <Description>NEEDS TESTING 
+Distance at which, once passed, an alternate AttackRate is applied instead</Description>
+      </Property>
+      <Property Name="NotAppropriDistAtkRate">
+        <Description>NEEDS TESTING 
+Amount of attack to deal instead, if the targettable hitbox is more than the distance specified in "AppropriEndDistance" away from player(?) fsm origin(?), maybe requires "IsTakeOverAppropriDist" to be true?</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em7001DarkFloorShotAttackAction">
+    <Description>Creates an active hitbox for a projectile fsm.
+Only functions on FSMs that are given the "shot" classification. if used in an fsm that is classified as an areaattack, will not function</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="OverWriteParamType">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="AttackRate">
+        <Description>Amount of the character's attack stat to apply to DMG calculations on a per hit basis. 
+Refer to enemy_status.tbl for enemy attack stats.</Description>
+      </Property>
+      <Property Name="SpArtsRate">
+        <Description>Amount of SBA gauge to gain for the attack on a per hit basis. 
+Affected by Uplift and in-game multipliers</Description>
+      </Property>
+      <Property Name="HitStopSecond">
+        <Description>Amount of time, in seconds, for the game to create "Hitstop" when the attack lands.</Description>
+      </Property>
+      <Property Name="LifeSecond">
+        <Description>Amount of time, in seconds, that a hitbox will remain active for. 
+Not sure if an FSM can call multiple hitboxes at the same time, or if the most recent will override.</Description>
+      </Property>
+      <Property Name="MultiHitIntervalSecond">
+        <Description>Amount of time, in seconds, that a hitbox will take to hit again. 
+Subject to MultiHitLimit for maximum number of hits. </Description>
+      </Property>
+      <Property Name="IsHitOnce">
+        <Description>Only allows the active hitbox to hit once. 
+This counts per FSM, so any previous hits called in any specific FSM will count towards this total. 
+Certain hitboxes with certain flags may still create "hits", but do not count to this total.</Description>
+      </Property>
+      <Property Name="IsMoveToHitPos">
+        <Description>Requires Testing, asummed to move the FSM origin to the location where this active hitbox overlaps with a targettable hitbox. 
+Not sure how it handles hitting multiple enemies at the same time.</Description>
+      </Property>
+      <Property Name="IsClearHitList">
+        <Description>Whether to clear all hit count calculations. If false, any hits called by this action will count towards the first called "MultiHitLimit" with a valid number.</Description>
+      </Property>
+      <Property Name="MultiHitLimit">
+        <Description>Creates an FSM-wide hit count maximum. Any actions with "IsClearHitList" set to true will void previous calls. Actions set to "IsHitOnce" do not count to the total.</Description>
+      </Property>
+      <Property Name="DebuffList">
+        <Description>Debuffs to be applied by this hitbox on a per hit basis.</Description>
+      </Property>
+      <Property Name="AppropriStartDist">
+        <Description>NEEDS TESTING 
+Start of the Appropriate Attack Range, in which a normal AttackRate, Specified above, is applied instead of the alternate, specified in NotAppropriDistAtkRate</Description>
+      </Property>
+      <Property Name="AppropriEndDist">
+        <Description>NEEDS TESTING 
+Distance at which, once passed, an alternate AttackRate is applied instead</Description>
+      </Property>
+      <Property Name="NotAppropriDistAtkRate">
+        <Description>NEEDS TESTING 
+Amount of attack to deal instead, if the targettable hitbox is more than the distance specified in "AppropriEndDistance" away from player(?) fsm origin(?), maybe requires "IsTakeOverAppropriDist" to be true?</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em7001DebugAction">
+    <Description>Stripped in debug builds.</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="Em7001ExplodeShockWaveAttackAction">
+    <Description>Creates an active hitbox for a projectile fsm.
+Only functions on FSMs that are given the "shot" classification. if used in an fsm that is classified as an areaattack, will not function</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="OverWriteParamType">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="AttackRate">
+        <Description>Amount of the character's attack stat to apply to DMG calculations on a per hit basis. 
+Refer to enemy_status.tbl for enemy attack stats.</Description>
+      </Property>
+      <Property Name="SpArtsRate">
+        <Description>Amount of SBA gauge to gain for the attack on a per hit basis. 
+Affected by Uplift and in-game multipliers</Description>
+      </Property>
+      <Property Name="HitStopSecond">
+        <Description>Amount of time, in seconds, for the game to create "Hitstop" when the attack lands.</Description>
+      </Property>
+      <Property Name="LifeSecond">
+        <Description>Amount of time, in seconds, that a hitbox will remain active for. 
+Not sure if an FSM can call multiple hitboxes at the same time, or if the most recent will override.</Description>
+      </Property>
+      <Property Name="MultiHitIntervalSecond">
+        <Description>Amount of time, in seconds, that a hitbox will take to hit again. 
+Subject to MultiHitLimit for maximum number of hits. </Description>
+      </Property>
+      <Property Name="IsHitOnce">
+        <Description>Only allows the active hitbox to hit once. 
+This counts per FSM, so any previous hits called in any specific FSM will count towards this total. 
+Certain hitboxes with certain flags may still create "hits", but do not count to this total.</Description>
+      </Property>
+      <Property Name="IsMoveToHitPos">
+        <Description>Requires Testing, asummed to move the FSM origin to the location where this active hitbox overlaps with a targettable hitbox. 
+Not sure how it handles hitting multiple enemies at the same time.</Description>
+      </Property>
+      <Property Name="IsClearHitList">
+        <Description>Whether to clear all hit count calculations. If false, any hits called by this action will count towards the first called "MultiHitLimit" with a valid number.</Description>
+      </Property>
+      <Property Name="MultiHitLimit">
+        <Description>Creates an FSM-wide hit count maximum. Any actions with "IsClearHitList" set to true will void previous calls. Actions set to "IsHitOnce" do not count to the total.</Description>
+      </Property>
+      <Property Name="DebuffList">
+        <Description>Debuffs to be applied by this hitbox on a per hit basis.</Description>
+      </Property>
+      <Property Name="AppropriStartDist">
+        <Description>NEEDS TESTING 
+Start of the Appropriate Attack Range, in which a normal AttackRate, Specified above, is applied instead of the alternate, specified in NotAppropriDistAtkRate</Description>
+      </Property>
+      <Property Name="AppropriEndDist">
+        <Description>NEEDS TESTING 
+Distance at which, once passed, an alternate AttackRate is applied instead</Description>
+      </Property>
+      <Property Name="NotAppropriDistAtkRate">
+        <Description>NEEDS TESTING 
+Amount of attack to deal instead, if the targettable hitbox is more than the distance specified in "AppropriEndDistance" away from player(?) fsm origin(?), maybe requires "IsTakeOverAppropriDist" to be true?</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em7001ExplodeShockWaveAttackSignAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsVanishOnActionEnd">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="IsAdjustGroundPos">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em7001LightShotImpactAction">
+    <Description>Creates an active hitbox for a projectile fsm.
+Only functions on FSMs that are given the "shot" classification. if used in an fsm that is classified as an areaattack, will not function</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="OverWriteParamType">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="AttackRate">
+        <Description>Amount of the character's attack stat to apply to DMG calculations on a per hit basis. 
+Refer to enemy_status.tbl for enemy attack stats.</Description>
+      </Property>
+      <Property Name="SpArtsRate">
+        <Description>Amount of SBA gauge to gain for the attack on a per hit basis. 
+Affected by Uplift and in-game multipliers</Description>
+      </Property>
+      <Property Name="HitStopSecond">
+        <Description>Amount of time, in seconds, for the game to create "Hitstop" when the attack lands.</Description>
+      </Property>
+      <Property Name="LifeSecond">
+        <Description>Amount of time, in seconds, that a hitbox will remain active for. 
+Not sure if an FSM can call multiple hitboxes at the same time, or if the most recent will override.</Description>
+      </Property>
+      <Property Name="MultiHitIntervalSecond">
+        <Description>Amount of time, in seconds, that a hitbox will take to hit again. 
+Subject to MultiHitLimit for maximum number of hits. </Description>
+      </Property>
+      <Property Name="IsHitOnce">
+        <Description>Only allows the active hitbox to hit once. 
+This counts per FSM, so any previous hits called in any specific FSM will count towards this total. 
+Certain hitboxes with certain flags may still create "hits", but do not count to this total.</Description>
+      </Property>
+      <Property Name="IsMoveToHitPos">
+        <Description>Requires Testing, asummed to move the FSM origin to the location where this active hitbox overlaps with a targettable hitbox. 
+Not sure how it handles hitting multiple enemies at the same time.</Description>
+      </Property>
+      <Property Name="IsClearHitList">
+        <Description>Whether to clear all hit count calculations. If false, any hits called by this action will count towards the first called "MultiHitLimit" with a valid number.</Description>
+      </Property>
+      <Property Name="MultiHitLimit">
+        <Description>Creates an FSM-wide hit count maximum. Any actions with "IsClearHitList" set to true will void previous calls. Actions set to "IsHitOnce" do not count to the total.</Description>
+      </Property>
+      <Property Name="DebuffList">
+        <Description>Debuffs to be applied by this hitbox on a per hit basis.</Description>
+      </Property>
+      <Property Name="AppropriStartDist">
+        <Description>NEEDS TESTING 
+Start of the Appropriate Attack Range, in which a normal AttackRate, Specified above, is applied instead of the alternate, specified in NotAppropriDistAtkRate</Description>
+      </Property>
+      <Property Name="AppropriEndDist">
+        <Description>NEEDS TESTING 
+Distance at which, once passed, an alternate AttackRate is applied instead</Description>
+      </Property>
+      <Property Name="NotAppropriDistAtkRate">
+        <Description>NEEDS TESTING 
+Amount of attack to deal instead, if the targettable hitbox is more than the distance specified in "AppropriEndDistance" away from player(?) fsm origin(?), maybe requires "IsTakeOverAppropriDist" to be true?</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em7001LightShotMoveAction">
+    <Description>Creates an active hitbox for a projectile fsm.
+Only functions on FSMs that are given the "shot" classification. if used in an fsm that is classified as an areaattack, will not function</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="OverWriteParamType">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="AttackRate">
+        <Description>Amount of the character's attack stat to apply to DMG calculations on a per hit basis. 
+Refer to enemy_status.tbl for enemy attack stats.</Description>
+      </Property>
+      <Property Name="SpArtsRate">
+        <Description>Amount of SBA gauge to gain for the attack on a per hit basis. 
+Affected by Uplift and in-game multipliers</Description>
+      </Property>
+      <Property Name="HitStopSecond">
+        <Description>Amount of time, in seconds, for the game to create "Hitstop" when the attack lands.</Description>
+      </Property>
+      <Property Name="LifeSecond">
+        <Description>Amount of time, in seconds, that a hitbox will remain active for. 
+Not sure if an FSM can call multiple hitboxes at the same time, or if the most recent will override.</Description>
+      </Property>
+      <Property Name="MultiHitIntervalSecond">
+        <Description>Amount of time, in seconds, that a hitbox will take to hit again. 
+Subject to MultiHitLimit for maximum number of hits. </Description>
+      </Property>
+      <Property Name="IsHitOnce">
+        <Description>Only allows the active hitbox to hit once. 
+This counts per FSM, so any previous hits called in any specific FSM will count towards this total. 
+Certain hitboxes with certain flags may still create "hits", but do not count to this total.</Description>
+      </Property>
+      <Property Name="IsMoveToHitPos">
+        <Description>Requires Testing, asummed to move the FSM origin to the location where this active hitbox overlaps with a targettable hitbox. 
+Not sure how it handles hitting multiple enemies at the same time.</Description>
+      </Property>
+      <Property Name="IsClearHitList">
+        <Description>Whether to clear all hit count calculations. If false, any hits called by this action will count towards the first called "MultiHitLimit" with a valid number.</Description>
+      </Property>
+      <Property Name="MultiHitLimit">
+        <Description>Creates an FSM-wide hit count maximum. Any actions with "IsClearHitList" set to true will void previous calls. Actions set to "IsHitOnce" do not count to the total.</Description>
+      </Property>
+      <Property Name="DebuffList">
+        <Description>Debuffs to be applied by this hitbox on a per hit basis.</Description>
+      </Property>
+      <Property Name="AppropriStartDist">
+        <Description>NEEDS TESTING 
+Start of the Appropriate Attack Range, in which a normal AttackRate, Specified above, is applied instead of the alternate, specified in NotAppropriDistAtkRate</Description>
+      </Property>
+      <Property Name="AppropriEndDist">
+        <Description>NEEDS TESTING 
+Distance at which, once passed, an alternate AttackRate is applied instead</Description>
+      </Property>
+      <Property Name="NotAppropriDistAtkRate">
+        <Description>NEEDS TESTING 
+Amount of attack to deal instead, if the targettable hitbox is more than the distance specified in "AppropriEndDistance" away from player(?) fsm origin(?), maybe requires "IsTakeOverAppropriDist" to be true?</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em7001MagicCircleAttackAction">
+    <Description>Creates an active hitbox for a projectile fsm.
+Only functions on FSMs that are given the "shot" classification. if used in an fsm that is classified as an areaattack, will not function</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="OverWriteParamType">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="AttackRate">
+        <Description>Amount of the character's attack stat to apply to DMG calculations on a per hit basis. 
+Refer to enemy_status.tbl for enemy attack stats.</Description>
+      </Property>
+      <Property Name="SpArtsRate">
+        <Description>Amount of SBA gauge to gain for the attack on a per hit basis. 
+Affected by Uplift and in-game multipliers</Description>
+      </Property>
+      <Property Name="HitStopSecond">
+        <Description>Amount of time, in seconds, for the game to create "Hitstop" when the attack lands.</Description>
+      </Property>
+      <Property Name="LifeSecond">
+        <Description>Amount of time, in seconds, that a hitbox will remain active for. 
+Not sure if an FSM can call multiple hitboxes at the same time, or if the most recent will override.</Description>
+      </Property>
+      <Property Name="MultiHitIntervalSecond">
+        <Description>Amount of time, in seconds, that a hitbox will take to hit again. 
+Subject to MultiHitLimit for maximum number of hits. </Description>
+      </Property>
+      <Property Name="IsHitOnce">
+        <Description>Only allows the active hitbox to hit once. 
+This counts per FSM, so any previous hits called in any specific FSM will count towards this total. 
+Certain hitboxes with certain flags may still create "hits", but do not count to this total.</Description>
+      </Property>
+      <Property Name="IsMoveToHitPos">
+        <Description>Requires Testing, asummed to move the FSM origin to the location where this active hitbox overlaps with a targettable hitbox. 
+Not sure how it handles hitting multiple enemies at the same time.</Description>
+      </Property>
+      <Property Name="IsClearHitList">
+        <Description>Whether to clear all hit count calculations. If false, any hits called by this action will count towards the first called "MultiHitLimit" with a valid number.</Description>
+      </Property>
+      <Property Name="MultiHitLimit">
+        <Description>Creates an FSM-wide hit count maximum. Any actions with "IsClearHitList" set to true will void previous calls. Actions set to "IsHitOnce" do not count to the total.</Description>
+      </Property>
+      <Property Name="DebuffList">
+        <Description>Debuffs to be applied by this hitbox on a per hit basis.</Description>
+      </Property>
+      <Property Name="AppropriStartDist">
+        <Description>NEEDS TESTING 
+Start of the Appropriate Attack Range, in which a normal AttackRate, Specified above, is applied instead of the alternate, specified in NotAppropriDistAtkRate</Description>
+      </Property>
+      <Property Name="AppropriEndDist">
+        <Description>NEEDS TESTING 
+Distance at which, once passed, an alternate AttackRate is applied instead</Description>
+      </Property>
+      <Property Name="NotAppropriDistAtkRate">
+        <Description>NEEDS TESTING 
+Amount of attack to deal instead, if the targettable hitbox is more than the distance specified in "AppropriEndDistance" away from player(?) fsm origin(?), maybe requires "IsTakeOverAppropriDist" to be true?</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em7001MagicCircleAttackSignAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsVanishOnActionEnd">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="IsAdjustGroundPos">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em7001MotionPlayAction">
+    <Description>Plays motion/animation assigned</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsAdjustTimeToEnd">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="EndTimeToAdjust">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="ResetWaitFace">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em7001RedLightShotImpactAction">
+    <Description>Creates an active hitbox for a projectile fsm.
+Only functions on FSMs that are given the "shot" classification. if used in an fsm that is classified as an areaattack, will not function</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="OverWriteParamType">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="AttackRate">
+        <Description>Amount of the character's attack stat to apply to DMG calculations on a per hit basis. 
+Refer to enemy_status.tbl for enemy attack stats.</Description>
+      </Property>
+      <Property Name="SpArtsRate">
+        <Description>Amount of SBA gauge to gain for the attack on a per hit basis. 
+Affected by Uplift and in-game multipliers</Description>
+      </Property>
+      <Property Name="HitStopSecond">
+        <Description>Amount of time, in seconds, for the game to create "Hitstop" when the attack lands.</Description>
+      </Property>
+      <Property Name="LifeSecond">
+        <Description>Amount of time, in seconds, that a hitbox will remain active for. 
+Not sure if an FSM can call multiple hitboxes at the same time, or if the most recent will override.</Description>
+      </Property>
+      <Property Name="MultiHitIntervalSecond">
+        <Description>Amount of time, in seconds, that a hitbox will take to hit again. 
+Subject to MultiHitLimit for maximum number of hits. </Description>
+      </Property>
+      <Property Name="IsHitOnce">
+        <Description>Only allows the active hitbox to hit once. 
+This counts per FSM, so any previous hits called in any specific FSM will count towards this total. 
+Certain hitboxes with certain flags may still create "hits", but do not count to this total.</Description>
+      </Property>
+      <Property Name="IsMoveToHitPos">
+        <Description>Requires Testing, asummed to move the FSM origin to the location where this active hitbox overlaps with a targettable hitbox. 
+Not sure how it handles hitting multiple enemies at the same time.</Description>
+      </Property>
+      <Property Name="IsClearHitList">
+        <Description>Whether to clear all hit count calculations. If false, any hits called by this action will count towards the first called "MultiHitLimit" with a valid number.</Description>
+      </Property>
+      <Property Name="MultiHitLimit">
+        <Description>Creates an FSM-wide hit count maximum. Any actions with "IsClearHitList" set to true will void previous calls. Actions set to "IsHitOnce" do not count to the total.</Description>
+      </Property>
+      <Property Name="DebuffList">
+        <Description>Debuffs to be applied by this hitbox on a per hit basis.</Description>
+      </Property>
+      <Property Name="AppropriStartDist">
+        <Description>NEEDS TESTING 
+Start of the Appropriate Attack Range, in which a normal AttackRate, Specified above, is applied instead of the alternate, specified in NotAppropriDistAtkRate</Description>
+      </Property>
+      <Property Name="AppropriEndDist">
+        <Description>NEEDS TESTING 
+Distance at which, once passed, an alternate AttackRate is applied instead</Description>
+      </Property>
+      <Property Name="NotAppropriDistAtkRate">
+        <Description>NEEDS TESTING 
+Amount of attack to deal instead, if the targettable hitbox is more than the distance specified in "AppropriEndDistance" away from player(?) fsm origin(?), maybe requires "IsTakeOverAppropriDist" to be true?</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em7001SupernovaAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsEnableInhole">
+        <Description>Not used by the game</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em7001WideAreaAttackAction">
+    <Description>Creates an active hitbox for a projectile fsm.
+Only functions on FSMs that are given the "shot" classification. if used in an fsm that is classified as an areaattack, will not function</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="OverWriteParamType">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="AttackRate">
+        <Description>Amount of the character's attack stat to apply to DMG calculations on a per hit basis. 
+Refer to enemy_status.tbl for enemy attack stats.</Description>
+      </Property>
+      <Property Name="SpArtsRate">
+        <Description>Amount of SBA gauge to gain for the attack on a per hit basis. 
+Affected by Uplift and in-game multipliers</Description>
+      </Property>
+      <Property Name="HitStopSecond">
+        <Description>Amount of time, in seconds, for the game to create "Hitstop" when the attack lands.</Description>
+      </Property>
+      <Property Name="LifeSecond">
+        <Description>Amount of time, in seconds, that a hitbox will remain active for. 
+Not sure if an FSM can call multiple hitboxes at the same time, or if the most recent will override.</Description>
+      </Property>
+      <Property Name="MultiHitIntervalSecond">
+        <Description>Amount of time, in seconds, that a hitbox will take to hit again. 
+Subject to MultiHitLimit for maximum number of hits. </Description>
+      </Property>
+      <Property Name="IsHitOnce">
+        <Description>Only allows the active hitbox to hit once. 
+This counts per FSM, so any previous hits called in any specific FSM will count towards this total. 
+Certain hitboxes with certain flags may still create "hits", but do not count to this total.</Description>
+      </Property>
+      <Property Name="IsMoveToHitPos">
+        <Description>Requires Testing, asummed to move the FSM origin to the location where this active hitbox overlaps with a targettable hitbox. 
+Not sure how it handles hitting multiple enemies at the same time.</Description>
+      </Property>
+      <Property Name="IsClearHitList">
+        <Description>Whether to clear all hit count calculations. If false, any hits called by this action will count towards the first called "MultiHitLimit" with a valid number.</Description>
+      </Property>
+      <Property Name="MultiHitLimit">
+        <Description>Creates an FSM-wide hit count maximum. Any actions with "IsClearHitList" set to true will void previous calls. Actions set to "IsHitOnce" do not count to the total.</Description>
+      </Property>
+      <Property Name="DebuffList">
+        <Description>Debuffs to be applied by this hitbox on a per hit basis.</Description>
+      </Property>
+      <Property Name="AppropriStartDist">
+        <Description>NEEDS TESTING 
+Start of the Appropriate Attack Range, in which a normal AttackRate, Specified above, is applied instead of the alternate, specified in NotAppropriDistAtkRate</Description>
+      </Property>
+      <Property Name="AppropriEndDist">
+        <Description>NEEDS TESTING 
+Distance at which, once passed, an alternate AttackRate is applied instead</Description>
+      </Property>
+      <Property Name="NotAppropriDistAtkRate">
+        <Description>NEEDS TESTING 
+Amount of attack to deal instead, if the targettable hitbox is more than the distance specified in "AppropriEndDistance" away from player(?) fsm origin(?), maybe requires "IsTakeOverAppropriDist" to be true?</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em7001WideAreaAttackSignAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsVanishOnActionEnd">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="IsAdjustGroundPos">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="We7000DarkWaveShotAttackAction">
+    <Description>Creates an active hitbox for a projectile fsm.
+Only functions on FSMs that are given the "shot" classification. if used in an fsm that is classified as an areaattack, will not function</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="OverWriteParamType">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="AttackRate">
+        <Description>Amount of the character's attack stat to apply to DMG calculations on a per hit basis. 
+Refer to enemy_status.tbl for enemy attack stats.</Description>
+      </Property>
+      <Property Name="SpArtsRate">
+        <Description>Amount of SBA gauge to gain for the attack on a per hit basis. 
+Affected by Uplift and in-game multipliers</Description>
+      </Property>
+      <Property Name="HitStopSecond">
+        <Description>Amount of time, in seconds, for the game to create "Hitstop" when the attack lands.</Description>
+      </Property>
+      <Property Name="LifeSecond">
+        <Description>Amount of time, in seconds, that a hitbox will remain active for. 
+Not sure if an FSM can call multiple hitboxes at the same time, or if the most recent will override.</Description>
+      </Property>
+      <Property Name="MultiHitIntervalSecond">
+        <Description>Amount of time, in seconds, that a hitbox will take to hit again. 
+Subject to MultiHitLimit for maximum number of hits. </Description>
+      </Property>
+      <Property Name="IsHitOnce">
+        <Description>Only allows the active hitbox to hit once. 
+This counts per FSM, so any previous hits called in any specific FSM will count towards this total. 
+Certain hitboxes with certain flags may still create "hits", but do not count to this total.</Description>
+      </Property>
+      <Property Name="IsMoveToHitPos">
+        <Description>Requires Testing, asummed to move the FSM origin to the location where this active hitbox overlaps with a targettable hitbox. 
+Not sure how it handles hitting multiple enemies at the same time.</Description>
+      </Property>
+      <Property Name="IsClearHitList">
+        <Description>Whether to clear all hit count calculations. If false, any hits called by this action will count towards the first called "MultiHitLimit" with a valid number.</Description>
+      </Property>
+      <Property Name="MultiHitLimit">
+        <Description>Creates an FSM-wide hit count maximum. Any actions with "IsClearHitList" set to true will void previous calls. Actions set to "IsHitOnce" do not count to the total.</Description>
+      </Property>
+      <Property Name="DebuffList">
+        <Description>Debuffs to be applied by this hitbox on a per hit basis.</Description>
+      </Property>
+      <Property Name="AppropriStartDist">
+        <Description>NEEDS TESTING 
+Start of the Appropriate Attack Range, in which a normal AttackRate, Specified above, is applied instead of the alternate, specified in NotAppropriDistAtkRate</Description>
+      </Property>
+      <Property Name="AppropriEndDist">
+        <Description>NEEDS TESTING 
+Distance at which, once passed, an alternate AttackRate is applied instead</Description>
+      </Property>
+      <Property Name="NotAppropriDistAtkRate">
+        <Description>NEEDS TESTING 
+Amount of attack to deal instead, if the targettable hitbox is more than the distance specified in "AppropriEndDistance" away from player(?) fsm origin(?), maybe requires "IsTakeOverAppropriDist" to be true?</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="We7001FlameFloorShotAction">
+    <Description>Creates an active hitbox for a projectile fsm.
+Only functions on FSMs that are given the "shot" classification. if used in an fsm that is classified as an areaattack, will not function</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="OverWriteParamType">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="AttackRate">
+        <Description>Amount of the character's attack stat to apply to DMG calculations on a per hit basis. 
+Refer to enemy_status.tbl for enemy attack stats.</Description>
+      </Property>
+      <Property Name="SpArtsRate">
+        <Description>Amount of SBA gauge to gain for the attack on a per hit basis. 
+Affected by Uplift and in-game multipliers</Description>
+      </Property>
+      <Property Name="HitStopSecond">
+        <Description>Amount of time, in seconds, for the game to create "Hitstop" when the attack lands.</Description>
+      </Property>
+      <Property Name="LifeSecond">
+        <Description>Amount of time, in seconds, that a hitbox will remain active for. 
+Not sure if an FSM can call multiple hitboxes at the same time, or if the most recent will override.</Description>
+      </Property>
+      <Property Name="MultiHitIntervalSecond">
+        <Description>Amount of time, in seconds, that a hitbox will take to hit again. 
+Subject to MultiHitLimit for maximum number of hits. </Description>
+      </Property>
+      <Property Name="IsHitOnce">
+        <Description>Only allows the active hitbox to hit once. 
+This counts per FSM, so any previous hits called in any specific FSM will count towards this total. 
+Certain hitboxes with certain flags may still create "hits", but do not count to this total.</Description>
+      </Property>
+      <Property Name="IsMoveToHitPos">
+        <Description>Requires Testing, asummed to move the FSM origin to the location where this active hitbox overlaps with a targettable hitbox. 
+Not sure how it handles hitting multiple enemies at the same time.</Description>
+      </Property>
+      <Property Name="IsClearHitList">
+        <Description>Whether to clear all hit count calculations. If false, any hits called by this action will count towards the first called "MultiHitLimit" with a valid number.</Description>
+      </Property>
+      <Property Name="MultiHitLimit">
+        <Description>Creates an FSM-wide hit count maximum. Any actions with "IsClearHitList" set to true will void previous calls. Actions set to "IsHitOnce" do not count to the total.</Description>
+      </Property>
+      <Property Name="DebuffList">
+        <Description>Debuffs to be applied by this hitbox on a per hit basis.</Description>
+      </Property>
+      <Property Name="AppropriStartDist">
+        <Description>NEEDS TESTING 
+Start of the Appropriate Attack Range, in which a normal AttackRate, Specified above, is applied instead of the alternate, specified in NotAppropriDistAtkRate</Description>
+      </Property>
+      <Property Name="AppropriEndDist">
+        <Description>NEEDS TESTING 
+Distance at which, once passed, an alternate AttackRate is applied instead</Description>
+      </Property>
+      <Property Name="NotAppropriDistAtkRate">
+        <Description>NEEDS TESTING 
+Amount of attack to deal instead, if the targettable hitbox is more than the distance specified in "AppropriEndDistance" away from player(?) fsm origin(?), maybe requires "IsTakeOverAppropriDist" to be true?</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="We7001MeteorExplosionAction">
+    <Description>Creates an active hitbox for a projectile fsm.
+Only functions on FSMs that are given the "shot" classification. if used in an fsm that is classified as an areaattack, will not function</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="OverWriteParamType">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="AttackRate">
+        <Description>Amount of the character's attack stat to apply to DMG calculations on a per hit basis. 
+Refer to enemy_status.tbl for enemy attack stats.</Description>
+      </Property>
+      <Property Name="SpArtsRate">
+        <Description>Amount of SBA gauge to gain for the attack on a per hit basis. 
+Affected by Uplift and in-game multipliers</Description>
+      </Property>
+      <Property Name="HitStopSecond">
+        <Description>Amount of time, in seconds, for the game to create "Hitstop" when the attack lands.</Description>
+      </Property>
+      <Property Name="LifeSecond">
+        <Description>Amount of time, in seconds, that a hitbox will remain active for. 
+Not sure if an FSM can call multiple hitboxes at the same time, or if the most recent will override.</Description>
+      </Property>
+      <Property Name="MultiHitIntervalSecond">
+        <Description>Amount of time, in seconds, that a hitbox will take to hit again. 
+Subject to MultiHitLimit for maximum number of hits. </Description>
+      </Property>
+      <Property Name="IsHitOnce">
+        <Description>Only allows the active hitbox to hit once. 
+This counts per FSM, so any previous hits called in any specific FSM will count towards this total. 
+Certain hitboxes with certain flags may still create "hits", but do not count to this total.</Description>
+      </Property>
+      <Property Name="IsMoveToHitPos">
+        <Description>Requires Testing, asummed to move the FSM origin to the location where this active hitbox overlaps with a targettable hitbox. 
+Not sure how it handles hitting multiple enemies at the same time.</Description>
+      </Property>
+      <Property Name="IsClearHitList">
+        <Description>Whether to clear all hit count calculations. If false, any hits called by this action will count towards the first called "MultiHitLimit" with a valid number.</Description>
+      </Property>
+      <Property Name="MultiHitLimit">
+        <Description>Creates an FSM-wide hit count maximum. Any actions with "IsClearHitList" set to true will void previous calls. Actions set to "IsHitOnce" do not count to the total.</Description>
+      </Property>
+      <Property Name="DebuffList">
+        <Description>Debuffs to be applied by this hitbox on a per hit basis.</Description>
+      </Property>
+      <Property Name="AppropriStartDist">
+        <Description>NEEDS TESTING 
+Start of the Appropriate Attack Range, in which a normal AttackRate, Specified above, is applied instead of the alternate, specified in NotAppropriDistAtkRate</Description>
+      </Property>
+      <Property Name="AppropriEndDist">
+        <Description>NEEDS TESTING 
+Distance at which, once passed, an alternate AttackRate is applied instead</Description>
+      </Property>
+      <Property Name="NotAppropriDistAtkRate">
+        <Description>NEEDS TESTING 
+Amount of attack to deal instead, if the targettable hitbox is more than the distance specified in "AppropriEndDistance" away from player(?) fsm origin(?), maybe requires "IsTakeOverAppropriDist" to be true?</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="We7002IceShotSignAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsVanishOnActionEnd">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="IsAdjustGroundPos">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="We7003ShockWaveSignAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsVanishOnActionEnd">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="IsAdjustGroundPos">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="We7004TornadoShotAppearAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsVanishOnActionEnd">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="IsAdjustGroundPos">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="We7004TornadoShotAttackSignAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsVanishOnActionEnd">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="IsAdjustGroundPos">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em8400ShotGroundMovePlasmaAction">
+    <Description>Added in Endless Ragnarok</Description>
+    <ChildTypes />
+    <Properties />
+  </Component>
+  <Component Name="Em8401EarthShotAttackSignAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsVanishOnActionEnd">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="IsAdjustGroundPos">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em8401EarthShotMoveAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsGimbalLockSafety">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em0701DiamondDustAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsCounterAttack">
+        <Description>Not used by the game</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em0706IceShotSignAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsVanishOnActionEnd">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="IsAdjustGroundPos">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em0706LaserHomingAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="OpenFlyParam">
+        <Description>Not used by the game</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em0706LaserSpinAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="OpenFlyParam">
+        <Description>Not used by the game</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="LaserSpinParam">
+    <ChildTypes />
+    <Properties>
+      <Property Name="ShowParamInfo">
+        <Description>Not used by the game</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em0706SwoopStompAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="AttackWaveSignScale">
+        <Description>Not used by the game</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="EmAhrimanSmallBaseTauntAttackAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="ShotLaserLoopSec">
+        <Description>Not used by the game</Description>
+      </Property>
+      <Property Name="UseShotLaserDamageStack">
+        <Description>Not used by the game</Description>
+      </Property>
+      <Property Name="ShotLaserMax">
+        <Description>Not used by the game</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em7300MotionPlayAction">
+    <Description>Plays motion/animation assigned</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsAdjustTimeToEnd">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="EndTimeToAdjust">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="ResetWaitFace">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em7300OverDriveSpeedArtsAction">
+    <Description>Managarmr Jumps off screen, before assaulting the battlefield with player tracking dash attacks. Calls em7300_od_arts_speed_slash_fsm_ingame after each slash interval timer.</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="SetInterval">
+        <Description>Amount of time to wait inbetween sets of 4 FSM calls</Description>
+      </Property>
+      <Property Name="SlashInterval">
+        <Description>The amount of time to wait inbetween FSM Calls</Description>
+      </Property>
+      <Property Name="SlashEndTime">
+        <Description>The amount of time to wait after the final slash call before reappearing on the map</Description>
+      </Property>
+      <Property Name="IsDoppel">
+        <Description>Slash Attacks will be created in the center of the map instead of on a player, creating a large X</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="We2103MoveAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="MoveDir">
+        <Description>Not used by the game</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="We2104StepThrowSwordAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="StartDistance">
+        <Description>Not used by the game</Description>
+      </Property>
+      <Property Name="ThrowDistance">
+        <Description>Not used by the game</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em2400ShotBeamAttackAction">
+    <Description>Creates an active hitbox for a projectile fsm.
+Only functions on FSMs that are given the "shot" classification. if used in an fsm that is classified as an areaattack, will not function</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="OverWriteParamType">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="AttackRate">
+        <Description>Amount of the character's attack stat to apply to DMG calculations on a per hit basis. 
+Refer to enemy_status.tbl for enemy attack stats.</Description>
+      </Property>
+      <Property Name="SpArtsRate">
+        <Description>Amount of SBA gauge to gain for the attack on a per hit basis. 
+Affected by Uplift and in-game multipliers</Description>
+      </Property>
+      <Property Name="HitStopSecond">
+        <Description>Amount of time, in seconds, for the game to create "Hitstop" when the attack lands.</Description>
+      </Property>
+      <Property Name="LifeSecond">
+        <Description>Amount of time, in seconds, that a hitbox will remain active for. 
+Not sure if an FSM can call multiple hitboxes at the same time, or if the most recent will override.</Description>
+      </Property>
+      <Property Name="MultiHitIntervalSecond">
+        <Description>Amount of time, in seconds, that a hitbox will take to hit again. 
+Subject to MultiHitLimit for maximum number of hits. </Description>
+      </Property>
+      <Property Name="IsHitOnce">
+        <Description>Only allows the active hitbox to hit once. 
+This counts per FSM, so any previous hits called in any specific FSM will count towards this total. 
+Certain hitboxes with certain flags may still create "hits", but do not count to this total.</Description>
+      </Property>
+      <Property Name="IsMoveToHitPos">
+        <Description>Requires Testing, asummed to move the FSM origin to the location where this active hitbox overlaps with a targettable hitbox. 
+Not sure how it handles hitting multiple enemies at the same time.</Description>
+      </Property>
+      <Property Name="IsClearHitList">
+        <Description>Whether to clear all hit count calculations. If false, any hits called by this action will count towards the first called "MultiHitLimit" with a valid number.</Description>
+      </Property>
+      <Property Name="MultiHitLimit">
+        <Description>Creates an FSM-wide hit count maximum. Any actions with "IsClearHitList" set to true will void previous calls. Actions set to "IsHitOnce" do not count to the total.</Description>
+      </Property>
+      <Property Name="DebuffList">
+        <Description>Debuffs to be applied by this hitbox on a per hit basis.</Description>
+      </Property>
+      <Property Name="AppropriStartDist">
+        <Description>NEEDS TESTING 
+Start of the Appropriate Attack Range, in which a normal AttackRate, Specified above, is applied instead of the alternate, specified in NotAppropriDistAtkRate</Description>
+      </Property>
+      <Property Name="AppropriEndDist">
+        <Description>NEEDS TESTING 
+Distance at which, once passed, an alternate AttackRate is applied instead</Description>
+      </Property>
+      <Property Name="NotAppropriDistAtkRate">
+        <Description>NEEDS TESTING 
+Amount of attack to deal instead, if the targettable hitbox is more than the distance specified in "AppropriEndDistance" away from player(?) fsm origin(?), maybe requires "IsTakeOverAppropriDist" to be true?</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em0800MinionsMotionPlayAction">
+    <Description>Plays motion/animation assigned</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsAdjustTimeToEnd">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="EndTimeToAdjust">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="ResetWaitFace">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em0805CallOfDarknessAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="BombModeSeName">
+        <Description>Not used by the game</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em0000MotionPlayAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="TargetHomingType">
+        <Description>Something to do with variable 'Em0000_TargetHomingType' (0x9EEB60E9) internally</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em7200BackKickAction">
+    <Description>Plays motion/animation assigned</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsAdjustTimeToEnd">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="EndTimeToAdjust">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="ResetWaitFace">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em7201EventMotionPlayAction">
+    <Description>Plays motion/animation assigned</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsAdjustTimeToEnd">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="EndTimeToAdjust">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="ResetWaitFace">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em7201ExtendsShotAttackAction">
+    <Description>Creates an active hitbox for a projectile fsm.
+Only functions on FSMs that are given the "shot" classification. if used in an fsm that is classified as an areaattack, will not function</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="OverWriteParamType">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="AttackRate">
+        <Description>Amount of the character's attack stat to apply to DMG calculations on a per hit basis. 
+Refer to enemy_status.tbl for enemy attack stats.</Description>
+      </Property>
+      <Property Name="SpArtsRate">
+        <Description>Amount of SBA gauge to gain for the attack on a per hit basis. 
+Affected by Uplift and in-game multipliers</Description>
+      </Property>
+      <Property Name="HitStopSecond">
+        <Description>Amount of time, in seconds, for the game to create "Hitstop" when the attack lands.</Description>
+      </Property>
+      <Property Name="LifeSecond">
+        <Description>Amount of time, in seconds, that a hitbox will remain active for. 
+Not sure if an FSM can call multiple hitboxes at the same time, or if the most recent will override.</Description>
+      </Property>
+      <Property Name="MultiHitIntervalSecond">
+        <Description>Amount of time, in seconds, that a hitbox will take to hit again. 
+Subject to MultiHitLimit for maximum number of hits. </Description>
+      </Property>
+      <Property Name="IsHitOnce">
+        <Description>Only allows the active hitbox to hit once. 
+This counts per FSM, so any previous hits called in any specific FSM will count towards this total. 
+Certain hitboxes with certain flags may still create "hits", but do not count to this total.</Description>
+      </Property>
+      <Property Name="IsMoveToHitPos">
+        <Description>Requires Testing, asummed to move the FSM origin to the location where this active hitbox overlaps with a targettable hitbox. 
+Not sure how it handles hitting multiple enemies at the same time.</Description>
+      </Property>
+      <Property Name="IsClearHitList">
+        <Description>Whether to clear all hit count calculations. If false, any hits called by this action will count towards the first called "MultiHitLimit" with a valid number.</Description>
+      </Property>
+      <Property Name="MultiHitLimit">
+        <Description>Creates an FSM-wide hit count maximum. Any actions with "IsClearHitList" set to true will void previous calls. Actions set to "IsHitOnce" do not count to the total.</Description>
+      </Property>
+      <Property Name="DebuffList">
+        <Description>Debuffs to be applied by this hitbox on a per hit basis.</Description>
+      </Property>
+      <Property Name="AppropriStartDist">
+        <Description>NEEDS TESTING 
+Start of the Appropriate Attack Range, in which a normal AttackRate, Specified above, is applied instead of the alternate, specified in NotAppropriDistAtkRate</Description>
+      </Property>
+      <Property Name="AppropriEndDist">
+        <Description>NEEDS TESTING 
+Distance at which, once passed, an alternate AttackRate is applied instead</Description>
+      </Property>
+      <Property Name="NotAppropriDistAtkRate">
+        <Description>NEEDS TESTING 
+Amount of attack to deal instead, if the targettable hitbox is more than the distance specified in "AppropriEndDistance" away from player(?) fsm origin(?), maybe requires "IsTakeOverAppropriDist" to be true?</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em7201NihiraPushStormAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="StartMotionId">
+        <Description>Not used by the game</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em7400ShotFloatingTimerAction">
+    <Description>Creates an active hitbox for a projectile fsm.
+Only functions on FSMs that are given the "shot" classification. if used in an fsm that is classified as an areaattack, will not function</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="OverWriteParamType">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="AttackRate">
+        <Description>Amount of the character's attack stat to apply to DMG calculations on a per hit basis. 
+Refer to enemy_status.tbl for enemy attack stats.</Description>
+      </Property>
+      <Property Name="SpArtsRate">
+        <Description>Amount of SBA gauge to gain for the attack on a per hit basis. 
+Affected by Uplift and in-game multipliers</Description>
+      </Property>
+      <Property Name="HitStopSecond">
+        <Description>Amount of time, in seconds, for the game to create "Hitstop" when the attack lands.</Description>
+      </Property>
+      <Property Name="LifeSecond">
+        <Description>Amount of time, in seconds, that a hitbox will remain active for. 
+Not sure if an FSM can call multiple hitboxes at the same time, or if the most recent will override.</Description>
+      </Property>
+      <Property Name="MultiHitIntervalSecond">
+        <Description>Amount of time, in seconds, that a hitbox will take to hit again. 
+Subject to MultiHitLimit for maximum number of hits. </Description>
+      </Property>
+      <Property Name="IsHitOnce">
+        <Description>Only allows the active hitbox to hit once. 
+This counts per FSM, so any previous hits called in any specific FSM will count towards this total. 
+Certain hitboxes with certain flags may still create "hits", but do not count to this total.</Description>
+      </Property>
+      <Property Name="IsMoveToHitPos">
+        <Description>Requires Testing, asummed to move the FSM origin to the location where this active hitbox overlaps with a targettable hitbox. 
+Not sure how it handles hitting multiple enemies at the same time.</Description>
+      </Property>
+      <Property Name="IsClearHitList">
+        <Description>Whether to clear all hit count calculations. If false, any hits called by this action will count towards the first called "MultiHitLimit" with a valid number.</Description>
+      </Property>
+      <Property Name="MultiHitLimit">
+        <Description>Creates an FSM-wide hit count maximum. Any actions with "IsClearHitList" set to true will void previous calls. Actions set to "IsHitOnce" do not count to the total.</Description>
+      </Property>
+      <Property Name="DebuffList">
+        <Description>Debuffs to be applied by this hitbox on a per hit basis.</Description>
+      </Property>
+      <Property Name="AppropriStartDist">
+        <Description>NEEDS TESTING 
+Start of the Appropriate Attack Range, in which a normal AttackRate, Specified above, is applied instead of the alternate, specified in NotAppropriDistAtkRate</Description>
+      </Property>
+      <Property Name="AppropriEndDist">
+        <Description>NEEDS TESTING 
+Distance at which, once passed, an alternate AttackRate is applied instead</Description>
+      </Property>
+      <Property Name="NotAppropriDistAtkRate">
+        <Description>NEEDS TESTING 
+Amount of attack to deal instead, if the targettable hitbox is more than the distance specified in "AppropriEndDistance" away from player(?) fsm origin(?), maybe requires "IsTakeOverAppropriDist" to be true?</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em2200ShotCommonAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="ShotType">
+        <Description>Valid: 1, 5, 6, 7, 8, 9, 11, 13, 14, 15, 16, 17, 19</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em0900ShotSignAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsVanishOnActionEnd">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="IsAdjustGroundPos">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="IceShotParam">
+    <ChildTypes />
+    <Properties>
+      <Property Name="ShowParamInfo">
+        <Description>Not used by the game</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em1301ElectricFieldAttackAction">
+    <Description>Creates an active hitbox for a projectile fsm.
+Only functions on FSMs that are given the "shot" classification. if used in an fsm that is classified as an areaattack, will not function</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="OverWriteParamType">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="AttackRate">
+        <Description>Amount of the character's attack stat to apply to DMG calculations on a per hit basis. 
+Refer to enemy_status.tbl for enemy attack stats.</Description>
+      </Property>
+      <Property Name="SpArtsRate">
+        <Description>Amount of SBA gauge to gain for the attack on a per hit basis. 
+Affected by Uplift and in-game multipliers</Description>
+      </Property>
+      <Property Name="HitStopSecond">
+        <Description>Amount of time, in seconds, for the game to create "Hitstop" when the attack lands.</Description>
+      </Property>
+      <Property Name="LifeSecond">
+        <Description>Amount of time, in seconds, that a hitbox will remain active for. 
+Not sure if an FSM can call multiple hitboxes at the same time, or if the most recent will override.</Description>
+      </Property>
+      <Property Name="MultiHitIntervalSecond">
+        <Description>Amount of time, in seconds, that a hitbox will take to hit again. 
+Subject to MultiHitLimit for maximum number of hits. </Description>
+      </Property>
+      <Property Name="IsHitOnce">
+        <Description>Only allows the active hitbox to hit once. 
+This counts per FSM, so any previous hits called in any specific FSM will count towards this total. 
+Certain hitboxes with certain flags may still create "hits", but do not count to this total.</Description>
+      </Property>
+      <Property Name="IsMoveToHitPos">
+        <Description>Requires Testing, asummed to move the FSM origin to the location where this active hitbox overlaps with a targettable hitbox. 
+Not sure how it handles hitting multiple enemies at the same time.</Description>
+      </Property>
+      <Property Name="IsClearHitList">
+        <Description>Whether to clear all hit count calculations. If false, any hits called by this action will count towards the first called "MultiHitLimit" with a valid number.</Description>
+      </Property>
+      <Property Name="MultiHitLimit">
+        <Description>Creates an FSM-wide hit count maximum. Any actions with "IsClearHitList" set to true will void previous calls. Actions set to "IsHitOnce" do not count to the total.</Description>
+      </Property>
+      <Property Name="DebuffList">
+        <Description>Debuffs to be applied by this hitbox on a per hit basis.</Description>
+      </Property>
+      <Property Name="AppropriStartDist">
+        <Description>NEEDS TESTING 
+Start of the Appropriate Attack Range, in which a normal AttackRate, Specified above, is applied instead of the alternate, specified in NotAppropriDistAtkRate</Description>
+      </Property>
+      <Property Name="AppropriEndDist">
+        <Description>NEEDS TESTING 
+Distance at which, once passed, an alternate AttackRate is applied instead</Description>
+      </Property>
+      <Property Name="NotAppropriDistAtkRate">
+        <Description>NEEDS TESTING 
+Amount of attack to deal instead, if the targettable hitbox is more than the distance specified in "AppropriEndDistance" away from player(?) fsm origin(?), maybe requires "IsTakeOverAppropriDist" to be true?</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="EmCultSoldierLeaderEmberComboAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="MovementRateOnFlag">
+        <Description>Not used by the game</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="EmCultSoldierBaseComboAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="MovementRateOnFlag">
+        <Description>Not used by the game</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em8200ShotAttackScalingAction">
+    <Description>Creates an active hitbox for a projectile fsm.
+Only functions on FSMs that are given the "shot" classification. if used in an fsm that is classified as an areaattack, will not function</Description>
+    <ChildTypes />
+    <Properties>
+      <Property Name="OverWriteParamType">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+      <Property Name="AttackRate">
+        <Description>Amount of the character's attack stat to apply to DMG calculations on a per hit basis. 
+Refer to enemy_status.tbl for enemy attack stats.</Description>
+      </Property>
+      <Property Name="SpArtsRate">
+        <Description>Amount of SBA gauge to gain for the attack on a per hit basis. 
+Affected by Uplift and in-game multipliers</Description>
+      </Property>
+      <Property Name="HitStopSecond">
+        <Description>Amount of time, in seconds, for the game to create "Hitstop" when the attack lands.</Description>
+      </Property>
+      <Property Name="LifeSecond">
+        <Description>Amount of time, in seconds, that a hitbox will remain active for. 
+Not sure if an FSM can call multiple hitboxes at the same time, or if the most recent will override.</Description>
+      </Property>
+      <Property Name="MultiHitIntervalSecond">
+        <Description>Amount of time, in seconds, that a hitbox will take to hit again. 
+Subject to MultiHitLimit for maximum number of hits. </Description>
+      </Property>
+      <Property Name="IsHitOnce">
+        <Description>Only allows the active hitbox to hit once. 
+This counts per FSM, so any previous hits called in any specific FSM will count towards this total. 
+Certain hitboxes with certain flags may still create "hits", but do not count to this total.</Description>
+      </Property>
+      <Property Name="IsMoveToHitPos">
+        <Description>Requires Testing, asummed to move the FSM origin to the location where this active hitbox overlaps with a targettable hitbox. 
+Not sure how it handles hitting multiple enemies at the same time.</Description>
+      </Property>
+      <Property Name="IsClearHitList">
+        <Description>Whether to clear all hit count calculations. If false, any hits called by this action will count towards the first called "MultiHitLimit" with a valid number.</Description>
+      </Property>
+      <Property Name="MultiHitLimit">
+        <Description>Creates an FSM-wide hit count maximum. Any actions with "IsClearHitList" set to true will void previous calls. Actions set to "IsHitOnce" do not count to the total.</Description>
+      </Property>
+      <Property Name="DebuffList">
+        <Description>Debuffs to be applied by this hitbox on a per hit basis.</Description>
+      </Property>
+      <Property Name="AppropriStartDist">
+        <Description>NEEDS TESTING 
+Start of the Appropriate Attack Range, in which a normal AttackRate, Specified above, is applied instead of the alternate, specified in NotAppropriDistAtkRate</Description>
+      </Property>
+      <Property Name="AppropriEndDist">
+        <Description>NEEDS TESTING 
+Distance at which, once passed, an alternate AttackRate is applied instead</Description>
+      </Property>
+      <Property Name="NotAppropriDistAtkRate">
+        <Description>NEEDS TESTING 
+Amount of attack to deal instead, if the targettable hitbox is more than the distance specified in "AppropriEndDistance" away from player(?) fsm origin(?), maybe requires "IsTakeOverAppropriDist" to be true?</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em7600CounterLaserAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="Time">
+        <Description>Not used by the game</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em7600OverAttackAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="StartFrame">
+        <Description>Not used by the game</Description>
+      </Property>
+      <Property Name="MoveFrame">
+        <Description>Not used by the game</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em7600OverDriveSpecial1Action">
+    <ChildTypes />
+    <Properties>
+      <Property Name="SignTime">
+        <Description>Not used by the game</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em7600OverDriveSpecial1MoveAction">
+    <ChildTypes />
+    <Properties>
+      <Property Name="IsChaosMove">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="ChaosWidthRate">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="ChaosChangeTime1">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="ChaosChangeTime2">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="ChaosChangeTime3">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="ChaosRotSpeedMax">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="SpeedMaxTime">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+      <Property Name="ChaosSpeedRate">
+        <Description>Added in Endless Ragnarok</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em7600Special3Action">
+    <ChildTypes />
+    <Properties>
+      <Property Name="SignTime">
+        <Description>Not used by the game</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="Em7601Place">
+    <ChildTypes />
+    <Properties>
+      <Property Name="Rot">
+        <Description>Not used by the game</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="DecorationNodeParam">
+    <ChildTypes />
+    <Properties>
+      <Property Name="AbortType">
+        <Description>Not used by the game</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="ActionInfo">
+    <ChildTypes />
+    <Properties>
+      <Property Name="Id">
+        <Description>This will be the number used to refer to the action by other files or other actions in branching paths</Description>
+      </Property>
+      <Property Name="AbilityTag">
+        <Description>Names the skill. This is only used for actual abilities, not normal actions.
+Example: "AB_PL0000_09" (this is Gran's 9th ability, which the ordering of abilities can be found by matching this against the Text file for the abilities, 
+or removing all selected abilities in game, and counting from top to bottom)</Description>
+      </Property>
+      <Property Name="StraddleFlagBit">
+        <Description>Controls specific traits for the action called.</Description>
+      </Property>
+      <Property Name="UsePoint">
+        <Description>How many honors to give to the player upon casting the action.</Description>
+      </Property>
+      <Property Name="AbilityStocks">
+        <Description>The number of charges an ability can hold, like Lancelot's Lawinsturm.</Description>
+      </Property>
+      <Property Name="AbilityChargeTime">
+        <Description>The cooldown of the ability.</Description>
+      </Property>
+      <Property Name="AbilityChargeDelayMin">
+        <Description>Minimum timer that will delay the ability cooldown from starting, this does not impact Cascade.</Description>
+      </Property>
+      <Property Name="AbilityChargeDelayMax">
+        <Description>Maximum timer that will delay the ability cooldown from starting, this does not impact Cascade.</Description>
+      </Property>
+      <Property Name="BranchXAtk">
+        <Description>When X is pressed during this action, so long as the flags are set to allow X presses, then the action listed in this will begin.</Description>
+      </Property>
+      <Property Name="BranchYAtk">
+        <Description>When Y is pressed during this action, so long as the flags are set to allow X presses, then the action listed in this will begin.</Description>
+      </Property>
+      <Property Name="BranchXAtk_Just">
+        <Description>When X is pressed within a specified window in the flags for the action/motions, it will go to the action listed.</Description>
+      </Property>
+      <Property Name="BranchYAtk_Just">
+        <Description>When Y is pressed within a specified window in the flags for the action/motions, it will go to the action listed.</Description>
+      </Property>
+      <Property Name="BranchXAtk_Hold">
+        <Description>When X is held down before a specified time in the flags for the action, and continues to be held when the flag activates, this action will be called.</Description>
+      </Property>
+      <Property Name="BranchYAtk_Hold">
+        <Description>When Y is held down before a specified time in the flags for the action, and continues to be held when the flag activates, this action will be called.</Description>
+      </Property>
+      <Property Name="BranchAtkHit">
+        <Description>Allows the action to automatically call another action after a hit is landed, depending on specific factors</Description>
+      </Property>
+      <Property Name="Dist">
+        <Description>Affects the distance the action is set to be called at by AI</Description>
+      </Property>
+      <Property Name="ControlTypeHash">
+        <Description>Controls how motions are handled when called by an action.</Description>
+      </Property>
+      <Property Name="ActionName">
+        <Description>A name assigned to the action by the devs, not referenced anywhere else.</Description>
+      </Property>
+      <Property Name="SaveMotId01">
+        <Description>A motion associated with this action. Called depending on "controlTypeHash_", and affected by "actionFreeWorkXX_".</Description>
+      </Property>
+      <Property Name="SaveMotId02">
+        <Description>A motion associated with this action. Called depending on "controlTypeHash_", and affected by "actionFreeWorkXX_".</Description>
+      </Property>
+      <Property Name="SaveMotId03">
+        <Description>A motion associated with this action. Called depending on "controlTypeHash_", and affected by "actionFreeWorkXX_".</Description>
+      </Property>
+      <Property Name="SaveMotId05">
+        <Description>A motion associated with this action. Called depending on "controlTypeHash_", and affected by "actionFreeWorkXX_".</Description>
+      </Property>
+      <Property Name="SaveMotId06">
+        <Description>A motion associated with this action. Called depending on "controlTypeHash_", and affected by "actionFreeWorkXX_".</Description>
+      </Property>
+      <Property Name="SaveMotId07">
+        <Description>A motion associated with this action. Called depending on "controlTypeHash_", and affected by "actionFreeWorkXX_".</Description>
+      </Property>
+      <Property Name="SaveMotId08">
+        <Description>A motion associated with this action. Called depending on "controlTypeHash_", and affected by "actionFreeWorkXX_".</Description>
+      </Property>
+      <Property Name="SaveMotId09">
+        <Description>A motion associated with this action. Called depending on "controlTypeHash_", and affected by "actionFreeWorkXX_".</Description>
+      </Property>
+      <Property Name="SaveMotId10">
+        <Description>A motion associated with this action. Called depending on "controlTypeHash_", and affected by "actionFreeWorkXX_".</Description>
+      </Property>
+      <Property Name="ActionFreeWork01">
+        <Description>Values associated with the action, such as for Zeta, when she does a Rhapsody parry, the angle of bounce and force behind the lift will be listed here.</Description>
+      </Property>
+      <Property Name="ActionFreeWork02">
+        <Description>Values associated with the action, such as for Zeta, when she does a Rhapsody parry, the angle of bounce and force behind the lift will be listed here.</Description>
+      </Property>
+      <Property Name="ActionFreeWork03">
+        <Description>Values associated with the action, such as for Zeta, when she does a Rhapsody parry, the angle of bounce and force behind the lift will be listed here.</Description>
+      </Property>
+      <Property Name="ActionFreeWork04">
+        <Description>Values associated with the action, such as for Zeta, when she does a Rhapsody parry, the angle of bounce and force behind the lift will be listed here.</Description>
+      </Property>
+      <Property Name="ActionFreeWork05">
+        <Description>Values associated with the action, such as for Zeta, when she does a Rhapsody parry, the angle of bounce and force behind the lift will be listed here.</Description>
+      </Property>
+      <Property Name="ActionFreeWork06">
+        <Description>Values associated with the action, such as for Zeta, when she does a Rhapsody parry, the angle of bounce and force behind the lift will be listed here.</Description>
+      </Property>
+      <Property Name="ActionFreeWork07">
+        <Description>Values associated with the action, such as for Zeta, when she does a Rhapsody parry, the angle of bounce and force behind the lift will be listed here.</Description>
+      </Property>
+      <Property Name="ActionFreeWork08">
+        <Description>Values associated with the action, such as for Zeta, when she does a Rhapsody parry, the angle of bounce and force behind the lift will be listed here.</Description>
+      </Property>
+      <Property Name="ActionFreeWork09">
+        <Description>Values associated with the action, such as for Zeta, when she does a Rhapsody parry, the angle of bounce and force behind the lift will be listed here.</Description>
+      </Property>
+      <Property Name="ActionFreeWork10">
+        <Description>Values associated with the action, such as for Zeta, when she does a Rhapsody parry, the angle of bounce and force behind the lift will be listed here.</Description>
+      </Property>
+      <Property Name="ActionFreeWork11">
+        <Description>Values associated with the action, such as for Zeta, when she does a Rhapsody parry, the angle of bounce and force behind the lift will be listed here.</Description>
+      </Property>
+      <Property Name="ActionFreeWork12">
+        <Description>Values associated with the action, such as for Zeta, when she does a Rhapsody parry, the angle of bounce and force behind the lift will be listed here.</Description>
+      </Property>
+      <Property Name="ActionFreeWork13">
+        <Description>Values associated with the action, such as for Zeta, when she does a Rhapsody parry, the angle of bounce and force behind the lift will be listed here.</Description>
+      </Property>
+      <Property Name="ActionFreeWork14">
+        <Description>Values associated with the action, such as for Zeta, when she does a Rhapsody parry, the angle of bounce and force behind the lift will be listed here.</Description>
+      </Property>
+      <Property Name="ActionFreeWork15">
+        <Description>Values associated with the action, such as for Zeta, when she does a Rhapsody parry, the angle of bounce and force behind the lift will be listed here.</Description>
+      </Property>
+      <Property Name="ActionFreeWork16">
+        <Description>Values associated with the action, such as for Zeta, when she does a Rhapsody parry, the angle of bounce and force behind the lift will be listed here.</Description>
+      </Property>
+      <Property Name="ActionFreeWork17">
+        <Description>Values associated with the action, such as for Zeta, when she does a Rhapsody parry, the angle of bounce and force behind the lift will be listed here.</Description>
+      </Property>
+      <Property Name="ActionFreeWork18">
+        <Description>Values associated with the action, such as for Zeta, when she does a Rhapsody parry, the angle of bounce and force behind the lift will be listed here.</Description>
+      </Property>
+      <Property Name="FreeWork05">
+        <Description>Always 1 seemingly.</Description>
+      </Property>
+      <Property Name="FreeWork06">
+        <Description>Always 1 seemingly.</Description>
+      </Property>
+      <Property Name="BulletType">
+        <Description>Can refer to the FSM associated with the action. 
+This is only used on some of the first characters designed, such as Captain, and is set within the executable. 
+Requires the correct flags during the action to call the FSM.</Description>
+      </Property>
+      <Property Name="SupportEffectList">
+        <Description>Utilizes a hash and 6 values in an array format to state the buffs that will be applied to the character or team members when this player calls this action, 
+so long as the required flag is in any of the motions tied to the action. The first value in the array states how many buffs the game will attempt to give.</Description>
+      </Property>
+      <Property Name="ActionCategory">
+        <Description>BitFlag that affects how this action is called by AI when the skill is available. Each has specific requirements to be active depending on conditions set in the executable.</Description>
+      </Property>
+      <Property Name="DamageLimitType">
+        <Description>Unused after version 1.3 of the game. Utilizes "damageLimitDataIndex_" instead.</Description>
+      </Property>
+      <Property Name="DamageLimitDataIndex">
+        <Description>Specifies the damage cap in the Parameter File's damage cap index that is associated with this action.</Description>
+      </Property>
+      <Property Name="RelatedAbilityType">
+        <Description>Associates the action with the id assigned (Ie. \"AB_PL0000_09\" would be assigned \"8\"), 
+possibly not needed, changing it still allowed the action to function as intended</Description>
+      </Property>
+      <Property Name="IndirectDamagePoint">
+        <Description>Additional honors, possibly given on granting buffs to other players, not fully aware of how honors works</Description>
+      </Property>
+      <Property Name="IsIndirectDamageAddMulti">
+        <Description>Unknown. True for Vane's Bubble</Description>
+      </Property>
+      <Property Name="IsCheckComboCutAbility">
+        <Description>Requires more testing. 
+Disables players from casting a skill and having access to the skill follow-ups listed in BranchXAtk and BranchYAtk before the skill cooldown is used</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="DebuffData">
+    <ChildTypes />
+    <Properties>
+      <Property Name="Sec">
+        <Description>Time, in seconds for the debuff to be active. 
+Affected by masteries and resistances.</Description>
+      </Property>
+      <Property Name="Rate">
+        <Description>Value for the weight of a debuff to be applied. ie. 40% ATK DOWN instead of 20% ATK DOWN. 
+Debuffs that do not require a value will ignore this.</Description>
+      </Property>
+      <Property Name="MaxLv">
+        <Description>Added in Endless Ragnarok.</Description>
+      </Property>
+    </Properties>
+  </Component>
+  <Component Name="EnumString`1">
+    <ChildTypes />
+    <Properties>
+      <Property Name="Str">
+        <Description>Name of this enum field at the specified index. Generally unused.</Description>
+      </Property>
+      <Property Name="Index">
+        <Description>Enum value.</Description>
+      </Property>
+    </Properties>
+  </Component>
+</Types>

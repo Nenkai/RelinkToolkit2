@@ -16,6 +16,7 @@ using RelinkToolkit2.Messages.Fsm;
 using RelinkToolkit2.ViewModels.Documents.GraphEditor;
 using RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
@@ -27,12 +28,17 @@ namespace RelinkToolkit2.Views.Documents.GraphEditor;
 public partial class FsmNodeView : UserControl, 
     IRecipient<FsmNodeLayerChangedMessage>
 {
-    private Label _label;
+    private Label? _label;
     private CancellationTokenSource? _layerLabelAnimCt = new();
 
     public FsmNodeView()
     {
         InitializeComponent();
+    }
+
+    private void Label_Loaded(object? sender, RoutedEventArgs e)
+    {
+        _label = (Label)sender!;
     }
 
     private void UserControl_DataContextChanged(object? sender, System.EventArgs e)
@@ -59,10 +65,14 @@ public partial class FsmNodeView : UserControl,
     {
         _layerLabelAnimCt?.Cancel();
 
-        _layerLabelAnimCt = new CancellationTokenSource();
-        var anim = (Animation)_label!.Resources["LayerChangedAnimation"]!;
-        await anim.RunAsync(_label, cancellationToken: _layerLabelAnimCt.Token);
-        _layerLabelAnimCt = null;
+        if (_label is not null && _label.Resources.TryGetValue("LayerChangedAnimation", out object? animObject))
+        {
+            _layerLabelAnimCt = new CancellationTokenSource();
+
+            Animation anim = (Animation)animObject!;
+            await anim.RunAsync(_label, cancellationToken: _layerLabelAnimCt.Token);
+            _layerLabelAnimCt = null;
+        }
     }
 
     private void Border_PointerPressed(object? sender, PointerPressedEventArgs e)
@@ -152,11 +162,6 @@ public partial class FsmNodeView : UserControl,
 
         TransitionViewModel selfTrans = nvm.Transitions.First(e => e.Source == e.Target);
         WeakReferenceMessenger.Default.Send(new EditConnectionRequest(selfTrans.ParentConnection));
-    }
-
-    private void Label_Loaded(object? sender, RoutedEventArgs e)
-    {
-        _label = (Label)sender!;
     }
 
     private void Component_DeleteClicked(object? sender, PointerPressedEventArgs e)

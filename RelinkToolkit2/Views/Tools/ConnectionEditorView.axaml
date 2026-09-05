@@ -1,0 +1,242 @@
+﻿<UserControl x:Class="RelinkToolkit2.Views.Tools.ConnectionEditorView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:converters="using:RelinkToolkit2.Converters"
+			 xmlns:controls="using:RelinkToolkit2.Controls"
+			 xmlns:VMs="using:RelinkToolkit2.ViewModels.Tools"
+             xmlns:fsmVMs="using:RelinkToolkit2.ViewModels.Documents.GraphEditor"
+			 xmlns:condVMs="using:RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents"
+			 xmlns:pgc="using:Avalonia.PropertyGrid.Controls"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:b="using:RelinkToolkit2.Behaviors"
+			 xmlns:design="clr-namespace:RelinkToolkit2"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="600"
+			 Name="Test"
+			 x:DataType="VMs:ConnectionEditorViewModel">
+    <Design.DataContext>
+		<x:Static Member="design:DesignData.ConnectionEditorViewModel" />
+    </Design.DataContext>
+
+	<UserControl.Resources>
+		<converters:VectorIconConverter x:Key="vectorIconConverter"/>
+
+		<b:TransitionComponentDropHandler x:Key="TransitionComponentDropHandler" />
+
+		<DataTemplate x:Key="ConditionOpTemplate" DataType="condVMs:TransitionConditionOpViewModel">
+		    <Border BorderThickness="4,1,1,1" CornerRadius="0" BorderBrush="{Binding BorderBrush}" Margin="4,2,6,4">
+		        <StackPanel Orientation="Vertical" Background="Transparent">
+					<!-- Make operator group draggable, but also make it so groups can receive conditions -->
+					<Interaction.Behaviors>
+						<ContextDragBehavior/>
+						<ContextDropBehavior Handler="{StaticResource TransitionComponentDropHandler}" />
+					</Interaction.Behaviors>
+		            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" Margin="4,4,4,4">
+						<Grid Grid.Column="0" Cursor="SizeAll" Margin="4 1 6 0">
+		                    <Image Width="14">
+		                        <Image.Source>
+		                            <controls:VectorIconDrawingImage Drawing="{DynamicResource Material.DragHorizontalVariant}" Brush="Gray"/>
+		                        </Image.Source>
+		                    </Image>
+		                </Grid>
+		                <ComboBox Grid.Column="1" SelectedIndex="{Binding Operand}" PlaceholderText="Any must be true" 
+								  IsEnabled="{Binding Operand, Converter={x:Static converters:ValueConverters.NotMinusOne}}">
+							<ComboBox.ItemTemplate>
+								<DataTemplate>
+									<TextBlock Height="18">
+										<TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis" />
+									</TextBlock>
+								</DataTemplate>
+							</ComboBox.ItemTemplate>
+							<ComboBoxItem Content="AND (All should be true)"/>
+							<ComboBoxItem Content="OR (Any may be true)"/>
+						</ComboBox>
+		                <Button Grid.Column="2" HorizontalContentAlignment="Left" Click="Button_AddConditionComponent" Cursor="Hand" Margin="2,0,0,0">
+		                    <StackPanel Orientation="Horizontal">
+		                        <Image Width="12" Height="12" Margin="0,0,4,0">
+		                            <Image.Source>
+		                                <controls:VectorIconDrawingImage Drawing="{DynamicResource Material.FlagPlus}"/>
+		                            </Image.Source>
+		                        </Image>
+		                        <TextBlock Text="Condition" FontSize="11"/>
+		                    </StackPanel>
+		                </Button>
+		                <Button Grid.Column="3" Margin="2,0,0,0" Command="{Binding AddOperandCommand}">
+							<StackPanel Orientation="Horizontal">
+		                        <Image Width="12" Height="12" Margin="0,0,4,0">
+		                            <Image.Source>
+		                                <controls:VectorIconDrawingImage Drawing="{DynamicResource Material.ShuffleVariant}"/>
+		                            </Image.Source>
+		                        </Image>
+		                        <TextBlock Text="Operand" FontSize="11"/>
+		                    </StackPanel>
+		                </Button>
+						<Button Grid.Column="4" DockPanel.Dock="Right" Margin="2,0,0,0" Command="{Binding DeleteOperandCommand}" IsEnabled="{Binding CanDelete}">
+							<Image Width="12" Height="12">
+								<Image.Source>
+									<controls:VectorIconDrawingImage Drawing="{DynamicResource Material.Delete}"/>
+								</Image.Source>
+							</Image>
+						</Button>
+		            </Grid>
+
+					<!-- List of conditions, or operators -->
+		            <ItemsControl ItemsSource="{Binding Elements}">
+		                <ItemsControl.DataTemplates>
+							<!-- Recursive logical group -->
+		                    <StaticResource ResourceKey="ConditionOpTemplate"/>
+
+		                    <!-- Actual condition -->
+		                    <StaticResource ResourceKey="ConditionTemplate"/>
+		                </ItemsControl.DataTemplates>
+        
+						<Interaction.Behaviors>
+							<!-- Make the items a drop target -->
+							<ContextDropBehavior Handler="{StaticResource TransitionComponentDropHandler}" />
+						</Interaction.Behaviors>
+		            </ItemsControl>
+		        </StackPanel>
+		    </Border>
+		</DataTemplate>
+
+		<!-- Condition Group -->
+		<DataTemplate x:Key="ConditionTemplate" DataType="{x:Type condVMs:TransitionConditionViewModel}">
+		    <Expander IsExpanded="{Binding IsExpanded}" Margin="4,0,4,2" HorizontalAlignment="Stretch">
+				<!-- Make the condition draggable, also make them draggable to so their position can be swapped -->
+				<Interaction.Behaviors>
+					<ContextDragBehavior/>
+					<ContextDropBehavior Handler="{StaticResource TransitionComponentDropHandler}" />
+				</Interaction.Behaviors>
+				<Expander.ContentTransition>
+					<CrossFade Duration="0:0:0.0" />
+				</Expander.ContentTransition>
+		        <Expander.Header>
+		            <DockPanel HorizontalAlignment="Stretch" Height="20" Margin="0 2 0 2" LastChildFill="True">
+		                <Grid DockPanel.Dock="Left" Background="Transparent" Cursor="SizeAll" Margin="2 1 6 0">
+		                    <Image Width="14">
+		                        <Image.Source>
+		                            <controls:VectorIconDrawingImage Drawing="{DynamicResource Material.DragHorizontalVariant}" Brush="Gray"/>
+		                        </Image.Source>
+		                    </Image>
+		                </Grid>
+		
+		                <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" FontWeight="Bold" Text="{Binding Title}" FontSize="11"/>
+		                <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" Text=" is " FontSize="11"/>
+		                <CheckBox DockPanel.Dock="Left" VerticalAlignment="Center" Margin="2 0 2 0" IsChecked="{Binding !IsFalse}" />
+		                <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" IsVisible="{Binding IsFalse}" Text="false" FontSize="11"/>
+		                <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" IsVisible="{Binding !IsFalse}" Text="true" FontSize="11"/>
+		
+		                <Button DockPanel.Dock="Right" Margin="0 0 2 0" Command="{Binding RemoveConditionCommand}" CommandParameter="{Binding}">
+		                    <Image Width="12" Height="12">
+		                        <Image.Source>
+		                            <controls:VectorIconDrawingImage Drawing="{DynamicResource Material.Delete}"/>
+		                        </Image.Source>
+		                    </Image>
+		                </Button>
+		                <Grid DockPanel.Dock="Right"/>
+		            </DockPanel>
+		        </Expander.Header>
+		        <ScrollViewer>
+		            <pgc:PropertyGrid
+		                x:Name="propertyGrid_Basic"
+		                IsQuickFilterVisible="False"
+		                IsHeaderVisible="False"
+		                IsTitleVisible="False"
+		                IsCategoryVisible="False"
+		                IsAutoNameWidth="True"
+		                LayoutStyle="Inline"
+		                DataContext="{Binding ConditionComponent}"/>
+		        </ScrollViewer>
+		    </Expander>
+		</DataTemplate>			
+	</UserControl.Resources>
+	
+	<!--TRANSITIONS-->
+	<Border Padding="4">
+		<ScrollViewer VerticalScrollBarVisibility="Auto">
+			<StackPanel>
+				<ItemsControl x:Name="TransitionControl" ItemsSource="{Binding Connection.Transitions}">
+					<ItemsControl.ItemTemplate>
+						<DataTemplate DataType="{x:Type fsmVMs:TransitionViewModel}">
+							<Expander x:Name="ConnectionExpander" CornerRadius="4 4 4 4" IsExpanded="true" Margin="0 0 2 2"
+									  BorderThickness="1" BorderBrush="Gray"
+									  PointerEntered="ConnectionExpander_PointerEntered"
+									  PointerExited="ConnectionExpander_PointerExited"
+									  Focusable="True">
+
+								<Expander.ContentTransition>
+									<CrossFade Duration="0:0:0.0" />
+								</Expander.ContentTransition>
+								<!-- Expander Header with node to node info -->
+								<Expander.Header>
+									<StackPanel Orientation="Vertical" Margin="0,2,0,2" VerticalAlignment="Top">
+										<TextBlock FontWeight="Heavy" FontSize="9" Foreground="Gray" Text="{Binding ConnectionType}"/>
+										<Grid>
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="Auto"/>
+												<ColumnDefinition Width="Auto"/>
+												<ColumnDefinition Width="Auto"/>
+												<ColumnDefinition Width="Auto"/>
+												<ColumnDefinition Width="*"/>
+												<ColumnDefinition Width="Auto"/>
+											</Grid.ColumnDefinitions>
+											<TextBlock Grid.Column="0" TextTrimming="CharacterEllipsis" Text="Go from " VerticalAlignment="Center" FontSize="11" />
+											<Button Grid.Column="1" Foreground="DodgerBlue" Background="Transparent" BorderThickness="0"
+													IsEnabled="True"
+													Margin="-2,1,-2,0"
+													Height="18"
+													Command="{Binding #TransitionControl.((VMs:ConnectionEditorViewModel)DataContext).NodeClickedCommand}"
+													CommandParameter="{Binding Source}">
+												<TextBlock Text="{Binding Source.Title}" Margin="0,-8,0,-8" TextTrimming="CharacterEllipsis" TextDecorations="Underline" FontSize="11" />
+											</Button>
+
+											<Image Grid.Column="2" DockPanel.Dock="Left" Width="10" Height="10" Margin="4 1 4 0">
+												<Image.Source>
+													<controls:VectorIconDrawingImage Drawing="{DynamicResource Material.ChevronDoubleRight}"/>
+												</Image.Source>
+											</Image>
+											<Button Grid.Column="3" Foreground="DodgerBlue" Background="Transparent" BorderThickness="0"
+													IsEnabled="True"
+													Margin="-2,1,2,0"
+													Height="18"
+													Command="{Binding #TransitionControl.((VMs:ConnectionEditorViewModel)DataContext).NodeClickedCommand}"
+													CommandParameter="{Binding Target}">
+												<TextBlock Text="{Binding Target.Title}" Margin="0,-8,0,-8" TextTrimming="CharacterEllipsis" TextDecorations="Underline" FontSize="11"/>
+											</Button>
+
+											<TextBlock Grid.Column="4" Text="if" VerticalAlignment="Center" FontSize="11"/>
+
+											<!-- Deleter -->
+											<Button Grid.Column="5" Width="18" Height="18" Margin="4 0 4 0"
+												Command="{Binding #TransitionControl.((VMs:ConnectionEditorViewModel)DataContext).Connection.TransitionDeletedCommand}"
+												CommandParameter="{Binding}">
+												<Image Width="12" Height="12">
+													<Image.Source>
+														<controls:VectorIconDrawingImage Drawing="{DynamicResource Material.Delete}"/>
+													</Image.Source>
+												</Image>
+											</Button>
+
+										</Grid>
+									</StackPanel>
+								</Expander.Header>
+
+								<!-- Connection information -->
+								<Border BorderThickness="0 1 0 0" BorderBrush="LightGray">
+									<StackPanel Orientation="Vertical" Margin="0 2 0 2">
+										<ItemsControl x:Name="ConditionsControl" ItemsSource="{Binding ConditionOperatorGroups}">
+											<ItemsControl.DataTemplates>
+												<StaticResource ResourceKey="ConditionOpTemplate"/>
+											</ItemsControl.DataTemplates>
+										</ItemsControl>
+									</StackPanel>
+								</Border>
+							</Expander>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</StackPanel>
+		</ScrollViewer>
+	</Border>
+</UserControl>
