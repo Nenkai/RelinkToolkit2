@@ -1,19 +1,21 @@
 ﻿<UserControl x:Class="RelinkToolkit2.Views.Tools.ConnectionEditorView"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 mc:Ignorable="d"
 			 xmlns:converters="using:RelinkToolkit2.Converters"
 			 xmlns:controls="using:RelinkToolkit2.Controls"
 			 xmlns:VMs="using:RelinkToolkit2.ViewModels.Tools"
              xmlns:fsmVMs="using:RelinkToolkit2.ViewModels.Documents.GraphEditor"
 			 xmlns:condVMs="using:RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents"
-			 xmlns:pgc="using:Avalonia.PropertyGrid.Controls"
-			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:md="https://github.com/whistyun/Markdown.Avalonia"
+			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
 			 xmlns:b="using:RelinkToolkit2.Behaviors"
 			 xmlns:design="clr-namespace:RelinkToolkit2"
-             mc:Ignorable="d" 
+			 xmlns:pgViews="using:RelinkToolkit2.Controls.PropertyGrid.Views"
              d:DesignHeight="450" d:DesignWidth="600"
-			 Name="Test"
+			 Name="ConnectionEditor"
 			 x:DataType="VMs:ConnectionEditorViewModel">
     <Design.DataContext>
 		<x:Static Member="design:DesignData.ConnectionEditorViewModel" />
@@ -24,6 +26,7 @@
 
 		<b:TransitionComponentDropHandler x:Key="TransitionComponentDropHandler" />
 
+		<!-- Operator Group -->
 		<DataTemplate x:Key="ConditionOpTemplate" DataType="condVMs:TransitionConditionOpViewModel">
 		    <Border BorderThickness="4,1,1,1" CornerRadius="0" BorderBrush="{Binding BorderBrush}" Margin="4,2,6,4">
 		        <StackPanel Orientation="Vertical" Background="Transparent">
@@ -40,8 +43,13 @@
 		                        </Image.Source>
 		                    </Image>
 		                </Grid>
-		                <ComboBox Grid.Column="1" SelectedIndex="{Binding Operand}" PlaceholderText="Any must be true" 
-								  IsEnabled="{Binding Operand, Converter={x:Static converters:ValueConverters.NotMinusOne}}">
+		                <ComboBox Grid.Column="1" SelectedIndex="{Binding Operand}" PlaceholderText="Any must be true">
+							<ComboBox.IsEnabled>
+								<MultiBinding Converter="{x:Static BoolConverters.And}">
+									<Binding Path="Operand" Converter="{x:Static converters:ValueConverters.NotMinusOne}"/>
+									<Binding Path="ParentTransition.IsEditable"/>
+								</MultiBinding>
+							</ComboBox.IsEnabled>
 							<ComboBox.ItemTemplate>
 								<DataTemplate>
 									<TextBlock Height="18">
@@ -52,7 +60,9 @@
 							<ComboBoxItem Content="AND (All should be true)"/>
 							<ComboBoxItem Content="OR (Any may be true)"/>
 						</ComboBox>
-		                <Button Grid.Column="2" HorizontalContentAlignment="Left" Click="Button_AddConditionComponent" Cursor="Hand" Margin="2,0,0,0">
+		                <Button Grid.Column="2" HorizontalContentAlignment="Left" Click="Button_AddConditionComponent" Cursor="Hand" Margin="2,0,0,0"
+								IsEnabled="{Binding ParentTransition.IsEditable}"
+								ToolTip.Tip="Add a new condition to this operator group">
 		                    <StackPanel Orientation="Horizontal">
 		                        <Image Width="12" Height="12" Margin="0,0,4,0">
 		                            <Image.Source>
@@ -62,7 +72,9 @@
 		                        <TextBlock Text="Condition" FontSize="11"/>
 		                    </StackPanel>
 		                </Button>
-		                <Button Grid.Column="3" Margin="2,0,0,0" Command="{Binding AddOperandCommand}">
+		                <Button Grid.Column="3" Margin="2,0,0,0" Command="{Binding AddOperandCommand}" 
+								IsEnabled="{Binding ParentTransition.IsEditable}"
+								ToolTip.Tip="Add a new operand group to this group">
 							<StackPanel Orientation="Horizontal">
 		                        <Image Width="12" Height="12" Margin="0,0,4,0">
 		                            <Image.Source>
@@ -72,7 +84,14 @@
 		                        <TextBlock Text="Operand" FontSize="11"/>
 		                    </StackPanel>
 		                </Button>
-						<Button Grid.Column="4" DockPanel.Dock="Right" Margin="2,0,0,0" Command="{Binding DeleteOperandCommand}" IsEnabled="{Binding CanDelete}">
+						<Button Grid.Column="4" DockPanel.Dock="Right" Margin="2,0,0,0" Command="{Binding DeleteOperandCommand}"
+								ToolTip.Tip="Delete operand group">
+							<Button.IsEnabled>
+								<MultiBinding Converter="{x:Static BoolConverters.And}">
+									<Binding Path="CanDelete"/>
+									<Binding Path="ParentTransition.IsEditable"/>
+								</MultiBinding>
+							</Button.IsEnabled>
 							<Image Width="12" Height="12">
 								<Image.Source>
 									<controls:VectorIconDrawingImage Drawing="{DynamicResource Material.Delete}"/>
@@ -100,9 +119,9 @@
 		    </Border>
 		</DataTemplate>
 
-		<!-- Condition Group -->
+		<!-- Condition Component -->
 		<DataTemplate x:Key="ConditionTemplate" DataType="{x:Type condVMs:TransitionConditionViewModel}">
-		    <Expander IsExpanded="{Binding IsExpanded}" Margin="4,0,4,2" HorizontalAlignment="Stretch">
+		    <Expander Name="ConditionExpander" IsExpanded="{Binding IsExpanded}" Margin="4,0,4,2" HorizontalAlignment="Stretch">
 				<!-- Make the condition draggable, also make them draggable to so their position can be swapped -->
 				<Interaction.Behaviors>
 					<ContextDragBehavior/>
@@ -121,16 +140,40 @@
 		                    </Image>
 		                </Grid>
 		
-		                <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" FontWeight="Bold" Text="{Binding Title}" FontSize="11"/>
+		                <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" FontWeight="Bold" Text="{Binding Title}" FontSize="11"
+								   ToolTip.ToolTipOpening="ConditionComponentTitle_OnToolTipOpening">
+							<ToolTip.Tip>
+								<Grid>
+									<md:MarkdownScrollViewer>
+									    <md:MarkdownScrollViewer.Styles>
+									        <Style Selector="ctxt|CTextBlock">
+									            <Setter Property="FontFamily" Value="Segoe UI"/>
+									        </Style>
+									    </md:MarkdownScrollViewer.Styles>
+									</md:MarkdownScrollViewer>
+								</Grid>
+							</ToolTip.Tip>
+						</TextBlock>
 		                <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" Text=" is " FontSize="11"/>
-		                <CheckBox DockPanel.Dock="Left" VerticalAlignment="Center" Margin="2 0 2 0" IsChecked="{Binding !IsFalse}" />
+		                <CheckBox DockPanel.Dock="Left" VerticalAlignment="Center" Margin="2 0 2 0" IsChecked="{Binding !IsFalse}" IsEnabled="{Binding ParentOperand?.ParentTransition.IsEditable}"/>
 		                <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" IsVisible="{Binding IsFalse}" Text="false" FontSize="11"/>
 		                <TextBlock DockPanel.Dock="Left" VerticalAlignment="Center" IsVisible="{Binding !IsFalse}" Text="true" FontSize="11"/>
 		
-		                <Button DockPanel.Dock="Right" Margin="0 0 2 0" Command="{Binding RemoveConditionCommand}" CommandParameter="{Binding}">
+						<Button DockPanel.Dock="Right" Margin="0 0 2 0" Command="{Binding RemoveConditionCommand}" CommandParameter="{Binding}"
+								ToolTip.Tip="Delete condition" IsEnabled="{Binding ParentOperand.ParentTransition.IsEditable}">
 		                    <Image Width="12" Height="12">
 		                        <Image.Source>
 		                            <controls:VectorIconDrawingImage Drawing="{DynamicResource Material.Delete}"/>
+		                        </Image.Source>
+		                    </Image>
+		                </Button>
+
+		                <Button DockPanel.Dock="Right" Margin="0 0 2 0" 
+								Command="{Binding #ConnectionEditor.((VMs:ConnectionEditorViewModel)DataContext).ComponentDocumentationCommand}" CommandParameter="{Binding}"
+								ToolTip.Tip="Edit/View documentation">
+		                    <Image Width="12" Height="12">
+		                        <Image.Source>
+		                            <controls:VectorIconDrawingImage Drawing="{DynamicResource Material.CommentEdit}"/>
 		                        </Image.Source>
 		                    </Image>
 		                </Button>
@@ -138,15 +181,15 @@
 		            </DockPanel>
 		        </Expander.Header>
 		        <ScrollViewer>
-		            <pgc:PropertyGrid
-		                x:Name="propertyGrid_Basic"
-		                IsQuickFilterVisible="False"
-		                IsHeaderVisible="False"
-		                IsTitleVisible="False"
-		                IsCategoryVisible="False"
-		                IsAutoNameWidth="True"
-		                LayoutStyle="Inline"
-		                DataContext="{Binding ConditionComponent}"/>
+		            <pgViews:DocumentablePropertyGridView
+						DataContext="{Binding PropertyGrid}"
+						IsEnabled="{Binding #ConditionExpander.((condVMs:TransitionConditionViewModel)DataContext).ParentOperand.ParentTransition.IsEditable}"
+						IsQuickFilterVisible="False"
+						IsHeaderVisible="False"
+						IsCategoryVisible="False"
+						IsTitleVisible="False"
+						DocumentationPanelVisible="False"
+						LayoutStyle="Inline"/>
 		        </ScrollViewer>
 		    </Expander>
 		</DataTemplate>			
@@ -183,7 +226,6 @@
 											</Grid.ColumnDefinitions>
 											<TextBlock Grid.Column="0" TextTrimming="CharacterEllipsis" Text="Go from " VerticalAlignment="Center" FontSize="11" />
 											<Button Grid.Column="1" Foreground="DodgerBlue" Background="Transparent" BorderThickness="0"
-													IsEnabled="True"
 													Margin="-2,1,-2,0"
 													Height="18"
 													Command="{Binding #TransitionControl.((VMs:ConnectionEditorViewModel)DataContext).NodeClickedCommand}"
@@ -197,7 +239,6 @@
 												</Image.Source>
 											</Image>
 											<Button Grid.Column="3" Foreground="DodgerBlue" Background="Transparent" BorderThickness="0"
-													IsEnabled="True"
 													Margin="-2,1,2,0"
 													Height="18"
 													Command="{Binding #TransitionControl.((VMs:ConnectionEditorViewModel)DataContext).NodeClickedCommand}"
@@ -208,15 +249,25 @@
 											<TextBlock Grid.Column="4" Text="if" VerticalAlignment="Center" FontSize="11"/>
 
 											<!-- Deleter -->
-											<Button Grid.Column="5" Width="18" Height="18" Margin="4 0 4 0"
-												Command="{Binding #TransitionControl.((VMs:ConnectionEditorViewModel)DataContext).Connection.TransitionDeletedCommand}"
-												CommandParameter="{Binding}">
-												<Image Width="12" Height="12">
+											<StackPanel Grid.Column="5" Orientation="Horizontal">
+												<Image Width="12" Height="12" IsVisible="{Binding !IsEditable}" ToolTip.Tip="Transition is part of a template FSM.">
 													<Image.Source>
-														<controls:VectorIconDrawingImage Drawing="{DynamicResource Material.Delete}"/>
+														<controls:VectorIconDrawingImage Drawing="{DynamicResource Material.Lock}"/>
 													</Image.Source>
 												</Image>
-											</Button>
+												<Button Width="18" Height="18" Margin="4 0 4 0"
+													Command="{Binding #TransitionControl.((VMs:ConnectionEditorViewModel)DataContext).Connection.TransitionDeletedCommand}"
+													CommandParameter="{Binding}"
+													IsEnabled="{Binding #ConnectionExpander.((fsmVMs:TransitionViewModel)DataContext).IsEditable}"
+													ToolTip.Tip="Delete transition">
+													<Image Width="12" Height="12">
+														<Image.Source>
+															<controls:VectorIconDrawingImage Drawing="{DynamicResource Material.Delete}"/>
+														</Image.Source>
+													</Image>
+												</Button>
+											</StackPanel>
+											
 
 										</Grid>
 									</StackPanel>

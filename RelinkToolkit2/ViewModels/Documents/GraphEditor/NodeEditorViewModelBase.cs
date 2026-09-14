@@ -109,7 +109,34 @@ public partial class NodeEditorViewModelBase : EditorDocumentBase
             WeakReferenceMessenger.Default.Send(new SnackbarMessage($"Updated '{vm.Key}'."));
 
             // Force a re-select to update the description
-            WeakReferenceMessenger.Default.Send(new FsmComponentSelectedMessage(component.Component));
+            bool isReadOnly = component.Parent is FsmNodeViewModel fsmNode && !fsmNode.IsEditableNode;
+            WeakReferenceMessenger.Default.Send(new FsmComponentSelectedMessage(component.Component, isReadOnly));
+        }
+    }
+
+    [RelayCommand]
+    public async Task OnEditComponentCaption(NodeComponentViewModel component)
+    {
+        if (component is null)
+            return;
+
+        string key = ComponentDocumentationService.BuildTypeKey(component.Component.GetType());
+        string? value = _componentDocumentation.GetComponentPreviewFormatString(key);
+
+        var vm = new ComponentCaptionEditViewModel()
+        {
+            Key = key,
+            Value = value,
+            Component = component.Component,
+        };
+        await _dialogService.ShowDialogAsync(vm);
+
+        if (vm.HasSaved)
+        {
+            _componentDocumentation.SetComponentPreviewFormatString(vm.Key, vm.Value);
+            WeakReferenceMessenger.Default.Send(new SnackbarMessage($"Updated caption for '{vm.Key}'."));
+
+            component.UpdateCaption();
         }
     }
 

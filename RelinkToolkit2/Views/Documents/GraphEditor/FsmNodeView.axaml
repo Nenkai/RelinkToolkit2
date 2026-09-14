@@ -85,6 +85,13 @@
 						</Label>
 
 						<StackPanel Orientation="Horizontal" Grid.Column="4">
+							<Panel IsVisible="{Binding TemplateFSMSource, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Background="Transparent" ToolTip.Tip="Node is part of a template FSM.">
+								<Image Width="18" Height="18">
+									<Image.Source>
+										<controls:VectorIconDrawingImage Brush="White" Drawing="{Binding Source='Material.Lock', Converter={StaticResource vectorIconConverter}}"/>
+									</Image.Source>
+								</Image>
+							</Panel>
 							<Panel IsVisible="{Binding HasSelfTransition}" Background="Transparent" Cursor="Hand" PointerPressed="Panel_PointerPressed" ToolTip.Tip="Node transitions to itself (loop).">
 								<Image Width="18" Height="18" IsVisible="{Binding HasSelfTransition}">
 									<Image.Source>
@@ -124,7 +131,13 @@
 												        <TextBlock Margin="4,-4,0,2" Text="{Binding Caption}" FontSize="8" FontWeight="Bold" Foreground="DimGray" IsVisible="{Binding Caption, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
 												    </StackPanel>
 												
-												    <Panel Grid.Column="2" Background="Transparent" Tapped="Component_Tapped" PointerPressed="Component_DeleteClicked" IsVisible="{Binding #ComponentBorder.IsPointerOver}">
+												    <Panel Grid.Column="2" Background="Transparent" Tapped="Component_Tapped" PointerPressed="Component_DeleteClicked">
+														<Panel.IsVisible>
+															<MultiBinding Converter="{x:Static BoolConverters.And}">
+															    <Binding Path="#ComponentBorder.IsPointerOver"/>
+															    <Binding Path="((nodeVMs:FsmNodeViewModel)Parent).IsEditableNode"/>
+															</MultiBinding>
+														</Panel.IsVisible>
 												        <Image Width="8" Height="8" IsHitTestVisible="False">
 												            <Image.Source>
 												                <controls:VectorIconDrawingImage Brush="White" Drawing="{Binding Source='Material.Close', Converter={StaticResource vectorIconConverter}}"/>

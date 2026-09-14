@@ -137,13 +137,15 @@ public class ComponentSearchService
             if (compType.Namespace.StartsWith(typeNamespace))
             {
                 string key = ComponentDocumentationService.BuildTypeKey(compType);
-                string desc = _componentDocumentation.GetComponentString(key) ?? string.Empty;
                 string tag = compType.GetCustomAttribute<GameSupportAttribute>()?.Text ?? string.Empty;
-                string hoverText = GetHoverText(compType);
+                string desc = _componentDocumentation.GetComponentString(key) ?? string.Empty;
+                string hoverText = GetHoverText(desc, compType);
+                bool showIcon = !string.IsNullOrWhiteSpace(desc);
 
                 if (compType.Namespace == typeNamespace)
                 {
-                    ComponentSearchItemViewModel itemComponent = mainPage.AddComponent(compType.Name, compType, desc, tag: tag, hoverText: hoverText, onSelectedCallback: OnSelected);
+                    ComponentSearchItemViewModel itemComponent = mainPage.AddComponent(compType.Name, compType, desc, tag: tag, hoverText: hoverText, showHelpCircle: showIcon, 
+                        onSelectedCallback: OnSelected);
                     _componentTable.TryAdd(itemComponent.Name, itemComponent);
                 }
                 else
@@ -180,7 +182,8 @@ public class ComponentSearchService
 
                             if (i == subSplit.Length - 1)
                             {
-                                ComponentSearchItemViewModel itemComponent = currentPage.AddComponent(compType.Name, compType, desc, tag: tag, hoverText: hoverText, onSelectedCallback: OnSelected);
+                                ComponentSearchItemViewModel itemComponent = currentPage.AddComponent(compType.Name, compType, tag: tag, hoverText: hoverText,
+                                    showHelpCircle: showIcon, onSelectedCallback: OnSelected);
                                 _componentTable.TryAdd(itemComponent.Name, itemComponent);
                             }
                             else
@@ -201,20 +204,27 @@ public class ComponentSearchService
         };
     }
 
-    private static string GetHoverText(Type compType)
+    private static string GetHoverText(string desc, Type compType)
     {
+        string hoverText = $"#### {compType.Name}\n\n";
+
+        if (!string.IsNullOrWhiteSpace(desc))
+            hoverText += desc;
+        else
+            hoverText += "(No known documentation for this component)";
+
         List<Type> baseTypes = [];
         for (Type? baseType = compType; baseType?.BaseType != null && baseType != typeof(BehaviorTreeComponent); baseType = baseType.BaseType)
         {
             baseTypes.Add(baseType);
         }
 
-        string hoverText = $"Inheritance tree:\n";
+        hoverText += $"\n\n---\n\nInheritance tree:\n";
         for (int i = 0; i < baseTypes.Count; i++)
         {
-            hoverText += baseTypes[i].Name;
+            hoverText += $"`{baseTypes[i].Name}`";
             if (i != baseTypes.Count - 1)
-                hoverText += "\n" + new string(' ', 2) + "-> ";
+                hoverText += new string(' ', 2) + "-> ";
         }
 
         return hoverText;

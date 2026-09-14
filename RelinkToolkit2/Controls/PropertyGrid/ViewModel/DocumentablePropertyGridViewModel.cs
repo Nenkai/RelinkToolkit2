@@ -13,6 +13,7 @@ using Dock.Model.Mvvm.Controls;
 using DynamicData.Aggregation;
 
 using GBFRDataTools.FSM.Components.Actions.Quest;
+using GBFRDataTools.FSM.Components.Conditions.UI;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -43,12 +44,11 @@ public partial class DocumentablePropertyGridViewModel : ObservableObject
     public partial object? SelectedObject { get; private set; }
 
     [ObservableProperty]
-    public partial string? ObjectName { get; set; }
-
-    [ObservableProperty]
     public partial string? Description { get; set; }
 
-    private string _objectTitle;
+    [ObservableProperty]
+    public partial bool ReadOnly { get; set; }
+
     private string _objectDescription;
 
     public DocumentablePropertyGridViewModel(IDialogService dialogService,
@@ -75,17 +75,14 @@ public partial class DocumentablePropertyGridViewModel : ObservableObject
         if (obj is not null)
         {
             var type = obj.GetType();
-            ObjectName = type.Name;
 
             string key = ComponentDocumentationService.BuildTypeKey(type);
             string? desc = _componentDocService.GetComponentString(key);
-            Description = desc ?? GetNoDocMessage(type.Name);
-            _objectTitle = ObjectName;
+            Description = $"#### {key}\n\n" + (desc ?? GetNoDocMessage(type.Name));
             _objectDescription = Description;
         }
         else
         {
-            ObjectName = string.Empty;
             Description = string.Empty;
         }
     }
@@ -96,36 +93,30 @@ public partial class DocumentablePropertyGridViewModel : ObservableObject
         string key = _componentDocService.BuildPropertyKey(@event.Context.Property);
         string? desc = _componentDocService.GetPropertyString(key);
 
-        ObjectName = @event.Context.Property.Name;
-        Description = !string.IsNullOrWhiteSpace(desc) ? desc : GetNoPropertyDocMessage(@event.Context.Property.Name);
+        Description = $"#### {@event.Context.Property.Name}\n\n" + (!string.IsNullOrWhiteSpace(desc) ? desc : GetNoPropertyDocMessage(@event.Context.Property.Name));
     }
 
     [RelayCommand]
     public void OnPropertyLostFocus(PropertyLostFocusEventArgs @event)
     {
-        ObjectName = _objectTitle;
         Description = _objectDescription;
     }
 
     [RelayCommand]
     public void OnPointerEnteredPropertyName(PropertyCellContext context)
     {
-        ObjectName = context.Property.Name;
         JsonPropertyNameAttribute? jsonPropNameAttr = context.Property.Attributes.OfType<JsonPropertyNameAttribute>().FirstOrDefault();
-        if (jsonPropNameAttr is not null)
-            ObjectName += $" ({jsonPropNameAttr.Name})";
 
         string key = _componentDocService.BuildPropertyKey(context.Property);
         string? desc = _componentDocService.GetPropertyString(key);
 
-        Description = !string.IsNullOrWhiteSpace(desc) ? desc : GetNoPropertyDocMessage(context.Property.Name);
+        Description = $"#### {context.Property.Name}\n\n" + (!string.IsNullOrWhiteSpace(desc) ? desc : GetNoPropertyDocMessage(context.Property.Name));
     }
 
 
     [RelayCommand]
     public void OnPointerExitedPropertyName(PropertyCellContext context)
     {
-        ObjectName = _objectTitle;
         Description = _objectDescription;
     }
 
@@ -153,8 +144,8 @@ public partial class DocumentablePropertyGridViewModel : ObservableObject
     }
 
     private static string GetNoPropertyDocMessage(string name)
-    => $"(No known documentation for '{name}')\n\nYou can provide one by double clicking or right-clicking the property name or by editing {ComponentDocumentationService.DOC_FILE_NAME}.";
+    => $"(No known documentation for `{name}`)\n\nYou can provide one by double clicking or right-clicking the property name or by editing `{ComponentDocumentationService.DOC_FILE_NAME}`.";
 
     private static string GetNoDocMessage(string name)
-        => $"(No known documentation for '{name}')\n\nYou can provide one by editing {ComponentDocumentationService.DOC_FILE_NAME}.";
+        => $"(No known documentation for `{name}`')\n\nYou can provide one by editing `{ComponentDocumentationService.DOC_FILE_NAME}`.";
 }

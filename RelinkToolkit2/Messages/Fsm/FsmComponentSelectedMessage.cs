@@ -14,11 +14,14 @@ namespace RelinkToolkit2.Messages.Fsm;
 /// <summary>
 /// Represents a message for when a node component has been selected on the graph.
 /// </summary>
-public class FsmComponentSelectedMessage : ValueChangedMessage<BehaviorTreeComponent>
+public class FsmComponentSelectedMessage
 {
-    public FsmComponentSelectedMessage(BehaviorTreeComponent component)
-        : base(component)
-    {
+    public BehaviorTreeComponent Component { get; }
+    public bool ReadOnly { get; }
 
+    public FsmComponentSelectedMessage(BehaviorTreeComponent component, bool readOnly = false)
+    {
+        Component = component;
+        ReadOnly = readOnly;
     }
 }

@@ -1,4 +1,7 @@
-﻿using Avalonia.Controls;
+﻿
+using System.Threading.Tasks;
+
+using Avalonia.Controls;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -11,11 +14,14 @@ using GBFRDataTools.FSM.Components.Conditions.Quest;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
+using RelinkToolkit2.Messages;
 using RelinkToolkit2.Messages.Fsm;
+using RelinkToolkit2.Services;
 using RelinkToolkit2.Services.Configuration.Models;
 using RelinkToolkit2.ViewModels.Documents.GraphEditor;
 using RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 using RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents;
+using RelinkToolkit2.ViewModels.Windows;
 
 namespace RelinkToolkit2.ViewModels.Tools;
 
@@ -23,15 +29,20 @@ public partial class ConnectionEditorViewModel : Tool,
     IRecipient<EditConnectionRequest>
 {
     private readonly IOptions<FSMOptions> _fsmOptions;
+    private readonly IDialogService _dialogService;
+    private readonly ComponentDocumentationService _componentDocumentation;
 
     [ObservableProperty]
     public partial GraphConnectionViewModel? Connection { get; set; }
 
     public ConnectionEditorViewModel() { }
 
-    public ConnectionEditorViewModel(IOptions<FSMOptions> fsmOptions) 
+    public ConnectionEditorViewModel(IOptions<FSMOptions> fsmOptions, 
+        IDialogService dialogService, ComponentDocumentationService componentDocumentation) 
     {
         _fsmOptions = fsmOptions;
+        _dialogService = dialogService;
+        _componentDocumentation = componentDocumentation;
 
         Id = "ConnectionEditor";
         Title = "Connection Editor";
@@ -46,14 +57,8 @@ public partial class ConnectionEditorViewModel : Tool,
             };
 
             var fsmConnection = (FsmConnectionViewModel)Connection;
-            var parentOperator = new TransitionConditionOpViewModel(fsmConnection)
-                .AddElement(new TransitionConditionViewModel(new RecvSignal()) { Title = "RecvSignal" })
-                .AddElement(new TransitionConditionViewModel(new CheckAnyHaveBahaWeapon()) { Title = "CheckAnyHaveBahaWeapon" })
-                .AddElement(new TransitionConditionOpViewModel(fsmConnection, null, TransitionOperandType.AND)
-                    .AddElement(new TransitionConditionViewModel(new RecvSignal()) { Title = "RecvSignal" })
-                )
-                .AddElement(new TransitionConditionViewModel(new CheckChallengeMissionClear()) { Title = "CheckChallengeMissionClear" });
-            Connection.Transitions.Add(new TransitionViewModel(fsmConnection)
+
+            var sourceToTargetTransition = new TransitionViewModel(fsmConnection)
             {
                 Source = new()
                 {
@@ -65,9 +70,19 @@ public partial class ConnectionEditorViewModel : Tool,
                     ParentEditor = editor,
                     Title = "Target"
                 },
-                ConditionOperatorGroups = [parentOperator]
-            });
-            Connection.Transitions.Add(new TransitionViewModel(fsmConnection)
+            };
+            sourceToTargetTransition.ConditionOperatorGroups = [
+                new TransitionConditionOpViewModel(sourceToTargetTransition)
+                .AddElement(new TransitionConditionViewModel(new RecvSignal()) { Title = "RecvSignal" })
+                .AddElement(new TransitionConditionViewModel(new CheckAnyHaveBahaWeapon()) { Title = "CheckAnyHaveBahaWeapon" })
+                .AddElement(new TransitionConditionOpViewModel(sourceToTargetTransition, null, TransitionOperandType.AND)
+                    .AddElement(new TransitionConditionViewModel(new RecvSignal()) { Title = "RecvSignal" })
+                )
+                .AddElement(new TransitionConditionViewModel(new CheckChallengeMissionClear()) { Title = "CheckChallengeMissionClear" })
+            ];
+            Connection.Transitions.Add(sourceToTargetTransition);
+
+            var targetToSourceTransition = new TransitionViewModel(fsmConnection)
             {
                 Source = new()
                 {
@@ -79,12 +94,13 @@ public partial class ConnectionEditorViewModel : Tool,
                     ParentEditor = editor,
                     Title = "Source"
                 },
-                ConditionOperatorGroups =
-                [
-                    new TransitionConditionOpViewModel(fsmConnection)
-                        .AddElement(new TransitionConditionViewModel(new RecvSignal()) { Title = "RecvSignal" })
-                ]
-            });
+            };
+            targetToSourceTransition.ConditionOperatorGroups =
+            [
+                new TransitionConditionOpViewModel(targetToSourceTransition)
+                    .AddElement(new TransitionConditionViewModel(new RecvSignal()) { Title = "RecvSignal" })
+            ];
+            Connection.Transitions.Add(targetToSourceTransition);
         }
 
         WeakReferenceMessenger.Default.RegisterAll(this);
@@ -119,6 +135,26 @@ public partial class ConnectionEditorViewModel : Tool,
             {
                 SetExpandProperties(subOperatorGroup);
             }
+        }
+    }
+
+    [RelayCommand]
+    public async Task OnComponentDocumentation(TransitionConditionViewModel component)
+    {
+        string key = ComponentDocumentationService.BuildTypeKey(component.ConditionComponent.GetType());
+        string? value = _componentDocumentation.GetComponentString(key);
+
+        var vm = new ComponentDocEditViewModel()
+        {
+            Key = key,
+            Value = value,
+        };
+        await _dialogService.ShowDialogAsync(vm);
+
+        if (vm.HasSaved)
+        {
+            _componentDocumentation.SetComponentString(vm.Key, vm.Value);
+            WeakReferenceMessenger.Default.Send(new SnackbarMessage($"Updated '{vm.Key}'."));
         }
     }
 

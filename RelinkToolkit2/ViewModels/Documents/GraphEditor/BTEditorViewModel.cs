@@ -201,7 +201,7 @@ public partial class BTEditorViewModel : NodeEditorViewModelBase, /* ISaveableDo
         RegisterBtElementGuid(component.Guid, component);
 
         operatorGroup.AddElement(new TransitionConditionViewModel(component, operatorGroup) { Title = component.ComponentName });
-        operatorGroup.ParentConnection.UpdateConnection();
+        operatorGroup.ParentTransition.ParentConnection.UpdateVisuals();
         message.Reply(true);
     }
 

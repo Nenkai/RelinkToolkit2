@@ -1,4 +1,17 @@
-﻿using System;
+﻿using Avalonia.PropertyGrid.Controls;
+
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+
+using GBFRDataTools.FSM.Components.Conditions;
+
+using Microsoft.Extensions.DependencyInjection;
+
+using RelinkToolkit2.Controls.PropertyGrid.ViewModel;
+using RelinkToolkit2.Messages.Fsm;
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -8,14 +21,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
-
-using GBFRDataTools.FSM.Components.Conditions;
-
-using RelinkToolkit2.Messages.Fsm;
-
 namespace RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents;
 
 /// <summary>
@@ -24,16 +29,19 @@ namespace RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents;
 public partial class TransitionConditionViewModel : TransitionConditionElementViewModelBase
 {
     [ObservableProperty]
-    private string? _title;
+    public partial string? Title { get; set; }
 
     [ObservableProperty]
-    private bool _isFalse;
+    public partial bool IsFalse { get; set; }
 
     [ObservableProperty]
-    private bool _isExpanded = false;
+    public partial bool IsExpanded { get; set; } = false;
 
     [ObservableProperty]
-    private ConditionComponent _conditionComponent;
+    public partial ConditionComponent ConditionComponent { get; set; }
+
+    [ObservableProperty]
+    public partial DocumentablePropertyGridViewModel PropertyGrid { get; set; }
 
     private TransitionConditionViewModel() { }
 
@@ -42,7 +50,10 @@ public partial class TransitionConditionViewModel : TransitionConditionElementVi
         ArgumentNullException.ThrowIfNull(conditionComponent, nameof(conditionComponent));
 
         ParentOperand = parentOperand;
-        _conditionComponent = conditionComponent;
+        ConditionComponent= conditionComponent;
+
+        PropertyGrid = App.Current.Services.GetRequiredService<DocumentablePropertyGridViewModel>();
+        PropertyGrid.SetObject(conditionComponent);
     }
 
     public static TransitionConditionViewModel FromConditionComponent(ConditionComponent conditionComponent)
@@ -65,7 +76,7 @@ public partial class TransitionConditionViewModel : TransitionConditionElementVi
         if (ParentOperand is not null)
         {
             ParentOperand.Elements.Remove(condition);
-            ParentOperand.ParentConnection.UpdateConnection();
+            ParentOperand.ParentTransition.ParentConnection.UpdateVisuals();
         }
     }
 

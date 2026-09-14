@@ -14,11 +14,12 @@ public class TransitionComponentDropHandler : DropHandlerBase
 {
     private bool Validate(object? sender, DragEventArgs e, object? sourceContext, TransitionConditionOpViewModel targetOperator, bool bExecute)
     {
-        Debug.WriteLine(sourceContext);
-
         // Moving a group to another group
         if (sourceContext is TransitionConditionOpViewModel sourceGroup)
         {
+            if (!sourceGroup.ParentTransition.IsEditable || !targetOperator.ParentTransition.IsEditable)
+                return false;
+
             // Moving a group to the same group (reorder)
             if (sourceGroup.ParentOperand == targetOperator.ParentOperand)
             {
@@ -52,6 +53,9 @@ public class TransitionComponentDropHandler : DropHandlerBase
         }
         else if (sourceContext is TransitionConditionViewModel sourceCondition) // Moving a condition to a group
         {
+            if (sourceCondition.ParentOperand?.ParentTransition.IsEditable == false)
+                return false;
+
             if (bExecute)
             {
                 sourceCondition.ParentOperand?.Elements.Remove(sourceCondition);
@@ -72,11 +76,17 @@ public class TransitionComponentDropHandler : DropHandlerBase
         if (sourceContext is not TransitionConditionElementViewModelBase conditionVmBase)
             return false;
 
+        if (conditionVmBase.ParentOperand?.ParentTransition.IsEditable == false)
+            return false;
+
         if (conditionVmBase.ParentOperand == targetCondition.ParentOperand && conditionVmBase.ParentOperand is not null)
         {
             TransitionConditionOpViewModel targetOperatorGroup = conditionVmBase.ParentOperand;
             int sourceIndex = targetOperatorGroup.Elements.IndexOf(conditionVmBase);
             int targetIndex = targetOperatorGroup.Elements.IndexOf(targetCondition);
+
+            if (!targetOperatorGroup.ParentTransition.IsEditable)
+                return false;
 
             if (sourceIndex != targetIndex)
             {

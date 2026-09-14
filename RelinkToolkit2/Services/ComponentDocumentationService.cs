@@ -47,6 +47,136 @@ public class ComponentDocumentationService : IHostedService
     }
 
     /// <summary>
+    /// Adds or updates a description for a component with the specified key.
+    /// </summary>
+    /// <param name="key">Component key</param>
+    /// <param name="value">Description text</param>
+    public void SetComponentString(string key, string value)
+    {
+        if (string.IsNullOrEmpty(key))
+            throw new ArgumentException("Key must not be null or empty.", nameof(key));
+
+        DocumentedType component = GetOrCreateComponentByPath(key.AsSpan());
+        component.Description = value;
+    }
+
+    /// <summary>
+    /// Adds or updates a preview format string for a component with the specified key.
+    /// </summary>
+    /// <param name="key">Component key</param>
+    /// <param name="value">Description text</param>
+    public void SetComponentPreviewFormatString(string key, string value)
+    {
+        if (string.IsNullOrEmpty(key))
+            throw new ArgumentException("Key must not be null or empty.", nameof(key));
+
+        DocumentedType component = GetOrCreateComponentByPath(key.AsSpan());
+        component.PreviewFormatString = value;
+    }
+
+    /// <summary>
+    /// Adds or updates a description for the property with the specified key
+    /// </summary>
+    /// <param name="key">Property key (component path + "." + property name).</param>
+    /// <param name="value">Description text to set.</param>
+    public void SetPropertyString(string key, string? value)
+    {
+        ReadOnlySpan<char> span = key.AsSpan();
+        int lastDot = span.LastIndexOf('.');
+        if (lastDot < 0)
+            throw new ArgumentException("Key must be in the form 'Component.Path.PropertyName'.", nameof(key));
+
+        ReadOnlySpan<char> componentPath = span[..lastDot];
+        ReadOnlySpan<char> propertyName = span[(lastDot + 1)..];
+
+        DocumentedType component = GetOrCreateComponentByPath(componentPath);
+        component.Properties[propertyName.ToString()] = value;
+    }
+
+    /// <summary>
+    /// Gets a description string for the specified key.
+    /// </summary>
+    /// <param name="key">Key.</param>
+    /// <returns>null if not found.</returns>
+    public string? GetComponentString(Type type)
+    {
+        var key = BuildTypeKey(type);
+        DocumentedType? component = FindComponentByPath(key.AsSpan());
+        return component?.Description;
+    }
+
+    /// <summary>
+    /// Gets a preview format string for the specified type.
+    /// </summary>
+    /// <param name="key">Key.</param>
+    /// <returns>null if not found.</returns>
+    public string? GetComponentPreviewFormatString(Type type)
+    {
+        var key = BuildTypeKey(type);
+        DocumentedType? component = FindComponentByPath(key.AsSpan());
+        return component?.PreviewFormatString;
+    }
+
+    /// <summary>
+    /// Gets a preview format string for the specified component key.
+    /// </summary>
+    /// <param name="key">Key.</param>
+    /// <returns>null if not found.</returns>
+    public string? GetComponentPreviewFormatString(string key)
+    {
+        DocumentedType? component = FindComponentByPath(key.AsSpan());
+        return component?.PreviewFormatString;
+    }
+
+    /// <summary>
+    /// Gets a description string for the specified key.
+    /// </summary>
+    /// <param name="key">Key.</param>
+    /// <returns>null if not found.</returns>
+    public string? GetComponentString(string key)
+    {
+        DocumentedType? component = FindComponentByPath(key.AsSpan());
+        return component?.Description;
+    }
+
+    /// <summary>
+    /// Gets a description string for the specified property descriptor.
+    /// </summary>
+    /// <param name="key">Key.</param>
+    /// <returns>null if not found.</returns>
+    public string? GetPropertyString(PropertyDescriptor propertyDescriptor)
+    {
+        var key = BuildPropertyKey(propertyDescriptor);
+        return GetPropertyString(key);
+    }
+
+    /// <summary>
+    /// Gets a description string for the specified key.
+    /// </summary>
+    /// <param name="key">Key.</param>
+    /// <returns>null if not found.</returns>
+    public string? GetPropertyString(string key)
+    {
+        ReadOnlySpan<char> span = key.AsSpan();
+        int lastDot = span.LastIndexOf('.');
+        if (lastDot < 0)
+            return null;
+
+        ReadOnlySpan<char> componentPath = span[..lastDot];
+        ReadOnlySpan<char> propertyName = span[(lastDot + 1)..];
+
+        DocumentedType? component = FindComponentByPath(componentPath);
+        if (component is null)
+            return null;
+
+        var props = component.Properties.GetAlternateLookup<ReadOnlySpan<char>>();
+        if (props.TryGetValue(propertyName, out string? desc))
+            return desc;
+
+        return null;
+    }
+
+    /// <summary>
     /// Returns a key for the specified property descriptor
     /// </summary>
     /// <param name="propertyDescriptor"></param>
@@ -81,76 +211,6 @@ public class ComponentDocumentationService : IHostedService
         }
 
         return sb.ToString();
-    }
-
-    /// <summary>
-    /// Adds or updates a description for a component with the specified key.
-    /// </summary>
-    /// <param name="key">Component key</param>
-    /// <param name="value">Description text</param>
-    public void SetComponentString(string key, string value)
-    {
-        if (string.IsNullOrEmpty(key))
-            throw new ArgumentException("Key must not be null or empty.", nameof(key));
-
-        DocumentedType component = GetOrCreateComponentByPath(key.AsSpan());
-        component.Description = value;
-    }
-
-    /// <summary>
-    /// Adds or updates a description for the property with the specified key
-    /// </summary>
-    /// <param name="key">Property key (component path + "." + property name).</param>
-    /// <param name="value">Description text to set.</param>
-    public void SetPropertyString(string key, string? value)
-    {
-        ReadOnlySpan<char> span = key.AsSpan();
-        int lastDot = span.LastIndexOf('.');
-        if (lastDot < 0)
-            throw new ArgumentException("Key must be in the form 'Component.Path.PropertyName'.", nameof(key));
-
-        ReadOnlySpan<char> componentPath = span[..lastDot];
-        ReadOnlySpan<char> propertyName = span[(lastDot + 1)..];
-
-        DocumentedType component = GetOrCreateComponentByPath(componentPath);
-        component.Properties[propertyName.ToString()] = value;
-    }
-
-    /// <summary>
-    /// Gets a description string for the specified key.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    /// <returns>null if not found.</returns>
-    public string? GetComponentString(string key)
-    {
-        DocumentedType? component = FindComponentByPath(key.AsSpan());
-        return component?.Description;
-    }
-
-    /// <summary>
-    /// Gets a description string for the specified key.
-    /// </summary>
-    /// <param name="key">Key.</param>
-    /// <returns>null if not found.</returns>
-    public string? GetPropertyString(string key)
-    {
-        ReadOnlySpan<char> span = key.AsSpan();
-        int lastDot = span.LastIndexOf('.');
-        if (lastDot < 0)
-            return null;
-
-        ReadOnlySpan<char> componentPath = span[..lastDot];
-        ReadOnlySpan<char> propertyName = span[(lastDot + 1)..];
-
-        DocumentedType? component = FindComponentByPath(componentPath);
-        if (component is null)
-            return null;
-
-        var props = component.Properties.GetAlternateLookup<ReadOnlySpan<char>>();
-        if (props.TryGetValue(propertyName, out string? desc))
-            return desc;
-
-        return null;
     }
 
     private DocumentedType? FindComponentByPath(ReadOnlySpan<char> path)
@@ -247,7 +307,8 @@ public class ComponentDocumentationService : IHostedService
                 var component = new DocumentedType
                 {
                     Name = typeDoc.Name,
-                    Description = typeDoc.Description
+                    Description = typeDoc.Description,
+                    PreviewFormatString = typeDoc.PreviewFormatString,
                 };
 
                 foreach (TypePropertyDocumentation prop in typeDoc.Properties)
@@ -303,6 +364,7 @@ public class ComponentDocumentationService : IHostedService
             {
                 Name = component.Name,
                 Description = component.Description,
+                PreviewFormatString = component.PreviewFormatString,
                 Properties = new(component.Properties.Count),
                 ChildTypes = new(component.ChildComponents.Count)
             };
@@ -397,6 +459,7 @@ public class ComponentDocumentationService : IHostedService
     {
         public required string Name { get; set; }
         public string? Description { get; set; }
+        public string? PreviewFormatString { get; set; }
         public Dictionary<string, string?> Properties { get; set; } = [];
         public Dictionary<string, DocumentedType> ChildComponents { get; set; } = [];
     }

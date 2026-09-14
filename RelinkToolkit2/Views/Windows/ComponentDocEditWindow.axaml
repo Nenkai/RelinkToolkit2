@@ -18,7 +18,7 @@
 	</Window.DataContext>
 
   <Grid RowDefinitions="Auto,*,Auto" >
-      <TextBlock Grid.Row="0" Text="{Binding Key}"/>
+      <TextBlock Grid.Row="0" Margin="6,4,0,0" FontWeight="Bold" Text="{Binding Key}"/>
       <Grid Grid.Row="1" ColumnDefinitions="*,6,*">
         <GroupBox Grid.Column="0" Margin="2" Header="Input (Markdown supported)" BorderThickness="0"> <!-- Note: GroupBox borders are bugged and the bottom keeps getting trimmed, so erase it -->
 		  <TextBox Name="InputTextBox" Text="{Binding Value}" AcceptsReturn="True" PlaceholderText="Enter any text here"/>

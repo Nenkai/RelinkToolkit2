@@ -14,6 +14,8 @@ using GBFRDataTools.FSM.Components;
 using GBFRDataTools.FSM.Components.Actions.AI.Enemy;
 using GBFRDataTools.FSM.Components.Actions.Quest;
 
+using MessagePack.Resolvers;
+
 using Nodify.Compatibility;
 
 using RelinkToolkit2.Messages.Fsm;
@@ -59,6 +61,11 @@ public partial class FsmNodeViewModel : FsmNodeViewModelBase //, IDropTarget
     [NotifyPropertyChangedFor(nameof(CanSetAsEndNode), nameof(CanHaveComponents))]
     public partial string? FsmName { get; set; }
 
+    /// <summary>
+    /// Template source for this FSM
+    /// </summary>
+    public string? TemplateFSMSource { get; set; }
+
     public uint NameHash { get; set; }
 
     /// <summary>
@@ -82,20 +89,25 @@ public partial class FsmNodeViewModel : FsmNodeViewModelBase //, IDropTarget
 
     public bool CanSetAsEndNode => !IsEndNode && !IsLayerRootNode && Components.Count == 0 && Transitions.Count == 0 && !HasBaseFSMLink();
 
-    public bool CanDeleteNode => !IsLayerRootNode || (IsLayerRootNode && ParentGroup.Nodes.Count == 1);
+    public bool CanDeleteNode => (!IsLayerRootNode || (IsLayerRootNode && ParentGroup.Nodes.Count == 1));
 
     public bool CanEditName => !IsEndNode;
 
     public bool CanHaveSelfTransition => !HasSelfTransition && !IsEndNode;
 
     /// <summary>
+    /// Returns whether this node can be edited (mainly whether it's part of a template)
+    /// </summary>
+    public bool IsEditableNode => string.IsNullOrWhiteSpace(TemplateFSMSource);
+
+    /// <summary>
     /// Returns whether this node is allowed to have components
     /// </summary>
     /// <returns></returns>
-    public bool CanHaveComponents => 
+    public bool CanHaveComponents =>
             !IsEndNode && // End nodes don't physically exist therefore they cannot have components
             !HasBaseFSMLink() && // Nodes that call fsm files don't seem to have components
-            !IsLayerRootNode; // Root nodes cannot have components it seems
+            !IsLayerRootNode;  // Root nodes cannot have components it seems
 
     public FsmNodeViewModel()
     {
@@ -263,9 +275,14 @@ public partial class FsmNodeViewModel : FsmNodeViewModelBase //, IDropTarget
     partial void OnIsEndNodeChanged(bool value)
     {
         if (value)
+        {
             Title = string.Empty;
+        }
         else
+        {
             Title = NodeViewModel.DefaultNodeName;
+            LayerIndexVisible = false;
+        }
 
         UpdateVisuals();
     }

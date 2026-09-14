@@ -88,7 +88,7 @@ public partial class FsmNodeView : UserControl,
             var properties = e.GetCurrentPoint(this).Properties;
             if (properties.IsLeftButtonPressed)
             {
-                WeakReferenceMessenger.Default.Send(new FsmComponentSelectedMessage(componentViewModel.Component));
+                WeakReferenceMessenger.Default.Send(new FsmComponentSelectedMessage(componentViewModel.Component, readOnly: !((FsmNodeViewModel)componentViewModel.Parent).IsEditableNode));
                 e.Handled = true;
             }
             else if (properties.IsRightButtonPressed)
@@ -116,7 +116,8 @@ public partial class FsmNodeView : UserControl,
         if (control.DataContext is not NodeComponentViewModel componentViewModel)
             return;
 
-        WeakReferenceMessenger.Default.Send(new FsmComponentSelectedMessage(componentViewModel.Component));
+        var message = new FsmComponentSelectedMessage(componentViewModel.Component, readOnly: !((FsmNodeViewModel)componentViewModel.Parent).IsEditableNode);
+        WeakReferenceMessenger.Default.Send(message);
     }
 
     private void Border_PointerEntered(object? sender, PointerEventArgs e)
@@ -179,6 +180,9 @@ public partial class FsmNodeView : UserControl,
         if (control.DataContext is not NodeComponentViewModel nvm)
             return;
 
+        if (nvm.Parent is FsmNodeViewModel fsmNode && !fsmNode.IsEditableNode)
+            return;
+
         nvm.Parent.Components.Remove(nvm);
         e.Handled = true;
     }
@@ -189,6 +193,9 @@ public partial class FsmNodeView : UserControl,
             return;
 
         if (control.DataContext is not NodeComponentViewModel nvm)
+            return;
+
+        if (nvm.Parent is FsmNodeViewModel fsmNode && !fsmNode.IsEditableNode)
             return;
 
         nvm.Parent.Components.Remove(nvm);

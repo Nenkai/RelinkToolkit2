@@ -78,12 +78,6 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
     public partial PendingConnectionViewModel PendingConnection { get; set; } = new();
 
     /// <summary>
-    /// Currently selected node.
-    /// </summary>
-    [ObservableProperty]
-    public partial FsmNodeViewModel? SelectedNode { get; set; }
-
-    /// <summary>
     /// Currently selected connection.
     /// </summary>
     [ObservableProperty]
@@ -121,8 +115,9 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
         : base(dialogService, componentDocumentation)
     {
         _logger = logger;
-
         _fsmOptions = fsmOptions;
+
+        SelectedNodes.CollectionChanged += SelectedNodes_CollectionChanged;
 
         // We are essentially swapping out gestures here.
         // We want group layer click to select the whole layer. not just the group.
@@ -228,16 +223,29 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
         {
             case nameof(FSMOptions.DisplayFSMGuids):
                 {
-                    foreach (var node in Nodes)
-                        node.GuidVisible = _fsmOptions.Value.DisplayFSMGuids;
+                    foreach (FsmNodeViewModelBase node in Nodes)
+                    {
+                        if (node is FsmNodeViewModel fsmNode)
+                        {
+                            if (!fsmNode.IsEndNode)
+                                fsmNode.GuidVisible = _fsmOptions.Value.DisplayFSMGuids;
+                            else
+                                fsmNode.GuidVisible = false;
+                        }
+                    }
                     break;
                 }
 
             case nameof(FSMOptions.DisplayLayerIndices):
-                foreach (var node in Nodes)
+                foreach (FsmNodeViewModelBase node in Nodes)
                 {
-                    if (node is FsmNodeViewModel)
-                        node.LayerIndexVisible = _fsmOptions.Value.DisplayLayerIndices;
+                    if (node is FsmNodeViewModel fsmNode)
+                    {
+                        if (!fsmNode.IsEndNode)
+                            node.LayerIndexVisible = _fsmOptions.Value.DisplayLayerIndices;
+                        else
+                            node.LayerIndexVisible = false;
+                    }
                 }
                 break;
         }
@@ -270,7 +278,9 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
     /// <param name="message"></param>
     public void Receive(NodeGraphSelectionChangeRequest message)
     {
-        SelectedNode = (FsmNodeViewModel)message.Node;
+        SelectedNodes.Clear();
+        SelectedNodes.Add((FsmNodeViewModel)message.Node);
+
         message.Reply(true);
     }
 
@@ -303,7 +313,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
             Title = component.ComponentName,
             IsExpanded = _fsmOptions.Value.AlwaysExpandConditions,
         });
-        operatorGroup.ParentConnection.UpdateConnection();
+        operatorGroup.ParentTransition.ParentConnection.UpdateVisuals();
         message.Reply(true);
     }
 
@@ -590,7 +600,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
             {
                 Header = $"Add Component",
                 IconKind = "Material.PuzzlePlus",
-                Enabled = nodeVM.CanHaveComponents,
+                Enabled = nodeVM.IsEditableNode && nodeVM.CanHaveComponents,
                 Command = AddComponentToNodeCommand,
                 Parameter = nodeVM,
             });
@@ -599,7 +609,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
             {
                 Header = !nodeVM.HasSelfTransition ? "Create self transition" : $"Remove self transition",
                 IconKind = "Material.ShapeCirclePlus",
-                Enabled = nodeVM.CanHaveSelfTransition || nodeVM.HasSelfTransition,
+                Enabled = nodeVM.IsEditableNode && (nodeVM.CanHaveSelfTransition || nodeVM.HasSelfTransition),
                 Command = CreateSelfTransitionCommand,
                 Parameter = nodeVM,
             });
@@ -618,7 +628,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
             {
                 Header = !hasBaseFsm ? $"Link to base FSM" : "Remove base FSM link",
                 IconKind = !hasBaseFsm ? "Material.LinkVariantPlus" : "Material.LinkVariantRemove",
-                Enabled = (!hasBaseFsm && !nodeVM.Components.Any() && !nodeVM.IsEndNode) || hasBaseFsm,
+                Enabled = nodeVM.IsEditableNode && ((!hasBaseFsm && !nodeVM.Components.Any() && !nodeVM.IsEndNode) || hasBaseFsm),
                 Command = LinkNodeToBaseFSMCommand,
                 Parameter = nodeVM,
             });
@@ -627,7 +637,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
             {
                 Header = !nodeVM.IsBranch ? "Mark as branch (evaluate & jump to child nodes on same tick/update)" : $"Unset as branch (only jump to child nodes on next tick/update)",
                 IconKind = !nodeVM.IsBranch ? "Material.SourceBranchPlus" : "Material.SourceBranchMinus",
-                Enabled = true,
+                Enabled = nodeVM.IsEditableNode,
                 Command = SetAsBranchCommand,
                 Parameter = nodeVM,
             });
@@ -637,7 +647,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
         {
             Header =  !nodeVM.IsEndNode ? "Set as end node (only for empty nodes)" : "Unset as end node",
             IconKind = "Material.Octagon",
-            Enabled = nodeVM.CanSetAsEndNode || nodeVM.IsEndNode,
+            Enabled = nodeVM.IsEditableNode && (nodeVM.CanSetAsEndNode || nodeVM.IsEndNode),
             Command = SetNodeAsEndNodeCommand,
             Parameter = nodeVM,
         });
@@ -663,6 +673,40 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
             Command = CopyNodeGuidCommand,
             Parameter = nodeVM,
         });
+
+        if (!nodeVM.IsEndNode)
+        {
+            var dbItem = new MenuItemViewModel()
+            {
+                Header = $"Node name database ({Title})",
+                IconKind = "Material.CogBox",
+                Enabled = true,
+            };
+
+            string? dbName = NodeNameStore.TryGetNameForNode(Title, nodeVM.Guid, nodeVM.NameHash);
+            if (dbName is not null)
+            {
+                dbItem.MenuItems.Add(new MenuItemViewModel()
+                {
+                    Header = $"Update with current node name",
+                    Enabled = true,
+                    IconKind = "Material.Update",
+                    Command = UpdateNodeToNameDbCommand,
+                    Parameter = nodeVM,
+                });
+            }
+
+            dbItem.MenuItems.Add(new MenuItemViewModel()
+            {
+                Header = dbName is null ? $"Add node name for node {nodeVM.Guid}" : $"Remove node name for node {nodeVM.Guid}",
+                Enabled = true,
+                IconKind = dbName is null ? "Material.FormatAnnotationPlus" : "Material.FormatAnnotationMinus",
+                Command = AddOrRemoveNodeToNameDbCommand,
+                Parameter = nodeVM,
+            });
+
+            items.Add(dbItem);
+        }
         items.Add(MenuItemViewModel.Separator);
 
         if (componentVM is not null)
@@ -679,7 +723,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
             {
                 Header = $"Copy as new component",
                 IconKind = "Material.ContentCopy",
-                Enabled = true,
+                Enabled = nodeVM.IsEditableNode,
                 Command = CopyComponentCommand,
                 Parameter = componentVM,
             });
@@ -687,16 +731,24 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
             {
                 Header = $"Delete component",
                 IconKind = "Material.Delete",
-                Enabled = true,
+                Enabled = nodeVM.IsEditableNode,
                 Command = DeleteComponentCommand,
                 Parameter = componentVM,
             });
             items.Add(new MenuItemViewModel()
             {
-                Header = "View/Edit documentation...",
+                Header = "View/edit documentation...",
                 IconKind = "Material.CommentEdit",
                 Enabled = true,
                 Command = EditComponentDocumentationCommand,
+                Parameter = componentVM,
+            });
+            items.Add(new MenuItemViewModel()
+            {
+                Header = "View/edit preview caption...",
+                IconKind = "Material.CommentEdit",
+                Enabled = true,
+                Command = EditComponentCaptionCommand,
                 Parameter = componentVM,
             });
             items.Add(MenuItemViewModel.Separator);
@@ -758,7 +810,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
         {
             Header = $"Delete node",
             IconKind = "Material.Delete",
-            Enabled = nodeVM.CanDeleteNode,
+            Enabled = nodeVM.IsEditableNode && nodeVM.CanDeleteNode,
             Command = DeleteNodeCommand,
             Parameter = nodeVM,
         });
@@ -836,7 +888,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
         nodeViewModel.AddComponent(btComponent);
 
         // Make sure to select it.
-        WeakReferenceMessenger.Default.Send(new FsmComponentSelectedMessage(btComponent));
+        WeakReferenceMessenger.Default.Send(new FsmComponentSelectedMessage(btComponent, readOnly: !nodeViewModel.IsEditableNode));
     }
 
     [RelayCommand]
@@ -965,6 +1017,29 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
 
     }
 
+    [RelayCommand]
+    public void OnUpdateNodeToNameDb(FsmNodeViewModel node)
+    {
+        NodeNameStore.SetNameForNode(Title, node.Guid, node.Title);
+        WeakReferenceMessenger.Default.Send(new SnackbarMessage($"Node name updated for FSM {Title}, Node {node.Guid}."));
+    }
+
+    [RelayCommand]
+    public void OnAddOrRemoveNodeToNameDb(FsmNodeViewModel node)
+    {
+        string? dbName = NodeNameStore.TryGetNameForNode(Title, node.Guid, node.NameHash);
+        if (dbName is null)
+        {
+            NodeNameStore.SetNameForNode(Title, node.Guid, node.Title);
+            WeakReferenceMessenger.Default.Send(new SnackbarMessage($"Node name saved for FSM {Title}, Node {node.Guid}."));
+        }
+        else
+        {
+            NodeNameStore.RemoveNameForNode(Title, node.Guid);
+            WeakReferenceMessenger.Default.Send(new SnackbarMessage($"Node name removed for FSM {Title}, Node {node.Guid}."));
+        }
+    }
+
     #endregion
 
     #region Transition Connecting Events
@@ -1089,12 +1164,14 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
 
     #region Misc Events
     /// <summary>
-    /// Called by generated observable property <see cref="_selectedNode"/>
-    /// </summary>
+    /// Fired when selected nodes have changed
     /// <param name="value"></param>
-    partial void OnSelectedNodeChanged(FsmNodeViewModel? value)
+    private void SelectedNodes_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
     {
-        NodeClicked(value);
+        if (SelectedNodes.Count == 1 && SelectedNodes[0] is FsmNodeViewModel)
+            NodeClicked(SelectedNodes[0]);
+        else
+            NodeClicked(null);
     }
 
     /// <summary>
@@ -1142,6 +1219,8 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
     [RelayCommand]
     private void OnPreviewItemsDragCompleted(DragCompletedEventArgs obj)
     {
+        // TODO: Do not allow moving uneditable (templated) nodes.
+
         foreach (var item in SelectedNodes)
         {
             // Is the root node of a layer that's not the root layer (layer 0)?
@@ -1526,7 +1605,6 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
         Nodes.Clear();
         Connections.Clear();
 
-        SelectedNode = null;
         SelectedNodes.Clear();
 
         LayerGroups.Clear();
@@ -1800,6 +1878,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
             Location = location,
             LayerIndex = node.LayerIndex,
             NameHash = node.NameHash,
+            TemplateFSMSource = node.TemplateSource,
             FsmFolderName = node.FsmFolderName,
             FsmName = node.FsmName,
             IsBranch = node.IsBranch,
@@ -1926,6 +2005,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
             Source = sourceNodeVm,
             Target = toNode,
             ConnectionType = connectionType,
+            IsEditable = string.IsNullOrWhiteSpace(trans.TemplateSource),
         };
         transition.Source.Transitions.Add(transition);
 
@@ -1941,11 +2021,11 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
         }
         else if (trans.ConditionComponents.Count >= 2)
         {
-            TransitionConditionElementViewModelBase root = BuildConditionTree(trans, connection);
+            TransitionConditionElementViewModelBase root = BuildConditionTree(trans, transition);
             transition.ConditionOperatorGroups[0].AddElement(root);
         }
 
-        connection.UpdateConnection();
+        connection.UpdateVisuals();
     }
     #endregion
 
@@ -2007,6 +2087,13 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
         return state;
     }
 
+    /// <summary>
+    /// Builds an FSM node for saving purposes
+    /// </summary>
+    /// <param name="fsmState">General FSM state</param>
+    /// <param name="nodeVM">Source node</param>
+    /// <param name="fsmNode">FSM node we are saving</param>
+    /// <param name="processedNodes"></param>
     private void BuildFSMNode(FSMState fsmState, FsmNodeViewModel nodeVM, FSMNode fsmNode, Dictionary<uint, FSMNode> processedNodes)
     {
         fsmNode.FsmFolderName = nodeVM.FsmFolderName;
@@ -2144,7 +2231,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
     /// <param name="fsmTransition"></param>
     /// <param name="connection"></param>
     /// <returns></returns>
-    private static TransitionConditionElementViewModelBase BuildConditionTree(Transition fsmTransition, FsmConnectionViewModel connection)
+    private static TransitionConditionElementViewModelBase BuildConditionTree(Transition fsmTransition, TransitionViewModel transition)
     {
         int numComponents = fsmTransition.ConditionComponents.Count;
         if (numComponents == 1)
@@ -2181,7 +2268,7 @@ public partial class FsmEditorViewModel : NodeEditorViewModelBase, ISaveableDocu
                 var firstParam = fsmTransition.TransitionParams[splitIndices[0]];
                 var operandType = firstParam.IsAndCondition ? TransitionOperandType.AND : TransitionOperandType.OR;
 
-                var op = new TransitionConditionOpViewModel(connection, operatorType: operandType);
+                var op = new TransitionConditionOpViewModel(transition, operatorType: operandType);
 
                 int sectionStart = start;
                 foreach (int split in splitIndices)

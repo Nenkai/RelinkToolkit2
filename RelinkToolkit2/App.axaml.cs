@@ -146,7 +146,13 @@ public partial class App : Application
     private void Desktop_Exit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
     {
         _logger?.LogInformation("Exit called..");
+        Save();
 
+        _logger?.LogInformation("All done. Exiting.");
+    }
+
+    private void Save()
+    {
         _logger?.LogInformation("Saving configuration.");
         Configuration?.Save();
 
@@ -156,7 +162,7 @@ public partial class App : Application
         var docService = App.Current.Services.GetRequiredService<ComponentDocumentationService>();
         docService.SaveDocumentFile();
 
-        _logger?.LogInformation("All saved. Exiting.");
+        NodeNameStore.SaveNodeNames();
     }
 
     private void SaveDockLayout()

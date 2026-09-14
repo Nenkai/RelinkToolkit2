@@ -101,7 +101,7 @@ public partial class ComponentSearchViewModel : ObservableObject
             subPage.AddComponent("Sub-Entry", 0);
             mainPage.AddPageEntry("Page 0, Entry 0 (folder)", subPage);
             mainPage.AddComponent("Page 0, Entry 1", 0);
-            mainPage.AddComponent("Page 0, Entry 2", 0, caption: "lol", tag: "Tag 2.0");
+            mainPage.AddComponent("Page 0, Entry 2", 0, hoverText: "lol", tag: "Tag 2.0");
             AddPage(mainPage);
         }
     }

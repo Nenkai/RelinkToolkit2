@@ -44,18 +44,17 @@ public partial class ComponentSearchPageViewModel : ObservableObject
     /// <param name="name"></param>
     /// <param name="data"></param>
     /// <param name="caption"></param>
-    public ComponentSearchItemViewModel AddComponent(string name, object data, string? caption = null, string? icon = "Material.FileCode", string? tag = null, 
-        string? hoverText = null, Action<ComponentSearchViewModel, ComponentSearchItemViewModel>? onSelectedCallback = null)
+    public ComponentSearchItemViewModel AddComponent(string name, object data, string? icon = "Material.FileCode", string? tag = null, 
+        string? hoverText = null, bool showHelpCircle = false, Action<ComponentSearchViewModel, ComponentSearchItemViewModel>? onSelectedCallback = null)
     {
         var component = new ComponentSearchItemViewModel()
         {
             Name = name,
             Data = data,
             Icon = icon,
-            HelpCaption = caption,
             Tag = tag,
             HoverText = hoverText,
-            InnerRightIcon = !string.IsNullOrWhiteSpace(caption) ? "Material.HelpCircle" : null,
+            InnerRightIcon = showHelpCircle ? "Material.HelpCircle" : null,
             OnSelected = onSelectedCallback,
         };
 

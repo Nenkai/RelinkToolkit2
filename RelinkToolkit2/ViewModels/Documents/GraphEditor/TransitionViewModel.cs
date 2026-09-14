@@ -1,11 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-
-using Nodify;
-
-using RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
-using RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents;
-
+﻿
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -14,6 +7,12 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+
+using RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
+using RelinkToolkit2.ViewModels.Documents.GraphEditor.TransitionComponents;
 
 using static RelinkToolkit2.ViewModels.Documents.GraphEditor.FsmEditorViewModel;
 
@@ -28,6 +27,11 @@ public partial class TransitionViewModel : ObservableObject
 
     public required FsmNodeViewModel Source { get; set; }
     public required FsmNodeViewModel Target { get; set; }
+
+    /// <summary>
+    /// Whether this transition is editable (not locked, i.e from a template FSM)
+    /// </summary>
+    public bool IsEditable { get; set; } = true;
 
     [ObservableProperty]
     public partial FsmNodeConnectionType ConnectionType { get; set; }
@@ -45,7 +49,7 @@ public partial class TransitionViewModel : ObservableObject
         ParentConnection = parentConnection;
 
         // Default condition group.
-        var operatorGroup = new TransitionConditionOpViewModel(parentConnection)
+        var operatorGroup = new TransitionConditionOpViewModel(this)
         {
             CanDelete = false,
         };
@@ -56,6 +60,6 @@ public partial class TransitionViewModel : ObservableObject
     public void OnTransitionComponentDeleted(TransitionConditionOpViewModel component)
     {
         ConditionOperatorGroups.Remove(component);
-        ParentConnection.UpdateConnection();
+        ParentConnection.UpdateVisuals();
     }
 }

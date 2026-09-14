@@ -43,6 +43,7 @@ public class DialogService : IDialogService
     {
         StringHasherViewModel => new StringHasherWindow(),
         ComponentDocEditViewModel => new ComponentDocEditWindow(),
+        ComponentCaptionEditViewModel => new ComponentCaptionEditWindow(),
         _ => throw new ArgumentException($"No window registered for {viewModel.GetType().Name}")
     };
 

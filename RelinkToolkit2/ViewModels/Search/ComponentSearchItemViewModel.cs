@@ -27,12 +27,6 @@ public partial class ComponentSearchItemViewModel : ObservableObject
     public partial string? InnerRightIcon { get; set; }
 
     /// <summary>
-    /// Hoverable caption.
-    /// </summary>
-    [ObservableProperty]
-    public partial string? HelpCaption { get; set; }
-
-    /// <summary>
     /// User-data associated to this item.
     /// </summary>
     [ObservableProperty]

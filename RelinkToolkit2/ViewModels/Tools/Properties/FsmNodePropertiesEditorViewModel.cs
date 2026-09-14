@@ -67,6 +67,8 @@ public partial class FsmNodePropertiesEditorViewModel : NodePropertiesViewModelB
     public void Receive(NodeSelectedMessage message)
     {
         Node = (FsmNodeViewModel)message.Node;
+
+        PropertyGrid.ReadOnly = Node?.IsEditableNode is not true;
         PropertyGrid.SetObject(Node?.Components.FirstOrDefault()?.Component);
     }
 }

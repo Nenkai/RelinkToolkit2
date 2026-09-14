@@ -30,6 +30,11 @@ public class TypeDocumentation
     public string? Description { get; set; }
 
     /// <summary>
+    /// Previewing format string
+    /// </summary>
+    public string? PreviewFormatString { get; set; }
+
+    /// <summary>
     /// Child Types
     /// </summary>
     public List<TypeDocumentation> ChildTypes { get; set; } = [];

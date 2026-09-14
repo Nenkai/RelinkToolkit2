@@ -2,11 +2,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:md="https://github.com/whistyun/Markdown.Avalonia"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="350"
 			 xmlns:searchVMs="using:RelinkToolkit2.ViewModels.Search"
-			 xmlns:b="using:RelinkToolkit2.Behaviors"
 			 xmlns:controls="using:RelinkToolkit2.Controls"
 			 xmlns:converters="using:RelinkToolkit2.Converters"
+			 xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
              x:Class="RelinkToolkit2.Views.Search.ComponentSearchView"
 			 x:DataType="searchVMs:ComponentSearchViewModel"
 			 Width="400"
@@ -80,7 +81,13 @@
 										<Grid ColumnDefinitions="Auto,*,Auto,Auto" x:DataType="searchVMs:ComponentSearchItemViewModel"
 											  ToolTip.ServiceEnabled="{Binding HoverText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" Background="Transparent">
 											<ToolTip.Tip>
-												<TextBlock Text="{Binding HoverText}"/>
+												<md:MarkdownScrollViewer Markdown="{Binding HoverText}">
+													<md:MarkdownScrollViewer.Styles>
+													    <Style Selector="ctxt|CTextBlock">
+													        <Setter Property="FontFamily" Value="Segoe UI"/>
+													    </Style>
+													</md:MarkdownScrollViewer.Styles>
+												</md:MarkdownScrollViewer>
 											</ToolTip.Tip>
 											<Image Grid.Column="0" Width="14" Height="14" Margin="0,0,2,0">
 												<Image.Source>
@@ -95,12 +102,7 @@
 													<TextBlock FontWeight="Bold" TextAlignment="Center" Text="{Binding Tag}" Foreground="#DDDDDD" FontSize="10"/>
 												</Border>
 											</Panel>
-											<Panel Grid.Column="3" Background="Transparent" ToolTip.ShowDelay="0" 
-												   IsVisible="{Binding InnerRightIcon, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-												   ToolTip.ServiceEnabled="{Binding HelpCaption, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-												<ToolTip.Tip>
-													<TextBlock Text="{Binding HelpCaption}"/>
-												</ToolTip.Tip>
+											<Panel Grid.Column="3" Background="Transparent" ToolTip.ShowDelay="0" IsVisible="{Binding InnerRightIcon, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
 												<Image Width="10" Height="10" Margin="0,0,4,0">
 													<Image.Source>
 														<controls:VectorIconDrawingImage Drawing="{Binding InnerRightIcon, Converter={StaticResource vectorIconConverter}}"/>

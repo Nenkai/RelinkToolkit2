@@ -59,7 +59,6 @@
 				 ItemsSource="{Binding Nodes}"
 				 Connections="{Binding Connections}"
 				 Background="{StaticResource SmallGridLinesDrawingBrush}"
-				 SelectedItem="{Binding SelectedNode}"
 			     SelectedItems="{Binding SelectedNodes}"
 				 SelectedConnection="{Binding SelectedConnection}"
 			     PendingConnection="{Binding PendingConnection}"

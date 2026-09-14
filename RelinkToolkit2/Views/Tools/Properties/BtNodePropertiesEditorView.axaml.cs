@@ -90,6 +90,6 @@ public partial class BtNodePropertiesEditorView : UserControl
         nodeViewModel.AddComponent(btComponent);
 
         // Make sure to select it.
-        WeakReferenceMessenger.Default.Send(new FsmComponentSelectedMessage(btComponent));
+        WeakReferenceMessenger.Default.Send(new FsmComponentSelectedMessage(btComponent, readOnly: !nodeViewModel.IsEditableNode));
     }
 }

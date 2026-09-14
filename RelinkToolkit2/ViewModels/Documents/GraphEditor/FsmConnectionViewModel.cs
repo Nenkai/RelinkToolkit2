@@ -63,10 +63,10 @@ public partial class FsmConnectionViewModel : GraphConnectionViewModel
 
     private void Transitions_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
     {
-        UpdateConnection();
+        UpdateVisuals();
     }
 
-    public override void UpdateConnection()
+    public override void UpdateVisuals()
     {
 
         ArrowHeadEnds = ArrowHeadEnds.None;

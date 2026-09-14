@@ -83,7 +83,7 @@ public partial class GraphConnectionViewModel : ObservableObject
         }
     }
 
-    public virtual void UpdateConnection()
+    public virtual void UpdateVisuals()
     {
 
     }

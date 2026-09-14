@@ -83,7 +83,14 @@
             <Separator Margin="0,6,0,6" IsVisible="True"/>
         </StackPanel>
 
-        <pgViews:DocumentablePropertyGridView IsVisible="True" DataContext="{Binding PropertyGrid}"/>
+        <pgViews:DocumentablePropertyGridView 
+            Margin="4"
+            IsVisible="True"
+            PropertyCategorizingStyle="CategorizeByObjectInheritingOrder"
+            IsQuickFilterVisible="False"
+            IsTitleVisible="False"
+            ShowDocTooltipOnHover="False"
+            DataContext="{Binding PropertyGrid}"/>
     </DockPanel>
 
 </UserControl>

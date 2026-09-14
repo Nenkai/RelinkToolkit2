@@ -27,9 +27,9 @@ public partial class TransitionConditionOpViewModel : TransitionConditionElement
     public bool _canDelete = true;
 
     /// <summary>
-    /// Parent connection where this operand is contained
+    /// Parent transition where this operand is contained
     /// </summary>
-    public FsmConnectionViewModel ParentConnection { get; set; }
+    public TransitionViewModel ParentTransition { get; set; }
 
     /// <summary>
     /// Use <see cref="AddElement"/> to add any elements.
@@ -38,11 +38,11 @@ public partial class TransitionConditionOpViewModel : TransitionConditionElement
 
     private TransitionConditionOpViewModel() { }
 
-    public TransitionConditionOpViewModel(FsmConnectionViewModel parentConnection, 
+    public TransitionConditionOpViewModel(TransitionViewModel parentTransition, 
         TransitionConditionOpViewModel? parentOperand = null,
         TransitionOperandType operatorType = TransitionOperandType.None)
     { 
-        ParentConnection = parentConnection;
+        ParentTransition = parentTransition;
         ParentOperand = parentOperand;
         Operand = operatorType;
     }
@@ -57,7 +57,7 @@ public partial class TransitionConditionOpViewModel : TransitionConditionElement
     [RelayCommand]
     public void OnAddOperand()
     {
-        AddElement(new TransitionConditionOpViewModel(ParentConnection, this, TransitionOperandType.AND));
+        AddElement(new TransitionConditionOpViewModel(ParentTransition, this, TransitionOperandType.AND));
     }
 
     [RelayCommand]

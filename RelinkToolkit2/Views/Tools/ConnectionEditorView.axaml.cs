@@ -1,12 +1,16 @@
 ﻿using System;
 
 using Avalonia.Controls;
+using Avalonia.Media;
+using Avalonia.Styling;
+
+using ColorTextBlock.Avalonia;
 
 using CommunityToolkit.Mvvm.Messaging;
 
-using Microsoft.Extensions.DependencyInjection;
-
 using GBFRDataTools.FSM.Components.Conditions;
+
+using Microsoft.Extensions.DependencyInjection;
 
 using RelinkToolkit2.Services;
 using RelinkToolkit2.ViewModels.Documents.GraphEditor;
@@ -81,10 +85,41 @@ public partial class ConnectionEditorView : UserControl
         if (component is not ConditionComponent conditionComponent)
             return;
 
-        WeakReferenceMessenger.Default.Send(new TransitionComponentAddRequest() 
-        { 
+        WeakReferenceMessenger.Default.Send(new TransitionComponentAddRequest()
+        {
             OperatorGroup = operatorGroup,
-            Component = conditionComponent 
+            Component = conditionComponent
         });
+    }
+
+    private void ConditionComponentTitle_OnToolTipOpening(object? sender, Avalonia.Interactivity.CancelRoutedEventArgs e)
+    {
+        if (sender is not Control control)
+            return;
+
+        var transitionCondition = (TransitionConditionViewModel)control.DataContext!;
+
+        ComponentDocumentationService docService = App.Current.Services.GetRequiredService<ComponentDocumentationService>();
+
+        string tip = $"#### {transitionCondition.ConditionComponent.ComponentName}\n\n";
+        string? docString = docService.GetComponentString(transitionCondition.ConditionComponent.GetType());
+        if (!string.IsNullOrWhiteSpace(docString))
+            tip += docString;
+        else
+            tip += $"**No documentation was found for component **`{transitionCondition.ConditionComponent.ComponentName}`.";
+
+        var stackPanel = new StackPanel();
+        var markdown = new Markdown.Avalonia.MarkdownScrollViewer()
+        {
+            Markdown = tip
+        };
+
+        var style = new Style(x => x.OfType<CTextBlock>());
+        style.Setters.Add(new Setter(CTextBlock.FontFamilyProperty, new FontFamily("Segoe UI")));
+        markdown.Styles.Add(style);
+
+        stackPanel.Children.Add(markdown);
+
+        ToolTip.SetTip(control, stackPanel);
     }
 }

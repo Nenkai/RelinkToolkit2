@@ -88,6 +88,8 @@ public partial class NodePropertiesViewModelBase : ToolBase,
 
     public void Receive(FsmComponentSelectedMessage message)
     {
-        PropertyGrid.SetObject(message.Value);
+        PropertyGrid.ReadOnly = message.ReadOnly;
+        PropertyGrid.SetObject(message.Component);
+
     }
 }

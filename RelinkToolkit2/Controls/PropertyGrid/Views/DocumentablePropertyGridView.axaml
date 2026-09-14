@@ -18,22 +18,28 @@
 
 	<UserControl.Resources>
 		<converters:VectorIconConverter x:Key="vectorIconConverter"/>
+		<converters:BoolToGridLengthConverter x:Key="boolToGridLengthConverter"/>
+    <converters:BoolToDoubleConverter x:Key="boolToDoubleConverter"/>
 	</UserControl.Resources>
 
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="*"></RowDefinition>
-			<RowDefinition Height="4"></RowDefinition>
-			<RowDefinition MinHeight="70" Height="120"></RowDefinition>
+			<RowDefinition Height="{Binding #MainPropertyGrid.DocumentationPanelVisible, Converter={StaticResource boolToGridLengthConverter}, ConverterParameter=4}"/>
+			<RowDefinition Height="{Binding #MainPropertyGrid.DocumentationPanelVisible, Converter={StaticResource boolToGridLengthConverter}, ConverterParameter=120}"
+						   MinHeight="{Binding #MainPropertyGrid.DocumentationPanelVisible, Converter={StaticResource boolToDoubleConverter}, ConverterParameter=70}"/>
 		</Grid.RowDefinitions>
 		<pgc:PropertyGrid Grid.Row="0"
 			x:Name="propertyGrid_Basic"
-			Margin="4"
-			IsQuickFilterVisible="False"
-			IsTitleVisible="False"
+			IsQuickFilterVisible="{Binding #MainPropertyGrid.IsQuickFilterVisible}"
+			IsHeaderVisible="{Binding #MainPropertyGrid.IsHeaderVisible}"
+			IsCategoryVisible="{Binding #MainPropertyGrid.IsCategoryVisible}"
+			LayoutStyle="{Binding #MainPropertyGrid.LayoutStyle}"
+			IsTitleVisible="{Binding #MainPropertyGrid.IsTitleVisible}"
 			IsAutoNameWidth="True"
+			IsReadOnly="{Binding #MainPropertyGrid.((VMs:DocumentablePropertyGridViewModel)DataContext).ReadOnly}"
 			DataContext="{Binding SelectedObject}"
-			PropertyCategorizingStyle="CategorizeByObjectInheritingOrder"
+			PropertyCategorizingStyle="{Binding #MainPropertyGrid.PropertyCategorizingStyle}"
 			CustomNameBlock="PropertyGrid_CustomNameBlock">
 			<pgc:PropertyGrid.Styles>
 				<Style>
@@ -53,11 +59,8 @@
 			</pgc:PropertyGrid.Styles>
 		</pgc:PropertyGrid>
 		<!-- TODO: Use PropertyGrid.BottomContent -->
-		<GridSplitter Grid.Row="1"/>
-		<Grid Grid.Row="2" RowDefinitions="Auto,*">
-			<Label Grid.Row="0" Margin="0,0,0,0" FontSize="13" FontWeight="Bold" Content="{Binding ObjectName}"/>
-			<md:MarkdownScrollViewer Grid.Row="1" DockPanel.Dock="Bottom" Markdown="{Binding Description}"/>
-		</Grid>
+		<GridSplitter Grid.Row="1" IsVisible="{Binding #MainPropertyGrid.DocumentationPanelVisible}"/>
+		<md:MarkdownScrollViewer Grid.Row="2" DockPanel.Dock="Bottom" Markdown="{Binding Description}" IsVisible="{Binding #MainPropertyGrid.DocumentationPanelVisible}"/>
 	</Grid>
 
 </UserControl>

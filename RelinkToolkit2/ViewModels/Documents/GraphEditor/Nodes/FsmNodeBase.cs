@@ -16,7 +16,6 @@ namespace RelinkToolkit2.ViewModels.Documents.GraphEditor.Nodes;
 /// </summary>
 public abstract partial class FsmNodeViewModelBase : NodeViewModel
 {
-
     [ObservableProperty]
     public partial int LayerIndex { get; set; }
 
